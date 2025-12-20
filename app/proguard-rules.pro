@@ -48,7 +48,7 @@
     @com.google.gson.annotations.SerializedName <fields>;
 }
 # 保留 CaptureInterceptor 类及其构造函数
--keep class cn.coderpig.cp_network_capture.interceptor.CaptureInterceptor {
+-keep class com.ghn.cp_network_capture.interceptor.CaptureInterceptor {
     public <init>();
 }
 

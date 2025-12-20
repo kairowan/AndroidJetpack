@@ -43,7 +43,7 @@ class DownloadActivity : BaseActivity<ActivityDownloadBinding, BaseViewModel>() 
                 progressInterval = 1024 * 1024 // 每1MB更新进度
             )
             // 2. 初始化下载器
-            downloader = FileDownloader.create(customConfig)
+            downloader = FileDownloader.create(this,customConfig)
             // 3. 实现监听器
             val listener = object : DownloadListener {
                 override fun onProgress(

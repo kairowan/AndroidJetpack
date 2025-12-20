@@ -28,11 +28,13 @@ dependencyResolutionManagement {
 }
 rootProject.name = "KotlinMvvm"
 include(":app")
-include(":NetworkModule")
-include(":BaseModule")
-include(":CapturePacketModule")
-include(":CommonModule")
-include(":EventModule")
-include(":RouterModule")
-
-
+// 通用库
+include(":Lib_Network")
+include(":Lib_Base")
+include(":Lib_Utils")
+include(":Lib_Event")
+include(":Lib_Router")
+include(":Lib_UI_Common")
+// 业务库
+include(":Feature_Capture")
+include("module_login")

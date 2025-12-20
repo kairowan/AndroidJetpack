@@ -9,7 +9,6 @@ import com.example.basemodel.base.basevm.BaseViewModel
 import com.ghn.cocknovel.net.DataService
 import com.ghn.cocknovel.ui.activity.WebviewActivity
 import com.google.gson.Gson
-import com.kt.NetworkModel.App
 import com.kt.NetworkModel.bean.ProjectBean
 import com.kt.NetworkModel.bean.TabFrameBean
 import com.kt.network.bean.FontDataNew

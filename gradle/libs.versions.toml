@@ -47,7 +47,6 @@ ext-junit="1.1.3"
 espresso="3.4.0"
 titlebar="10.0"
 xbanner="androidx_v1.2.6"
-hilt = "2.37"
 liangjingkanji-brv="1.6.1"
 easywindow="10.6"
 activity = "1.8.0"
@@ -57,7 +56,6 @@ activity = "1.8.0"
 [libraries]
 
 apt = { module = "cn.therouter:apt", version.ref = "apt" }
-hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroidGradlePlugin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinGradlePlugin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "ktx" }
@@ -83,7 +81,7 @@ rxlifecycle-rxlifecycle4-android={ group = "com.trello.rxlifecycle4", name = "rx
 rxlifecycle-rxlifecycle4-components={ group = "com.trello.rxlifecycle4", name = "rxlifecycle-components", version.ref = "rxlifecycle" }
 github-glide={ group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 androidx-room-runtime={ group = "androidx.room", name = "room-runtime", version.ref = "room" }
-androidx-room-comliler={ group = "androidx.room", name = "room-comliler", version.ref = "room" }
+androidx-room-compiler={ group = "androidx.room", name = "room-comliler", version.ref = "room" }
 androidx-room-ktx={ group = "androidx.room", name = "room-ktx", version.ref = "room" }
 jetbrains-annotations={ group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 aliyun-httpdns={ group = "com.aliyun.ams", name = "alicloud-android-httpdns", version.ref = "httpdns" }
@@ -102,8 +100,6 @@ androidx-junit={ group = "androidx.test.ext", name = "junit", version.ref = "ext
 androidx-espresso={ group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 github-titlebar={ group = "com.github.getActivity", name = "TitleBar", version.ref = "titlebar" }
 github-xbanner={ group = "com.github.xiaohaibin", name = "XBanner", version.ref = "xbanner" }
-dagger-hilt-android={ group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-dagger-hilt-android-compiler={ group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 github-lqdbrv={group = "com.github.liangjingkanji",name="BRV",version.ref="liangjingkanji-brv"}
 github-easywindow = { module = "com.github.getActivity:EasyWindow", version.ref = "easywindow" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }

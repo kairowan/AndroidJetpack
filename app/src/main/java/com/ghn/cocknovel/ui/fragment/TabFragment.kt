@@ -60,8 +60,6 @@ class TabFragment : BaseFragment<FragmentTabBinding, RecommendViewModel>() {
 
     override fun initViewObservable() {
 
-
-
         adapter = object : BaseRecyclerAdapter<TabFrameBean.Data.Data>(recyclerview_tablist) {
             @SuppressLint("CheckResult")
             override fun bindData(holder: BaseViewHolder?, position: Int) {

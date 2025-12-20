@@ -1,25 +1,17 @@
 package com.ghn.cocknovel.ui.activity
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.KeyEvent
-import android.view.MenuItem
-import android.view.View
-import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.example.basemodel.base.baseact.BaseActivity
 import com.example.basemodel.base.basevm.BaseViewModel
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.ActivityMainBinding
-import com.ghn.cocknovel.ui.fragment.BookshelfFragment
-import com.ghn.cocknovel.ui.fragment.BookstoreFragment
-import com.ghn.cocknovel.ui.fragment.ClassificationFragment
-import com.ghn.cocknovel.ui.fragment.MineFragment
 import com.ghn.cocknovel.utils.DebugEntryHelper
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.ghn.routermodule.AppRouter
+import com.ghn.routermodule.RouterPath
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
@@ -39,6 +31,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
     }
 
     override fun initView() {
+        AppRouter.goTo(RouterPath.Login.LoginAC)
         Log.i("initView", "1111111")
         DebugEntryHelper.attachToActivity(this)
         mBinding.navView.post {
@@ -72,7 +65,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
                     }
                 }
             })
-        showMsgWithImage("提示", com.example.basemodel.R.mipmap.ic_my_handes)
+        showMsgWithImage("提示", com.ghn.lib.base.R.mipmap.ic_my_handes)
     }
 
     private var exitTime: Long = 0

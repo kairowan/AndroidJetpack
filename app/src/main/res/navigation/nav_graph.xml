@@ -6,7 +6,7 @@
     >
     <fragment
         android:id="@+id/bookstore"
-        android:name="com.ghn.cocknovel.ui.fragment.RecommendFragment" />
+        android:name="com.ghn.cocknovel.ui.fragment.BookstoreFragment" />
     <fragment
         android:id="@+id/classification"
         android:name="com.ghn.cocknovel.ui.fragment.ClassificationFragment" />

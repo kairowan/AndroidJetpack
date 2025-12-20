@@ -1,18 +1,16 @@
 package com.ghn.cocknovel.utils
 
 import android.app.Activity
-import android.content.Intent
 import android.graphics.Color
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import android.widget.Toast
 import com.ghn.cocknovel.R
-import com.ghn.commonmodule.ext.dp
+import com.kairowan.lib_ui_common.ext.dp
 import com.ghn.routermodule.AppRouter
-import com.ghn.routermodule.RouterParams
 import com.kt.ktmvvm.lib.BuildConfig
 
 
@@ -42,6 +40,7 @@ object DebugEntryHelper {
             setPadding(16, 8, 16, 8)
             alpha = 0.8f
             setOnClickListener {
+                Log.i("attachToActivity", "点击事件: ")
                 AppRouter.goToNet()
 //                val className = "cn.coderpig.cp_network_capture.ui.activity.NetworkCaptureActivity"
 //                try {

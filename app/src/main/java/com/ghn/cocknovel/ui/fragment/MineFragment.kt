@@ -71,7 +71,7 @@ class MineFragment : BaseFragment<FragmentMineBinding, BookStoreViewModel>() {
 
     override fun initData() {
         mBinding.let {
-            Glide.with(this).load(com.example.basemodel.R.mipmap.ic_my_handes)
+            Glide.with(this).load(com.ghn.lib.base.R.mipmap.ic_my_handes)
                 .apply(RequestOptions.bitmapTransform(CircleCrop()))
                 .transition(DrawableTransitionOptions.withCrossFade(500))
                 .into(it.rounIcon)

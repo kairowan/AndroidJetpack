@@ -1,6 +1,6 @@
 package com.ghn.cocknovel.net
 
-import com.kt.NetworkModel.App
+import com.ghn.cocknovel.App
 import com.kt.NetworkModel.bean.ProjectBean
 import com.kt.NetworkModel.bean.TabFrameBean
 import com.kt.NetworkModel.bean.WBanner
@@ -13,7 +13,7 @@ import com.kt.network.net.RetrofitClient
 /**
  * @author 浩楠
  *
- * @date 2023/1/9   17:08.
+ * @date 2023/1/9
  *
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
@@ -31,7 +31,7 @@ class DataService {
             host: Int,
             phoneNumber: String
         ): BaseResult<Any> {
-            return RetrofitClient.getInstance(App.context()).getDefault(ApiService::class.java, host)
+            return RetrofitClient.getInstance(App.get()).getDefault(ApiService::class.java, host)
                 .Login(phoneNumber)
         }
 

@@ -1,0 +1,32 @@
+package com.kt.NetworkModel.helper
+
+import org.json.JSONArray
+import org.json.JSONObject
+
+/**
+ * @author 浩楠
+ *
+ * @date 2025/12/20
+ *
+ *      _              _           _     _   ____  _             _ _
+ *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
+ *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
+ *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
+ *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
+ * @Description: TODO
+ */
+object LogJsonUtils {
+    fun formatJson(json: String): String {
+        if (json.isBlank()) return ""
+        return try {
+            val trimmed = json.trim()
+            when {
+                trimmed.startsWith("{") -> JSONObject(trimmed).toString(2)
+                trimmed.startsWith("[") -> JSONArray(trimmed).toString(2)
+                else -> trimmed
+            }
+        } catch (e: Exception) {
+            json
+        }
+    }
+}
