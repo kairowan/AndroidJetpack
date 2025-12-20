@@ -16,17 +16,11 @@ android {
 }
 
 dependencies {
-
-    api(project(":BaseModule"))
-    api(project(":NetworkModule"))
-    api(project(":EventModule"))
-    api(project(":RouterModule"))
-    api(project(":CapturePacketModule"))
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.material)
-    testImplementation(libs.test.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso)
+    api(libs.androidx.appcompat)
+    api(libs.google.material)
+    api(libs.test.junit)
+    api(libs.androidx.junit)
+    api(libs.androidx.espresso)
 
     api(libs.lifecycle.viewmodel)
     api(libs.lifecycle.runtime)
@@ -58,4 +52,9 @@ dependencies {
     api(libs.refresh.header.classics)
     api(libs.router)
     api(libs.multidex)
+    api(libs.github.xpopup)
+    api(libs.dialogs.lifecycle)
+    api(libs.dialogs.core)
+    api(libs.androidx.activity)
+
 }

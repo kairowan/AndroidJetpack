@@ -3,6 +3,7 @@ plugins {
     id("kotlin-android")
     kotlin("android")
     kotlin("kapt")
+    id("kotlin-kapt")
 }
 
 kapt {
@@ -22,6 +23,15 @@ android {
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.toString()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+//        externalNativeBuild {
+//            cmake {
+//                arguments("-DANDROID_STL=c++_shared", "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--hash-style=both")
+//            }
+//        }
+//        ndk {
+//            abiFilters.add("armeabi-v7a")
+//            abiFilters.add("arm64-v8a")
+//        }
     }
     signingConfigs {
         create("platform") {
@@ -73,20 +83,20 @@ android {
 }
 
 dependencies {
+//    implementation(project(":CommonModule"))
+    implementation(project(":BaseModule"))
+//    implementation(project(":NetworkModule"))
+    implementation(project(":RouterModule"))
+    implementation(project(":EventModule"))
+    implementation(project(":CapturePacketModule"))
 
-    implementation(project("path" to ":CommonModule"))
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.material)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.navigation.fragment)
-    implementation(libs.androidx.navigation.ui)
-    implementation(libs.test.junit)
-    implementation(libs.androidx.junit)
-    implementation(libs.androidx.espresso)
     implementation(libs.github.titlebar)
     implementation(libs.github.xbanner)
     implementation(libs.github.xxPermissions)
-    kapt (libs.apt)
+
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
+
+    kapt(libs.apt)
 }
 

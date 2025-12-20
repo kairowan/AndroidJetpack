@@ -12,9 +12,9 @@ import com.ghn.cocknovel.viewmodel.RecommendViewModel
 
 class BookshelfFragment() : BaseFragment<FragmentBookshelfBinding, RecommendViewModel>() {
 //    var adapter: BaseRecyclerAdapter<Datas>? = null
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

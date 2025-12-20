@@ -11,9 +11,9 @@ import com.ghn.routermodule.RouterPath
 
 
 class BoyFragment : BaseFragment<FragmentBoyBinding, RecommendViewModel>(){
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

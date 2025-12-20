@@ -16,9 +16,9 @@ import com.google.android.material.tabs.TabLayout
 class ClassificationFragment : BaseFragment<FragmentClassificationBinding, RecommendViewModel>() {
 
     private lateinit var fragmentList: MutableList<Fragment>
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

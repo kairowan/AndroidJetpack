@@ -5,8 +5,8 @@ import android.webkit.URLUtil
 import android.widget.TextView
 import com.kt.NetworkModel.download.utils.PathUtils
 import androidx.lifecycle.lifecycleScope
-import com.example.basemodel.base.BaseActivity
-import com.example.basemodel.base.BaseViewModel
+import com.example.basemodel.base.baseact.BaseActivity
+import com.example.basemodel.base.basevm.BaseViewModel
 import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.ActivityDownloadBinding
@@ -30,8 +30,9 @@ class DownloadActivity : BaseActivity<ActivityDownloadBinding, BaseViewModel>() 
         "https://raw.githubusercontent.com/WVector/AppUpdateDemo/master/json/json.txt"
     )
 
-    override fun initVariableId(): Int = BR.mode
-    override fun initContentView(savedInstanceState: Bundle?): Int = R.layout.activity_download
+//    override fun initVariableId(): Int = BR._all
+    override fun initContentView(savedInstanceState: Bundle?): ActivityDownloadBinding  = ActivityDownloadBinding.inflate(layoutInflater)
+
     override fun initParam() {
         mBinding.TvDownload.setOnClickListener {
             // 1. 创建配置（可选自定义）
@@ -145,6 +146,18 @@ class DownloadActivity : BaseActivity<ActivityDownloadBinding, BaseViewModel>() 
                 }
             )
         }
+    }
+
+    override fun initView() {
+
+    }
+
+    override fun initViewObservable() {
+
+    }
+
+    override fun initData() {
+
     }
 
     private fun updateTvPercents(downloadId: String, fileName: String, progress: Float) {

@@ -34,7 +34,7 @@ abstract class BaseCoreFragment<V : ViewBinding, VM : BaseViewModel> :
     open var viewModelId: Int = 0
     private var isFirst: Boolean = true
 
-    abstract fun initVariableId(): Int
+//    abstract fun initVariableId(): Int
     abstract fun initContentView(inflater: LayoutInflater, container: ViewGroup?): V
 
     override fun onCreateView(
@@ -73,7 +73,7 @@ abstract class BaseCoreFragment<V : ViewBinding, VM : BaseViewModel> :
 
     @Suppress("UNCHECKED_CAST")
     private fun initViewModel() {
-        viewModelId = initVariableId()
+//        viewModelId = initVariableId()
 
         val modelClass = (javaClass.genericSuperclass as? ParameterizedType)
             ?.actualTypeArguments?.get(1) as? Class<VM> ?: BaseViewModel::class.java as Class<VM>

@@ -23,7 +23,7 @@ import com.therouter.router.Route
  */
 @Route(path = RouterPath.User.UserKEY)
 class UserKeyActivity : BaseActivity<UserLeyActivityBinding, BaseViewModel>() {
-    override fun initVariableId(): Int = BR.mode
+//    override fun initVariableId(): Int = BR.mode
     override fun initContentView(savedInstanceState: Bundle?): UserLeyActivityBinding =
         UserLeyActivityBinding.inflate(layoutInflater)
 

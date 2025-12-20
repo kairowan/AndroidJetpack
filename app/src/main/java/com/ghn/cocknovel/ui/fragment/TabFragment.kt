@@ -29,9 +29,9 @@ class TabFragment : BaseFragment<FragmentTabBinding, RecommendViewModel>() {
     }
     val recyclerview_tablist = mutableListOf<TabFrameBean.Data.Data>()
 
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

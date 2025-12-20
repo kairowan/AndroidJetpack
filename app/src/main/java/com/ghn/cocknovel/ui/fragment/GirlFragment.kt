@@ -22,7 +22,7 @@ import java.util.Date
 
 data class DemoLoginEvent(val log: String)
 class GirlFragment : BaseFragment<FragmentGirlBinding, BookStoreViewModel>(), View.OnClickListener {
-    override fun initVariableId(): Int = BR.mode
+//    override fun initVariableId(): Int = BR.mode
 
     override fun initContentView(
         inflater: LayoutInflater,

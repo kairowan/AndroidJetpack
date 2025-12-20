@@ -18,9 +18,9 @@ class WebviewActivity : BaseActivity<ActivityWebviewBinding, RecommendViewModel>
     @Autowired(name = RouterParams.KEY_WBE_URL)
     lateinit var webUrl: String
 
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(savedInstanceState: Bundle?): ActivityWebviewBinding =
         ActivityWebviewBinding.inflate(layoutInflater)

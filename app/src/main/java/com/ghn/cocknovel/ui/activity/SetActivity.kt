@@ -11,9 +11,9 @@ import com.hjq.bar.TitleBar
 
 
 class SetActivity : BaseActivity<ActivitySetBinding, BookStoreViewModel>() {
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(savedInstanceState: Bundle?): ActivitySetBinding =
         ActivitySetBinding.inflate(layoutInflater)

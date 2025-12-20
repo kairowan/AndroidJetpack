@@ -18,9 +18,9 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 class BookstoreFragment : BaseFragment<FragmentBookstoreBinding, BookStoreViewModel>() {
     private val fragmentList = ArrayList<Fragment>()
     var titles = ArrayList<String>()
-    override fun initVariableId(): Int {
-        return BR.model
-    }
+//    override fun initVariableId(): Int {
+//        return BR.model
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

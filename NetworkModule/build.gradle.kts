@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("kotlin-android")
+    id("kotlin-kapt")
     kotlin("android")
 }
 
@@ -15,6 +16,7 @@ android {
     }
 
     buildFeatures {
+        viewBinding = true
         dataBinding = true
         buildConfig = true
     }
@@ -23,5 +25,5 @@ android {
 }
 
 dependencies {
-
+    api(project("path" to ":CommonModule"))
 }

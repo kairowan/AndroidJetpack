@@ -26,7 +26,7 @@ class HomeActivity : BaseActivity<HomeActivityBinding, BaseViewModel>() {
 
     private lateinit var statusController: StatusController
 
-    override fun initVariableId(): Int = BR.mode
+//    override fun initVariableId(): Int = BR.mode
 
     override fun initContentView(savedInstanceState: Bundle?): HomeActivityBinding =
         HomeActivityBinding.inflate(layoutInflater)

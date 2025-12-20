@@ -12,9 +12,9 @@ import com.hjq.bar.TitleBar
 class SwitchActivity : BaseActivity<ActivitySwitchBinding, BookStoreViewModel>() {
 
 
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(savedInstanceState: Bundle?): ActivitySwitchBinding =
         ActivitySwitchBinding.inflate(layoutInflater)

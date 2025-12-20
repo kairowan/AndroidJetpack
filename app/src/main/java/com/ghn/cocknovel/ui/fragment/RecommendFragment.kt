@@ -24,9 +24,9 @@ import com.stx.xhb.androidx.transformers.Transformer
 
 class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewModel>() {
     private var page = 1
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

@@ -26,9 +26,9 @@ import com.hjq.permissions.XXPermissions
 
 
 class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(savedInstanceState: Bundle?): ActivityMainBinding =
         ActivityMainBinding.inflate(layoutInflater)

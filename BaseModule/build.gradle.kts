@@ -16,18 +16,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":CapturePacketModule"))
-    implementation(project(":NetworkModule"))
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.material)
-    implementation(libs.test.junit)
-    implementation(libs.androidx.junit)
-    implementation(libs.androidx.espresso)
-    implementation(libs.dialogs.core)
-    implementation(libs.dialogs.lifecycle)
-    implementation(libs.github.xpopup)
-    implementation (libs.github.easywindow)
-
-
+    api(project(":CommonModule"))
+    api(project(":NetworkModule"))
 }

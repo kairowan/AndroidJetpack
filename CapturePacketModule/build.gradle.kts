@@ -25,11 +25,6 @@ android {
 
 dependencies {
     implementation(project(":RouterModule"))
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.material)
-    implementation(libs.okhttp.okhttp4)
-    implementation(libs.retrofit.retrofit2.gson)
-    implementation(libs.router)
-    kapt (libs.apt)
+    implementation(project(":CommonModule"))
+
 }

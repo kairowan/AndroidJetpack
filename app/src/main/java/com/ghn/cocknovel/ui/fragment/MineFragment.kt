@@ -46,9 +46,9 @@ class MineFragment : BaseFragment<FragmentMineBinding, BookStoreViewModel>() {
         .diskCacheStrategy(DiskCacheStrategy.NONE) //不做磁盘缓存
         .skipMemoryCache(true) //不做内存缓存
 
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(
         inflater: LayoutInflater,

@@ -27,7 +27,7 @@ abstract class BaseCoreActivity<V : ViewBinding, VM : BaseViewModel> :
     protected lateinit var mBinding: V
     protected lateinit var mViewModel: VM
 
-    abstract fun initVariableId(): Int
+//    abstract fun initVariableId(): Int
     abstract fun initContentView(savedInstanceState: Bundle?): V
 
     override fun onCreate(savedInstanceState: Bundle?) {

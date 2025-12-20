@@ -14,9 +14,9 @@ import com.kt.network.utils.RandomverificationCode
 
 
 class StartActivity : BaseActivity<ActivityStartBinding, BookStoreViewModel>() {
-    override fun initVariableId(): Int {
-        return BR.mode
-    }
+//    override fun initVariableId(): Int {
+//        return BR.mode
+//    }
 
     override fun initContentView(savedInstanceState: Bundle?): ActivityStartBinding =
         ActivityStartBinding.inflate(layoutInflater)

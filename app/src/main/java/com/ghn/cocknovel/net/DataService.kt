@@ -70,9 +70,9 @@ class DataService {
         /**
          * 下载
          */
-        suspend fun download(host: Int, url: String): Any? {
-            return RetrofitClient.getInstance(App.context()).getDefault(ApiService::class.java, host)
-                .downloadFile(url)
-        }
+//        suspend fun download(host: Int, url: String): Any? {
+//            return RetrofitClient.getInstance(App.context()).getDefault(ApiService::class.java, host)
+//                .downloadFile(url)
+//        }
     }
 }

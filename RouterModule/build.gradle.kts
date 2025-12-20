@@ -17,12 +17,5 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.material)
-    testImplementation(libs.test.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso)
-
     implementation(libs.router)
 }
