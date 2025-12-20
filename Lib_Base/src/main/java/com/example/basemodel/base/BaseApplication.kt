@@ -4,6 +4,7 @@ import androidx.multidex.MultiDexApplication
 import com.example.basemodel.base.init.AppHeaderProvider
 import com.example.basemodel.base.init.NetworkCallbackImpl
 import com.ghn.commonmodule.ext.MVUtils
+import com.ghn.lib.ble.profile.BleRepository
 import com.kt.NetworkModel.helper.NetConfigHelper
 import com.kt.network.net.RetrofitClient
 import com.tencent.mmkv.MMKV
@@ -23,15 +24,31 @@ import com.tencent.mmkv.MMKV
 open class BaseApplication : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
-
+        // Init MMKv
         this.initMMkv()
-        // 初始化 handler头
-        RetrofitClient.init(AppHeaderProvider())
-        // 初始化 Toast 
-        NetConfigHelper.init(NetworkCallbackImpl())
+        // Init handler
+        this.initHandler()
+        // Init Toast
+        this.initToast()
+        // Init BleRepository
+        this.initBle()
     }
+
     private fun initMMkv() {
         MMKV.initialize(this)
         MVUtils.instance
+    }
+
+    private fun initHandler() {
+        RetrofitClient.init(AppHeaderProvider())
+    }
+
+    private fun initToast() {
+        NetConfigHelper.init(NetworkCallbackImpl())
+
+    }
+
+    private fun initBle() {
+        BleRepository.init(this)
     }
 }
