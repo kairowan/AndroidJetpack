@@ -1,9 +1,6 @@
 [versions]
-compileSdk="33"
 
-hiltAndroidGradlePlugin="2.38.1"
 kotlinGradlePlugin="2.0.0"
-minSdk="21"
 multidex="2.0.1"
 refreshHeaderClassics="2.0.5"
 router="1.2.4"

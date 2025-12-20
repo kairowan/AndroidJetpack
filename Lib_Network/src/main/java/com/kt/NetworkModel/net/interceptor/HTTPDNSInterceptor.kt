@@ -12,24 +12,10 @@ import okhttp3.Response
 class HTTPDNSInterceptor(private val context: Context,private val headerProvider: IHeaderProvider?) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originRequest = chain.request()
-        val httpUrl = originRequest.url
-        val service = HttpDns.getService(context)
-        val host = httpUrl.host
-        val hostIP = service.getIpByHostAsync(host)
-
         val builder = originRequest.newBuilder()
-
-        if (!hostIP.isNullOrEmpty()) {
-            val newUrl = httpUrl.newBuilder().host(hostIP).build()
-            builder.url(newUrl)
-            builder.header("host", host)
-        }
         headerProvider?.getHeaders()?.forEach { (key, value) ->
             builder.header(key, value)
         }
-
-        builder.header("Accept-Encoding", "gzip, deflate")
-
         return chain.proceed(builder.build())
     }
 }

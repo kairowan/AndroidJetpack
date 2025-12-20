@@ -3,8 +3,10 @@ package com.example.basemodel.base
 import androidx.multidex.MultiDexApplication
 import com.example.basemodel.base.init.AppHeaderProvider
 import com.example.basemodel.base.init.NetworkCallbackImpl
+import com.ghn.commonmodule.ext.MVUtils
 import com.kt.NetworkModel.helper.NetConfigHelper
 import com.kt.network.net.RetrofitClient
+import com.tencent.mmkv.MMKV
 
 /**
  * @author 浩楠
@@ -21,9 +23,15 @@ import com.kt.network.net.RetrofitClient
 open class BaseApplication : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
+
+        this.initMMkv()
         // 初始化 handler头
         RetrofitClient.init(AppHeaderProvider())
         // 初始化 Toast 
         NetConfigHelper.init(NetworkCallbackImpl())
+    }
+    private fun initMMkv() {
+        MMKV.initialize(this)
+        MVUtils.instance
     }
 }

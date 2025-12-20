@@ -64,14 +64,15 @@ class RetrofitClient private constructor(var context: Context) {
             .connectionPool(ConnectionPool(8, 10, TimeUnit.SECONDS)) //添加这两行代码
             .sslSocketFactory(TrustAllCerts.createSSLSocketFactory()!!, TrustAllCerts())
             .hostnameVerifier(TrustAllCerts.TrustAllHostnameVerifier())
-            //alibaba dns优化
-            .addInterceptor(captureInterceptor!!)
             .dns(OkHttpDNS.get(context))
             .eventListenerFactory(OkHttpEventListener.FACTORY)
         if (optimization) {
             builder.addInterceptor(HTTPDNSInterceptor(context,globalHeaderProvider))
                 .cache(context?.cacheDir?.let { Cache(it, 50 * 1024 * 1024L) })//缓存目录
-                .addInterceptor(NoNetworkInterceptor(context))//无网拦截器
+                .addInterceptor(NoNetworkInterceptor(context))//无网拦截器\
+        }
+        if (captureInterceptor != null) {
+            builder.addInterceptor(captureInterceptor)
         }
         if (update==false) {
             builder.addNetworkInterceptor(LoggingInterceptor().apply {

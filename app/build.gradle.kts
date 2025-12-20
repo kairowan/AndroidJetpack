@@ -11,7 +11,6 @@ android {
         applicationId = "com.ghn.cocknovel"
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
-
     }
 //    signingConfigs {
 //        create("platform") {

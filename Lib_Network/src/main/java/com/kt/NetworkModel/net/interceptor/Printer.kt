@@ -2,6 +2,7 @@ package com.kt.NetworkModel.net.interceptor
 
 import com.kt.NetworkModel.helper.LogJsonUtils
 import okhttp3.FormBody
+import okhttp3.Headers
 import okhttp3.Request
 import okio.Buffer
 import java.io.IOException
@@ -78,11 +79,11 @@ object Printer {
         val lines = ArrayList<String>()
         lines.add("URL: ${request.url}")
         lines.add("Method: @${request.method}")
-
-        if (builder.level == Level.HEADERS || builder.level == Level.BASIC) {
-            lines.add("Headers:")
-            lines.addAll(formatHeaders(request.headers.toString()))
-        }
+        appendHeaders(lines, builder, request.headers)
+//        if (builder.level == Level.HEADERS || builder.level == Level.BODY || builder.level == Level.BASIC) {
+//            lines.add("Headers:")
+//            lines.addAll(formatHeaders(request.headers.toString()))
+//        }
 
         if (request.body is FormBody) {
             val formBody = StringBuilder()
@@ -110,6 +111,8 @@ object Printer {
         val lines = ArrayList<String>()
         lines.add("URL: ${request.url}")
         lines.add("Method: @${request.method}")
+        appendHeaders(lines, builder, request.headers)
+
         lines.add("Omitted request body (File)")
         printLog(builder, id, "Request", lines)
     }
@@ -121,9 +124,13 @@ object Printer {
         val lines = ArrayList<String>()
         lines.add("Result: Success=$isSuccessful  Time=${chainMs}ms  Code=$code")
 
-        if (builder.level == Level.HEADERS || builder.level == Level.BASIC) {
+//        if (builder.level == Level.HEADERS || builder.level == Level.BODY || builder.level == Level.BASIC) {
+//            lines.add("Headers:")
+//            lines.addAll(formatHeaders(headers))
+//        }
+        if (builder.level == Level.HEADERS || builder.level == Level.BASIC || builder.level == Level.BODY) {
             lines.add("Headers:")
-            lines.addAll(formatHeaders(headers))
+            lines.addAll(formatHeadersFromString(headers))
         }
 
         if (builder.level == Level.BASIC || builder.level == Level.BODY) {
@@ -147,6 +154,20 @@ object Printer {
     private fun formatHeaders(header: String): List<String> {
         if (header.isBlank()) return emptyList()
         return header.split(LINE_SEPARATOR).filter { it.isNotBlank() }.map { "  $it" }
+    }
+
+    private fun appendHeaders(lines: ArrayList<String>, builder: LoggingInterceptor, headers: Headers) {
+        if (builder.level == Level.HEADERS || builder.level == Level.BASIC || builder.level == Level.BODY) {
+            lines.add("Headers:")
+            for (i in 0 until headers.size) {
+                lines.add("  ${headers.name(i)}: ${headers.value(i)}")
+            }
+        }
+    }
+
+    private fun formatHeadersFromString(header: String): List<String> {
+        if (header.isBlank()) return emptyList()
+        return header.split(LINE_SEPARATOR).filter { it.isNotBlank() }.map { "  ${it.trim()}" }
     }
 
     private fun bodyToString(request: Request): String {

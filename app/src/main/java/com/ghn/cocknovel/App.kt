@@ -39,7 +39,7 @@ open class App : BaseApplication() {
         if (isMainProcess()) {
             instance = this
             this.initAuto()
-            this.initMMkv()
+
             this.initAdp()
             TheRouter.init(this)
             ToastHelper.init(this)
@@ -64,10 +64,7 @@ open class App : BaseApplication() {
             .setSupportSubunits(Subunits.MM)
     }
 
-    private fun initMMkv() {
-        MMKV.initialize(this)
-        MVUtils.instance
-    }
+
 
     private fun initAdp() {
         BRV.modelId = BR._all
