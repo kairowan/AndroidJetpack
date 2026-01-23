@@ -1,5 +1,7 @@
 package com.example.basemodel.base.basevm
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.kt.network.net.ExceptionHandle
 import com.kt.network.net.ResponseThrowable
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +23,8 @@ import kotlinx.coroutines.launch
 interface BaseViewModelScope {
 
     fun launchUI(block: suspend CoroutineScope.() -> Unit) {
-        CoroutineScope(Dispatchers.Main).launch {
+        val scope = (this as? ViewModel)?.viewModelScope ?: CoroutineScope(Dispatchers.Main)
+        scope.launch {
             try {
                 block()
             } catch (e: Throwable) {

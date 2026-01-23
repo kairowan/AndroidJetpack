@@ -54,7 +54,7 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
 
     @SuppressLint("SetTextI18n")
     override fun initViewObservable() {
-        mViewModel.mBanner.observe(this) {
+        mViewModel.mBanner.observe(viewLifecycleOwner) {
             mBinding.homexbanner.setBannerData(it)
             //刷新数据之后，需要重新设置是否支持自动轮播
             mBinding.homexbanner.setAutoPlayAble(it.size > 1)
@@ -70,7 +70,7 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
             }
         }
         mViewModel.getHomeStatus(page)
-        mViewModel.homeStatus.observe(this@RecommendFragment) {
+        mViewModel.homeStatus.observe(viewLifecycleOwner) {
             mBinding.HomePage.onRefresh {
                 mViewModel.getHomeStatus(page)
                 addData(it.datas) {
@@ -96,7 +96,6 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
 
     }
 }
-
 
 
 

@@ -60,8 +60,8 @@ suspend fun <T> requestFlowResponse(
             requestCall()
         }
 
-        if (response?.success == true) {
-            throw ResponseThrowable(response.errorCode, response.errorMsg)
+        if (response?.success != true) {
+            throw ResponseThrowable(response?.errorCode, response?.errorMsg)
         }
         //发送网络请求结果回调
         emit(response)
@@ -70,9 +70,8 @@ suspend fun <T> requestFlowResponse(
 
         .catch { e ->
             e.printStackTrace()
-            ExceptionHandle.handleException(e)
-//            val exception = ExceptionHandle.handleException(e)
-//            errorBlock?.invoke(exception.code, exception.errMsg)
+            val exception = ExceptionHandle.handleException(e)
+            errorBlock?.invoke(exception.code, exception)
         }
     return flow
 }

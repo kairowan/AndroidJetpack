@@ -62,10 +62,12 @@ class RetrofitClient private constructor(var context: Context) {
             .writeTimeout(DEFAULT_TIME_OUT.toLong(), TimeUnit.SECONDS)
             .readTimeout(DEFAULT_TIME_OUT.toLong(), TimeUnit.SECONDS)
             .connectionPool(ConnectionPool(8, 10, TimeUnit.SECONDS)) //添加这两行代码
-            .sslSocketFactory(TrustAllCerts.createSSLSocketFactory()!!, TrustAllCerts())
-            .hostnameVerifier(TrustAllCerts.TrustAllHostnameVerifier())
             .dns(OkHttpDNS.get(context))
             .eventListenerFactory(OkHttpEventListener.FACTORY)
+        if (BuildConfig.DEBUG) {
+            builder.sslSocketFactory(TrustAllCerts.createSSLSocketFactory()!!, TrustAllCerts())
+                .hostnameVerifier(TrustAllCerts.TrustAllHostnameVerifier())
+        }
         if (optimization) {
             builder.addInterceptor(HTTPDNSInterceptor(context,globalHeaderProvider))
                 .cache(context?.cacheDir?.let { Cache(it, 50 * 1024 * 1024L) })//缓存目录

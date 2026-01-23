@@ -25,46 +25,54 @@ abstract class BaseMVVMFragment<V : ViewBinding, VM : BaseViewModel> :
         registerUIObservers()
     }
     open fun registerUIObservers() {
-        mViewModel.uc.getStartActivityEvent()?.observe(this) { params ->
+        mViewModel.uc.getStartActivityEvent()?.observe(viewLifecycleOwner) { params ->
             params?.let {
-                val clz = params[BaseViewModel.Companion.ParameterField.CLASS] as Class<*>?
+                val clz = params[BaseViewModel.Companion.ParameterField.CLASS] as? Class<*>
+                if (clz == null) return@observe
                 val intent = Intent(activity, clz)
                 val bundle = params[BaseViewModel.Companion.ParameterField.BUNDLE]
                 if (bundle is Bundle) {
                     intent.putExtras((bundle as Bundle?)!!)
                 }
-                this@BaseMVVMFragment.startActivityForResult(
-                    intent,
-                    params[BaseViewModel.Companion.ParameterField.REQUEST] as Int
-                )
+                val requestCode = params[BaseViewModel.Companion.ParameterField.REQUEST] as? Int
+                if (requestCode != null) {
+                    this@BaseMVVMFragment.startActivityForResult(intent, requestCode)
+                } else {
+                    this@BaseMVVMFragment.startActivity(intent)
+                }
             }
         }
 
-        mViewModel.uc.getStartModelActivityEvent()?.observe(this) {params ->
+        mViewModel.uc.getStartModelActivityEvent()?.observe(viewLifecycleOwner) { params ->
 
-            val clz = params?.get(BaseViewModel.Companion.ParameterField.CLASS) as Class<*>?
-            val pkg = params?.get(BaseViewModel.Companion.ParameterField.CANONICAL_NAME)
-            val intent=Intent()
-            intent.setClassName(pkg.toString(), clz.toString())
+            val classValue = params?.get(BaseViewModel.Companion.ParameterField.CLASS)
+            val pkg = params?.get(BaseViewModel.Companion.ParameterField.CANONICAL_NAME)?.toString()
+            val className = when (classValue) {
+                is Class<*> -> classValue.name
+                else -> classValue?.toString()
+            }
+            if (pkg.isNullOrBlank() || className.isNullOrBlank()) return@observe
+            val intent = Intent()
+            intent.setClassName(pkg, className)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             this@BaseMVVMFragment.startActivity(intent)
         }
 
-        mViewModel.uc.getFinishEvent()?.observe(this) {
+        mViewModel.uc.getFinishEvent()?.observe(viewLifecycleOwner) {
             activity?.finish()
         }
 
-        mViewModel.uc.getOnBackPressedEvent()?.observe(this) {
+        mViewModel.uc.getOnBackPressedEvent()?.observe(viewLifecycleOwner) {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
 
-        mViewModel.uc.getSetResultEvent()?.observe(this) { result ->
+        mViewModel.uc.getSetResultEvent()?.observe(viewLifecycleOwner) { result ->
             val intent = Intent()
             result?.forEach { intent.putExtra(it.key, it.value.toString()) }
             activity?.setResult(AppCompatActivity.RESULT_OK, intent)
         }
 
-        mViewModel.uc.getFinishResult()?.observe(this) {
+        mViewModel.uc.getFinishResult()?.observe(viewLifecycleOwner) {
             activity?.setResult(it!!)
             activity?.finish()
         }

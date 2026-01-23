@@ -45,7 +45,7 @@ class ClassificationFragment : BaseFragment<FragmentClassificationBinding, Recom
     override fun initViewObservable() {
 
 
-        mViewModel.mProject.observe(this) {
+        mViewModel.mProject.observe(viewLifecycleOwner) {
             for (i in 0 until it.size) {
                 mBinding.ficationTab.addTab(mBinding.ficationTab.newTab().setText(it[i].name))
                 fragmentList.add(TabFragment())
