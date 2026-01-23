@@ -21,11 +21,6 @@ import kotlinx.coroutines.launch
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
  *  描述: 提供统一的发送和订阅接口
- *
- *  改进点:
- *  1. observe() 新增 consumeSticky 参数
- *  2. Fragment.observeEvent 增加 viewLifecycleOwner 安全检查
- *  3. 添加 destroy() 入口
  */
 object EventChannel {
     @Volatile
@@ -114,9 +109,6 @@ object EventChannel {
     /**
      * Fragment 订阅事件的扩展函数
      * 自动绑定 viewLifecycleOwner 生命周期，在 STARTED 状态时收集事件
-     *
-     * 安全性改进：如果在 view 创建前调用，会延迟到 view 创建后再订阅
-     *
      * @param sticky 是否接收粘性事件
      * @param consumeSticky 是否消费粘性事件
      * @param block 事件处理回调
@@ -167,7 +159,6 @@ object EventChannel {
     /**
      * ComponentActivity 订阅事件的扩展函数
      * 自动绑定生命周期，在 STARTED 状态时收集事件
-     *
      * @param sticky 是否接收粘性事件
      * @param consumeSticky 是否消费粘性事件
      * @param block 事件处理回调
