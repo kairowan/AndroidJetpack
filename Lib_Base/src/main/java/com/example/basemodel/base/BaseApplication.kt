@@ -10,6 +10,7 @@ import com.kt.network.net.ExceptionHandle
 import com.kt.network.net.RetrofitClient
 import com.tencent.mmkv.MMKV
 import android.util.Log
+import com.ghn.lib.ble.profile.BleRepository
 
 /**
  * @author 浩楠
@@ -26,11 +27,17 @@ import android.util.Log
 open class BaseApplication : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
-
+        // Init MMKv
         this.initMMkv()
+        // Init handler
+        this.initHandler()
+        // Init Toast
+        this.initToast()
+        // Init BleRepository
+        this.initBle()
         // 初始化 handler头
         RetrofitClient.init(AppHeaderProvider())
-        // 初始化 Toast 
+        // 初始化 Toast
         NetConfigHelper.init(NetworkCallbackImpl())
         EventChannel.setErrorHandler { t ->
             val ex = ExceptionHandle.handleException(t)
