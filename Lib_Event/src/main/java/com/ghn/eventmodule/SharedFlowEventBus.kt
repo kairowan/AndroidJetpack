@@ -21,13 +21,6 @@ import java.util.concurrent.ConcurrentHashMap
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
  *  描述: 事件总线实现
- *
- *  改进点:
- *  1. 使用 computeIfAbsent 替代 getOrPut 确保原子性
- *  2. 粘性事件消费时不再清除 maxCacheSizeMap 配置
- *  3. 添加 destroy() 方法支持 scope 生命周期管理
- *  4. observe() 新增 consumeSticky 参数控制是否消费粘性事件
- *  5. cleanupIfIdle 使用 computeIfPresent 实现原子检查+移除
  */
 object SharedFlowEventBus {
     @PublishedApi
@@ -163,7 +156,6 @@ object SharedFlowEventBus {
     inline fun <reified T : Any> clearStickyEvents() {
         val key = T::class.java.name
         stickyEventQueue.remove(key)
-        // 不再清除 maxCacheSizeMap，保留用户配置
         cleanupIfIdle(key)
     }
 
@@ -173,7 +165,6 @@ object SharedFlowEventBus {
      */
     fun clearAllStickyEvents() {
         stickyEventQueue.clear()
-        // 不再清除 maxCacheSizeMap，保留用户配置
         cleanupAllIfIdle()
     }
 
