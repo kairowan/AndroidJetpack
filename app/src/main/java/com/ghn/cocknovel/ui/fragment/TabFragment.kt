@@ -46,7 +46,7 @@ class TabFragment : BaseFragment<FragmentTabBinding, RecommendViewModel>() {
     override fun initView() {
         val controller = LayoutAnimationController(AnimationUtils.loadAnimation(activity, R.anim.animate))
         mBinding.fragmentRecyclerview.adapter = adapter
-        mViewModel.mProjectcontent.observe(this) {
+        mViewModel.mProjectcontent.observe(viewLifecycleOwner) {
             adapter?.addData(it.datas)
         }
     }

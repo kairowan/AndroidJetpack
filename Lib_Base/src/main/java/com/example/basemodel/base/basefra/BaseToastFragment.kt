@@ -21,7 +21,7 @@ abstract class BaseToastFragment<V : ViewBinding, VM : BaseViewModel> :
     override fun initViewObservable() {
         super.initViewObservable()
 
-        mViewModel.uc.toastEvent().observe(this) { message ->
+        mViewModel.uc.toastEvent().observe(viewLifecycleOwner) { message ->
             showMsg(message.toString())
         }
     }

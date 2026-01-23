@@ -33,21 +33,33 @@ abstract class BaseMVVMActivity<V : ViewBinding, VM : BaseViewModel> :
         mViewModel.uc.getStartActivityEvent().observe(this) { params ->
             params?.let {
                 val clz = it[CLASS] as? Class<*>
+                if (clz == null) return@observe
                 val intent = Intent(this, clz)
                 val bundle = it[BUNDLE] as? Bundle
                 bundle?.let { intent.putExtras(it) }
-                startActivityForResult(intent, it[REQUEST] as Int)
+                val requestCode = it[REQUEST] as? Int
+                if (requestCode != null) {
+                    startActivityForResult(intent, requestCode)
+                } else {
+                    startActivity(intent)
+                }
             }
         }
 
         mViewModel.uc.getStartModelActivityEvent().observe(this) {
-            val clz = it!![CLASS]?.toString()
-            val pkg = it[CANONICAL_NAME]?.toString()
-            val intent = Intent().apply {
-                setClassName(pkg!!, clz!!)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val classValue = it?.get(CLASS)
+            val pkg = it?.get(CANONICAL_NAME)?.toString()
+            val className = when (classValue) {
+                is Class<*> -> classValue.name
+                else -> classValue?.toString()
             }
-            startActivity(intent)
+            if (!pkg.isNullOrBlank() && !className.isNullOrBlank()) {
+                val intent = Intent().apply {
+                    setClassName(pkg, className)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+            }
         }
 
         mViewModel.uc.getFinishEvent().observe(this) { finish() }

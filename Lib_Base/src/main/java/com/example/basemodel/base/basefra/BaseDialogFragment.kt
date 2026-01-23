@@ -27,11 +27,11 @@ abstract class BaseDialogFragment<V : ViewBinding, VM : BaseViewModel> :
     override fun initViewObservable() {
         super.initViewObservable()
 
-        mViewModel.uc.getShowDialog().observe(this) {
+        mViewModel.uc.getShowDialog().observe(viewLifecycleOwner) {
             showLoading()
         }
 
-        mViewModel.uc.getDismissDialog().observe(this) {
+        mViewModel.uc.getDismissDialog().observe(viewLifecycleOwner) {
             dismissLoading()
         }
     }
