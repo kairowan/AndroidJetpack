@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun ApplicationExtension.configureAndroid() {
-    compileSdk = 35
+    compileSdk = 34
     defaultConfig {
         minSdk = 24
         targetSdk = 35
@@ -25,7 +25,7 @@ fun ApplicationExtension.configureAndroid() {
 }
 
 fun LibraryExtension.configureAndroid() {
-    compileSdk = 35
+    compileSdk = 34
     defaultConfig {
         minSdk = 24
     }

@@ -1,88 +1,25 @@
 package com.ghn.cocknovel.ui.activity
 
 import android.os.Bundle
-import android.util.Log
-import android.view.KeyEvent
-import androidx.navigation.findNavController
-import androidx.navigation.ui.NavigationUI
-import com.example.basemodel.base.baseact.BaseActivity
-import com.example.basemodel.base.basevm.BaseViewModel
-import com.ghn.cocknovel.R
-import com.ghn.cocknovel.databinding.ActivityMainBinding
-import com.ghn.cocknovel.utils.DebugEntryHelper
-import com.ghn.routermodule.AppRouter
-import com.ghn.routermodule.RouterPath
-import com.hjq.permissions.OnPermissionCallback
-import com.hjq.permissions.Permission
-import com.hjq.permissions.XXPermissions
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import com.ghn.cocknovel.navigation.AppNavHost
+import com.kotlinmvvm.core.designsystem.theme.AppTheme
 
-
-class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
-//    override fun initVariableId(): Int {
-//        return BR.mode
-//    }
-
-    override fun initContentView(savedInstanceState: Bundle?): ActivityMainBinding =
-        ActivityMainBinding.inflate(layoutInflater)
-
-
-    override fun initParam() {
-
-    }
-
-    override fun initView() {
-        AppRouter.goTo(RouterPath.Login.LoginAC)
-        Log.i("initView", "1111111")
-        DebugEntryHelper.attachToActivity(this)
-        mBinding.navView.post {
-            val navController = findNavController(R.id.nav_host_fragment)
-            NavigationUI.setupWithNavController(mBinding.navView, navController)
-        }
-    }
-
-    override fun initViewObservable() {
-
-    }
-
-    override fun initData() {
-        XXPermissions.with(this).permission(Permission.CAMERA)
-            .permission(Permission.READ_MEDIA_IMAGES)
-            .request(object : OnPermissionCallback {
-                override fun onGranted(permissions: MutableList<String>, allGranted: Boolean) {
-                    if (!allGranted) {
-                        showMsg("获取部分权限成功，但部分权限未正常授予")
-                        return
-                    }
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            AppTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    AppNavHost()
                 }
-
-                override fun onDenied(permissions: MutableList<String>, doNotAskAgain: Boolean) {
-                    if (doNotAskAgain) {
-                        showMsg("被永久拒绝授权，请手动授权")
-                        // 如果是被永久拒绝就跳转到应用权限系统设置页面
-                        XXPermissions.startPermissionActivity(this@MainActivity, permissions)
-                    } else {
-                        showMsg("获取权限失败")
-                    }
-                }
-            })
-        showMsgWithImage("提示", com.ghn.lib.base.R.mipmap.ic_my_handes)
-    }
-
-    private var exitTime: Long = 0
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_DOWN) {
-            if (System.currentTimeMillis() - exitTime > 2000) {
-                mBinding.container.let { showMsg("再按一次退出鲸鱼阅读") }
-                exitTime = System.currentTimeMillis()
-            } else {
-                finish()
             }
-            return true
         }
-        return super.onKeyDown(keyCode, event)
     }
-
-
 }
-
-

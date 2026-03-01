@@ -61,7 +61,7 @@ suspend fun <T> requestFlowResponse(
         }
 
         if (response?.success != true) {
-            throw ResponseThrowable(response?.errorCode, response?.errorMsg)
+            throw ResponseThrowable(response?.errorCode ?: -1, response?.errorMsg ?: "Unknown Error")
         }
         //发送网络请求结果回调
         emit(response)

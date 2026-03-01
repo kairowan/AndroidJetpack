@@ -6,13 +6,13 @@ import com.kt.NetworkModel.bean.WBanner
 import com.kt.network.bean.BaseResult
 import com.kt.network.bean.FontDataNew
 import okhttp3.Response
-import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Streaming
 import retrofit2.http.Url
+import com.kt.NetworkModel.bean.eyepetizer.EyepetizerHomeResponse
 
 interface ApiService {
     /**
@@ -21,13 +21,13 @@ interface ApiService {
     @GET(ApiAddress.LOGIN)
     suspend fun Login(
         @Query("phoneNumber") phoneNumber: String
-    ):  BaseResult<Any>
+    ): BaseResult<Any>
 
     /**
      * 首页文章
      */
     @GET("article/list/{page}/json")
-    suspend fun callback(@Query("page")page: Int): BaseResult<FontDataNew>
+    suspend fun callback(@Query("page") page: Int): BaseResult<FontDataNew>
 
     /**
      * 轮播图
@@ -57,25 +57,18 @@ interface ApiService {
     @GET
     suspend fun downloadFile(
         @Url url: String,
-        @Header("Range") range: String // 参数类型必须为String
+        @Header("Range") range: String
     ): Response
 
+    /**
+     * Eyepetizer 首页数据
+     */
+    @GET(ApiAddress.EYEPETIZER_HOME_SELECTED)
+    suspend fun getEyepetizerHome(): EyepetizerHomeResponse
 
-
-
-//    /**
-//     * get
-//     */
-//    @GET(ApiAddress.LOGIN)
-//    suspend fun login(
-//        @Query("account") account: String,
-//        @Query("password") password: String
-//    ): BaseResponse<Any>
-//
-//
-//    /**
-//     * post body
-//     */
-//    @POST(ApiAddress.LOGIN)
-//    suspend fun loginBody(@Body requestBody: RequestBody): BaseResponse<Any>
-} 
+    /**
+     * Eyepetizer 加载更多
+     */
+    @GET
+    suspend fun getEyepetizerHomeMore(@Url nextPageUrl: String): EyepetizerHomeResponse
+}

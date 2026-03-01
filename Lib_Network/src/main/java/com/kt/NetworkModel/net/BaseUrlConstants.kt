@@ -10,6 +10,7 @@ class BaseUrlConstants {
         private const val degree: String = "http://v.juhe.cn/"
         private const val wanandroid: String = "https://www.wanandroid.com"
         private const val baseurl3: String = "http://rk.tongjidiaocha.com/"
+        private const val eyepetizer: String = "http://baobab.kaiyanapp.com/"
         fun getHost(host: Int): String {
             when (host) {
                 1 -> return baseUrl1
@@ -18,6 +19,7 @@ class BaseUrlConstants {
                 4 -> return degree
                 5 -> return wanandroid
                 6 -> return baseurl3
+                7 -> return eyepetizer
             }
             return baseUrl1;
         }

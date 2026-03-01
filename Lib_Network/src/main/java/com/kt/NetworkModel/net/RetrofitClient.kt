@@ -77,7 +77,7 @@ class RetrofitClient private constructor(var context: Context) {
             builder.addInterceptor(captureInterceptor)
         }
         if (update==false) {
-            builder.addNetworkInterceptor(LoggingInterceptor().apply {
+            builder.addInterceptor(LoggingInterceptor().apply {
                 isDebug = BuildConfig.DEBUG
                 level = Level.BASIC
                 type = Platform.INFO

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="cp_network_capture_fold_request_headers">请求头 ▲(收起)</string>
-    <string name="cp_network_capture_expand_request_headers">请求头 ▼(展开)</string>
-    <string name="cp_network_capture_fold_response_headers">响应头 ▲(收起)</string>
-    <string name="cp_network_capture_expand_response_headers">响应头 ▼(展开)</string>
-</resources>

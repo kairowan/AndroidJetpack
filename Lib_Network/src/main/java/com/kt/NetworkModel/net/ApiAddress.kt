@@ -6,22 +6,32 @@ class ApiAddress {
         /**
          * 登录接口 user/login
          */
-        const val LOGIN="api/user/auth/get/verifyCode"
+        const val LOGIN = "api/user/auth/get/verifyCode"
+
         /**
          * 首页文章列表
          */
-        const val CALLBACK="article/list/1/json"
+        const val CALLBACK = "article/list/1/json"
+
         /**
          * 轮播
          */
-        const val BANNER="banner/json"
+        const val BANNER = "banner/json"
+
         /**
          * 项目分类
          */
-        const val PROJECT="project/tree/json"
+        const val PROJECT = "project/tree/json"
+
         /**
          * 项目分类
          */
-        const val PROJECT_CONTENT="/article/list/0/json?cid=60"
+        const val PROJECT_CONTENT = "/article/list/0/json?cid=60"
+
+        /**
+         * 首页精选
+         */
+        const val EYEPETIZER_HOME_SELECTED = "api/v4/tabs/selected"
     }
 }
+
