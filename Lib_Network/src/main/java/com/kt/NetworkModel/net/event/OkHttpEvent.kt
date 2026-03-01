@@ -2,6 +2,19 @@ package com.kt.network.net.event
 
 import android.text.TextUtils
 
+/**
+ * @author 浩楠
+ *
+ * @date 2026-2-17
+ *
+ *      _              _           _     _   ____  _             _ _
+ *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
+ *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
+ *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
+ *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
+ * @Description: TODO
+ */
+
 class OkHttpEvent {
     var callStartTime: Long = 0
     var callEndTime: Long = 0

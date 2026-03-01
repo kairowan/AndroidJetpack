@@ -18,6 +18,19 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * @author 浩楠
+ *
+ * @date 2026-2-27
+ *
+ *      _              _           _     _   ____  _             _ _
+ *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
+ *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
+ *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
+ *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
+ * @Description: TODO
+ */
+
 private const val VIDEO_CACHE_DIR = "media3_video_cache"
 private const val VIDEO_CACHE_MAX_BYTES = 300L * 1024 * 1024
 internal const val DEFAULT_PRELOAD_BYTES = 2L * 1024 * 1024
