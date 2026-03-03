@@ -83,7 +83,7 @@ class RetrofitClient private constructor(var context: Context) {
         }
         if (optimization) {
             builder.addInterceptor(HTTPDNSInterceptor(context,globalHeaderProvider))
-                .cache(context?.cacheDir?.let { Cache(it, 50 * 1024 * 1024L) })//缓存目录
+                .cache(Cache(context.cacheDir, 50 * 1024 * 1024L))//缓存目录
                 .addInterceptor(NoNetworkInterceptor(context))//无网拦截器\
         }
         if (captureInterceptor != null) {

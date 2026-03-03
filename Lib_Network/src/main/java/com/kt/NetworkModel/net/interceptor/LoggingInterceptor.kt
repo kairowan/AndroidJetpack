@@ -7,10 +7,10 @@ import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.internal.platform.Platform
 import okhttp3.internal.platform.Platform.Companion.INFO
 import java.io.IOException
-import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
 /**
@@ -112,7 +112,6 @@ class LoggingInterceptor : Interceptor {
         val st = System.nanoTime()
         val response = chain.proceed(request)
 
-        val segmentList = request.url.encodedPathSegments
         val chainMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - st)
         val header = response.headers.toString()
         val code = response.code
@@ -142,10 +141,9 @@ class LoggingInterceptor : Interceptor {
                 code,
                 header,
                 bodyJson,
-                segmentList,
                 requestId
             )
-            body = ResponseBody.create(contentType, bodyString)
+            body = bodyString.toResponseBody(contentType)
 //            val charset = body.contentType()?.charset(Charset.forName("UTF-8"))
 //                ?: Charset.forName("UTF-8")
         } else {
@@ -154,8 +152,6 @@ class LoggingInterceptor : Interceptor {
                 chainMs,
                 isSuccessful,
                 code,
-                header,
-                segmentList,
                 requestId
             )
             return response

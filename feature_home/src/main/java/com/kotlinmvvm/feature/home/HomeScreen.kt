@@ -19,6 +19,7 @@ import com.kotlinmvvm.core.data.repository.EyepetizerRepository
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
 import com.kotlinmvvm.core.ui.component.PagedList
 import com.kotlinmvvm.core.ui.component.UiStateContainer
+import com.kotlinmvvm.core.ui.base.viewModelFactory
 
 /**
  * @author 浩楠
@@ -37,7 +38,11 @@ import com.kotlinmvvm.core.ui.component.UiStateContainer
 @Composable
 fun HomeRoute(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(EyepetizerRepository())),
+    viewModel: HomeViewModel = viewModel(
+        factory = viewModelFactory {
+            HomeViewModel(EyepetizerRepository())
+        }
+    ),
     onVideoClick: (EyepetizerFeedItem.Video) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

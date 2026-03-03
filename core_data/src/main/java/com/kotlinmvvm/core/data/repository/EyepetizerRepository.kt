@@ -1,7 +1,6 @@
 package com.kotlinmvvm.core.data.repository
 
 import com.kt.network.net.ApiService
-import com.kt.network.net.RetrofitClient
 import com.kotlinmvvm.core.model.EyepetizerFeed
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
 import kotlinx.coroutines.Dispatchers
@@ -20,12 +19,7 @@ import kotlinx.coroutines.withContext
  * @Description: TODO
  */
 
-class EyepetizerRepository {
-    
-    private val apiService: ApiService by lazy {
-        RetrofitClient.getInstance(null).getDefault(ApiService::class.java, 7)
-    }
-
+class EyepetizerRepository : BaseApiRepository(EYEPETIZER_HOST_TYPE) {
     suspend fun getHomeFeed(nextPageUrl: String? = null): Result<EyepetizerFeed> = withContext(Dispatchers.IO) {
         try {
             val response = if (nextPageUrl.isNullOrEmpty()) {
@@ -64,5 +58,9 @@ class EyepetizerRepository {
             e.printStackTrace()
             Result.failure(e)
         }
+    }
+
+    companion object {
+        private const val EYEPETIZER_HOST_TYPE = 7
     }
 }

@@ -51,8 +51,7 @@ class OkHttpDNS(context: Context?) : Dns {
         //通过异步解析接⼝获取ip
         val ip = httpDns?.getIpByHostAsync(hostname)
         ip?.let {
-
-            val inetAddresses = listOf(InetAddress.getAllByName(ip)) as MutableList<InetAddress>
+            val inetAddresses = InetAddress.getAllByName(ip).toMutableList()
             Log.e("OkHttpDns", "inetAddresses:$inetAddresses")
             return inetAddresses
         } ?: let {

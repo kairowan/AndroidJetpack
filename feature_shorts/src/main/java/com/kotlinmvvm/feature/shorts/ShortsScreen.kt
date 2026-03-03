@@ -36,6 +36,7 @@ import com.kotlinmvvm.core.player.rememberPlayer
 import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.ErrorContent
 import com.kotlinmvvm.core.ui.state.UiState
+import com.kotlinmvvm.core.ui.base.viewModelFactory
 
 /**
  * @author 浩楠
@@ -67,7 +68,11 @@ private enum class ShortsFullscreenMode {
 fun ShortsRoute(
     modifier: Modifier = Modifier,
     repository: EyepetizerRepository = remember { EyepetizerRepository() },
-    viewModel: ShortsViewModel = viewModel(factory = ShortsViewModel.factory(repository)),
+    viewModel: ShortsViewModel = viewModel(
+        factory = viewModelFactory {
+            ShortsViewModel(repository)
+        }
+    ),
     onFullscreenChanged: (Boolean) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

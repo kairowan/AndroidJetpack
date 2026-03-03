@@ -100,7 +100,6 @@ class FileDownloader private constructor(
                     processResponse(
                         response,
                         tempFile,
-                        savePath,
                         listener,
                         downloadedBytes,
                         downloadId
@@ -111,7 +110,7 @@ class FileDownloader private constructor(
                     return@withContext
                 } catch (e: Exception) {
                     val shouldRetry =
-                        handleRetry(e, retryCount, tempFile, savePath, listener, downloadId)
+                        handleRetry(e, retryCount, listener, downloadId)
                     if (shouldRetry) {
                         retryCount++
                         tempFile.delete()
@@ -120,6 +119,7 @@ class FileDownloader private constructor(
                             originalFilename
                         )
                         tempFile = newTempFile
+                        targetFile = newTargetFile
                         continue
                     } else {
                         listener.onError(downloadId, e)
@@ -207,6 +207,7 @@ class FileDownloader private constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun okhttp3.Call.await(): Response {
         return suspendCancellableCoroutine { continuation ->
             val callback = object : okhttp3.Callback {
@@ -238,7 +239,6 @@ class FileDownloader private constructor(
     private suspend fun processResponse(
         response: Response,
         tempFile: File,
-        savePath: String,
         listener: DownloadListener,
         offset: Long,
         downloadId: String
@@ -247,7 +247,6 @@ class FileDownloader private constructor(
             response.isSuccessful -> handleSuccess(
                 response,
                 tempFile,
-                savePath,
                 listener,
                 offset,
                 downloadId
@@ -261,7 +260,6 @@ class FileDownloader private constructor(
     private suspend fun handleSuccess(
         response: Response,
         tempFile: File,
-        savePath: String,
         listener: DownloadListener,
         offset: Long,
         downloadId: String
@@ -298,8 +296,6 @@ class FileDownloader private constructor(
     private suspend fun handleRetry(
         e: Exception,
         retryCount: Int,
-        tempFile: File,
-        savePath: String,
         listener: DownloadListener,
         downloadId: String // 新增 downloadId 参数
     ): Boolean {
@@ -343,7 +339,4 @@ class FileDownloader private constructor(
     }
 
 }
-
-
-
 

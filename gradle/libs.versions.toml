@@ -1,13 +1,13 @@
 [versions]
 kotlinGradlePlugin="2.0.21"
-androidGradlePlugin="8.2.2"
+androidGradlePlugin="8.9.1"
 multidex="2.0.1"
 refreshHeaderClassics="2.0.5"
 router="1.2.4"
 apt="1.2.4"
 versionCode ="1"
 versionName="1.0.0"
-agp = "8.2.2"
+agp = "8.9.1"
 kotlin = "2.0.21"
 ktx="2.8.0"
 core-ktx="1.13.1"
@@ -34,6 +34,7 @@ github-XPopup="2.9.19"
 mmkv="1.3.0"
 dialogs="3.1.1"
 navigation="2.7.7"
+navigation3 = "1.0.1"
 junit="4.13.2"
 ext-junit="1.1.3"
 espresso="3.4.0"
@@ -125,6 +126,8 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivityCompose" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigationCompose" }
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 androidx-lifecycle-runtimeCompose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "ktx" }
 androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "ktx" }

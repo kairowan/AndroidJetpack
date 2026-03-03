@@ -3,6 +3,7 @@ package com.kt.NetworkModel.utils
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -57,36 +58,20 @@ object CameraUtils {
         // 激活相机
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         val state = Environment.getExternalStorageState()
-        if (state == Environment.MEDIA_MOUNTED) {
-            val getImageByCamera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            var mUri = Uri.fromFile(
-                File(
-                    Environment.getExternalStorageDirectory(),
-                    "/DCIM/Camera/"
-                            + System.currentTimeMillis().toString() + ".png"
-                )
-            )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                getImageByCamera.putExtra(MediaStore.EXTRA_OUTPUT, mUri)
+        if (state == Environment.MEDIA_MOUNTED && hasSdcard()) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(outputImagePath))
+            } else {
+                val contentValues = ContentValues(1).apply {
+                    put(MediaStore.Images.Media.DATA, outputImagePath.absolutePath)
+                }
+                context.applicationContext.contentResolver.insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues
+                )?.let { uri ->
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+                }
             }
-
-            // 判断存储卡是否可以用，可用进行存储
-//        if (hasSdcard()) {
-//            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-//                // 从文件中创建uri
-//                val uri = Uri.fromFile(outputImagePath)
-//                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-//            } else {
-//                //兼容android7.0 使用共享文件的形式
-//                val contentValues = ContentValues(1)
-//                contentValues.put(MediaStore.Images.Media.DATA, outputImagePath.absolutePath)
-//                val uri = context.applicationContext.contentResolver.insert(
-//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                    contentValues
-//                )
-//                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-//            }
-//        }
         }
         return intent
     }
@@ -163,44 +148,37 @@ object CameraUtils {
      * @param orc_bitmap
      * @param iv
      */
-    fun ImgUpdateDirection(filepath: String?, orc_bitmap: Bitmap?, iv: ImageView) {
+    fun ImgUpdateDirection(filepath: String?, sourceBitmap: Bitmap?, iv: ImageView) {
         //图片旋转的角度
-        var orc_bitmap = orc_bitmap
-        var digree = 0
-        //根据图片的filepath获取到一个ExifInterface的对象
-        var exif: ExifInterface? = null
+        var adjustedBitmap = sourceBitmap
         try {
-            exif = ExifInterface(filepath!!)
-            if (exif != null) {
-
-                // 读取图片中相机方向信息
-                val ori = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_UNDEFINED
-                )
-                digree = when (ori) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> 90
-                    ExifInterface.ORIENTATION_ROTATE_180 -> 180
-                    ExifInterface.ORIENTATION_ROTATE_270 -> 270
-                    else -> 0
-                }
+            val exif = ExifInterface(filepath!!)
+            // 读取图片中相机方向信息
+            val ori = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED
+            )
+            val digree = when (ori) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                else -> 0
             }
             //如果图片不为0
             if (digree != 0) {
                 // 旋转图片
                 val m = Matrix()
                 m.postRotate(digree.toFloat())
-                orc_bitmap = Bitmap.createBitmap(
-                    orc_bitmap!!, 0, 0, orc_bitmap.width,
-                    orc_bitmap.height, m, true
+                adjustedBitmap = Bitmap.createBitmap(
+                    adjustedBitmap!!, 0, 0, adjustedBitmap.width,
+                    adjustedBitmap.height, m, true
                 )
             }
-            if (orc_bitmap != null) {
-                iv.setImageBitmap(orc_bitmap)
+            if (adjustedBitmap != null) {
+                iv.setImageBitmap(adjustedBitmap)
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            exif = null
         }
     }
 
@@ -234,7 +212,7 @@ object CameraUtils {
         val options = BitmapFactory.Options()
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         options.inJustDecodeBounds = true
-        var bitmap = BitmapFactory.decodeStream(inputStream, null, options)
+        BitmapFactory.decodeStream(inputStream, null, options)
         options.inJustDecodeBounds = false
         val outWidth = options.outWidth
         val outHeight = options.outHeight
@@ -257,8 +235,6 @@ object CameraUtils {
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
         inputStream = ByteArrayInputStream(outputStream.toByteArray())
         //压缩好比例大小后再进行质量压缩
-        bitmap = BitmapFactory.decodeStream(inputStream, null, options)
-        return bitmap
+        return BitmapFactory.decodeStream(inputStream, null, options)
     }
 }
-

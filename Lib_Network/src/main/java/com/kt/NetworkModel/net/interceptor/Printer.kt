@@ -132,7 +132,7 @@ object Printer {
 
     internal fun printJsonResponse(
         builder: LoggingInterceptor, chainMs: Long, isSuccessful: Boolean,
-        code: Int, headers: String, bodyString: String, segments: List<String>, id: String
+        code: Int, headers: String, bodyString: String, id: String
     ) {
         val lines = ArrayList<String>()
         lines.add("Result: Success=$isSuccessful  Time=${chainMs}ms  Code=$code")
@@ -156,7 +156,7 @@ object Printer {
 
     internal fun printFileResponse(
         builder: LoggingInterceptor, chainMs: Long, isSuccessful: Boolean,
-        code: Int, headers: String, segments: List<String>, id: String
+        code: Int, id: String
     ) {
         val lines = ArrayList<String>()
         lines.add("Result: Success=$isSuccessful  Time=${chainMs}ms  Code=$code")

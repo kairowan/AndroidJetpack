@@ -1,75 +1,109 @@
-基于 **模块化+Kotlin+协程+Retrofit+Jetpack+单向数据流（MVI 风格）** 架构实现的开眼（Eyepetizer）客户端，适合学习从 0 到 1 搭建符合大型 Android 项目实践的工程结构。
+# KotlinMvvm（Compose 多模块版）
 
-|                             项目截图                             |                             项目截图                             |                             项目截图                             |
-| :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| ![](https://github.com/Gao-hao-nan/MVVM/blob/master/image/image_gif1.gif) | ![](https://github.com/Gao-hao-nan/MVVM/blob/master/image/image_gif2.gif) | ![](https://github.com/Gao-hao-nan/MVVM/blob/master/image/image_gif3.gif)
-### 1. 项目架构
-1. 项目采用 Kotlin 语言编写，结合 Jetpack 相关控件，`Navigation`，`Lifecycle`，`ViewModel`，`StateFlow` 等搭建单向数据流（MVI 风格）架构；历史模块中仍存在部分 MVVM 写法；
-2. 通过**组件化**，**模块化**拆分，实现项目更好解耦和复用
-3. 使用 **协程+Retrofit+OkHttp** 优雅地实现网络请求；
-4. 通过 **mmkv**，**Room** 数据库等实现对数据缓存的管理；
-5. 使用 **Glide** 完成图片加载；
-6. 通过RxAppCompatActivity+RxLifecycleAndroid 封装的基类
+一个基于 **Jetpack Compose + 模块化 + 协程 + Retrofit/OkHttp + StateFlow** 的开眼（Eyepetizer）客户端示例工程。
 
-### Compose 播放器（Media3）
-当前项目已提供基于 `core_player` 的 Compose 播放器能力，支持短视频场景和详情页场景：
+> 说明：项目名历史上叫 `MVVM`，但当前 Compose 主链路已经按 **单向数据流（MVI 风格）** 组织（`UiState + ViewModel + Repository`）。
 
-1. 播放能力
-- 基于 `Media3 ExoPlayer` 实现播放、手势、进度同步、倍速、音量控制。
-- `rememberPlayer()` 提供生命周期感知的播放器实例。
+## 项目现状（与代码一致）
 
-2. 预缓存能力
-- 使用 `SimpleCache + CacheDataSource` 统一缓存视频数据。
-- `ShortsPager` 默认预加载后续视频（可配置 `preloadCount`）。
+- UI：Jetpack Compose + Material3
+- 架构：MVI 风格 UDF（`UiState` + `StateFlow`）
+- 导航：`Navigation3`（`androidx.navigation3.runtime/ui`）
+- 图片加载：`Coil`
+- 播放器：`Media3 ExoPlayer`（含缓存、预加载、可插拔控制层）
+- 数据源：**开眼（Eyepetizer）**
+- 当前 Compose 模块：**没有 event/ble 模块**
 
-3. 全屏能力
-- 支持 `竖屏全屏` / `横屏全屏` / `退出全屏`，并联动系统栏显示隐藏。
-- 详情页和短视频页均已接入 icon 化全屏控制。
+## 模块结构
 
-4. 可插拔能力（重点）
-- 默认控制层可通过以下方式替换或扩展：
-  - `controlConfig` / `controlStyle` / `controlIcons` / `controlActions`
-  - `surfaceContent`（替换视频渲染层）
-  - `controlsContent`（替换整个控制层 UI）
-  - `overlayContent`（叠加业务层）
-  - `features: List<PlayerFeature>`（挂载非 UI 功能扩展）
-
-5. 自定义控制层示例
-- `feature_detail/BrandedPlayerControls.kt` 提供了完整自定义控制层示例。
-- 详情页通过 `controlsContent` 已替换为品牌化控制层，并示例了 `ResumePlaybackFeature`（旋转续播）。
-
-示例：
-```kotlin
-VideoPlayerView(
-    url = video.playUrl,
-    player = player,
-    controlsContent = { p, state ->
-        BrandedPlayerControls(
-            player = p,
-            state = state,
-            title = video.title,
-            onBack = onBack,
-            isFullscreen = isFullscreen,
-            isLandscapeFullscreen = isLandscape
-        )
-    },
-    features = listOf(resumeFeature)
-)
+```text
+app                 // 应用壳层、Navigation3 路由、主入口
+Lib_Network         // 网络基础能力（Retrofit/OkHttp/ApiService）
+core_model          // 领域模型（EyepetizerFeed / EyepetizerFeedItem）
+core_data           // 数据仓库层（EyepetizerRepository、BaseApiRepository）
+core_ui             // UI 基类与通用组件（BaseViewModel、PagedList、UiStateContainer）
+core_designsystem   // 主题与设计系统
+core_player         // Compose 播放器能力（Media3）
+feature_home        // 首页列表
+feature_detail      // 详情页 + 品牌化控制层
+feature_shorts      // 短视频流
 ```
 
-欢迎在 **Issue** 中提交对本仓库的改进建议~
-有问题请联系QQ:1931672489
-感谢您的阅读~
+## 架构说明
 
-### 致谢
+当前 Compose 页面统一采用：
 
-**API：** 开眼（Eyepetizer）接口（项目内整理）[**eyepetizer_api.md**](./eyepetizer_api.md)
+1. `Screen` 只负责渲染和交互分发  
+2. `ViewModel`（`BaseViewModel` / `BasePagedViewModel`）管理 `UiState`  
+3. `Repository` 负责数据获取和映射  
+4. `ApiService` 由 `RetrofitClient` 提供  
 
-**主要使用的开源框架:**
+关键点：
 
-*   [**Retrofit**](https://github.com/square/retrofit)
-*   [**OkHttp**](https://github.com/square/okhttp)
-*   [**Glide**](https://github.com/bumptech/glide)
-*   [**ARouter**](https://github.com/alibaba/ARouter)
-*   [**MMKV**](https://github.com/Tencent/MMKV)
-*   [**SmartRefreshLayout**](https://github.com/scwang90/SmartRefreshLayout)
+- `core_ui` 提供可复用的分页状态管理与列表容器；
+- `core_data` 的 `EyepetizerRepository` 当前走 hostType `7`（开眼域名）；
+- `app` 使用 `Navigation3` 完成 Home/Shorts/Detail 路由切换；
+- Compose 页面内 `viewModel(factory = viewModelFactory { ... })` 与页面生命周期绑定。
+
+## 播放器能力（core_player）
+
+`core_player` 已具备以下能力：
+
+1. 预缓存/预加载  
+- 基于 `SimpleCache + CacheDataSource`
+- `ShortsPager` 支持按页预加载后续视频（`preloadCount`）
+
+2. 全屏模式  
+- 支持竖屏全屏、横屏全屏、退出全屏
+- 全屏切换联动系统栏显示/隐藏
+
+3. 旋转续播  
+- `feature_detail` 通过 `ResumePlaybackFeature` 保存并恢复播放进度、播放状态、倍速
+
+4. 控制层可插拔  
+- 可替换视频渲染层：`surfaceContent`
+- 可替换控制层 UI：`controlsContent`
+- 可叠加业务层：`overlayContent`
+- 可挂载功能插件：`features: List<PlayerFeature>`
+- 默认控制层可通过 `controlConfig/controlStyle/controlIcons/controlActions` 配置
+
+## 快速运行
+
+### 环境要求
+
+- JDK 17
+- Android Studio（建议最新稳定版）
+- Android SDK：`compileSdk 36`，`minSdk 24`
+
+### 启动步骤
+
+1. 克隆项目并用 Android Studio 打开根目录  
+2. 同步 Gradle  
+3. 运行 `app` 模块  
+
+命令行构建示例：
+
+```bash
+./gradlew :app:assembleDebug
+```
+
+## 数据接口说明
+
+- 本项目 Compose 主链路使用 **开眼（Eyepetizer）** 接口
+- 接口整理文档见：[eyepetizer_api.md](./eyepetizer_api.md)
+- 不是 WanAndroid 接口
+
+## 主要依赖
+
+- [Kotlin](https://kotlinlang.org/)
+- [Jetpack Compose](https://developer.android.com/jetpack/compose)
+- [Navigation3](https://developer.android.com/jetpack/androidx/releases/navigation3)
+- [Media3](https://developer.android.com/media/media3)
+- [Retrofit](https://github.com/square/retrofit)
+- [OkHttp](https://github.com/square/okhttp)
+- [Coil](https://github.com/coil-kt/coil)
+
+## 致谢
+
+- 开眼（Eyepetizer）开放数据
+- 项目内网络与基础库贡献者

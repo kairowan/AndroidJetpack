@@ -32,7 +32,8 @@ import java.lang.reflect.Field
 object ChangeDefaultFontUtils {
     fun setDefaultFont(
         context: Context,
-        staticTypefaceFieldName: String?, fontAssetName: String?
+        staticTypefaceFieldName: String,
+        fontAssetName: String
     ) {
         val regular = Typeface.createFromAsset(
             context.assets,
@@ -43,7 +44,7 @@ object ChangeDefaultFontUtils {
 
 
     private fun replaceFont(
-        staticTypefaceFieldName: String?,
+        staticTypefaceFieldName: String,
         newTypeface: Typeface?
     ) {
         try {
