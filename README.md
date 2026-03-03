@@ -90,8 +90,6 @@ feature_shorts      // 短视频流
 ## 数据接口说明
 
 - 本项目 Compose 主链路使用 **开眼（Eyepetizer）** 接口
-- 接口整理文档见：[eyepetizer_api.md](./eyepetizer_api.md)
-- 不是 WanAndroid 接口
 
 ## 主要依赖
 
