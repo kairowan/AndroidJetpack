@@ -1,5 +1,6 @@
-package com.kotlinmvvm.core.player
+package com.kotlinmvvm.core.player.ui
 
+import android.graphics.Color as AndroidColor
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
@@ -12,6 +13,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.kotlinmvvm.core.player.api.IPlayer
 
 /**
  * @author 浩楠
@@ -42,6 +44,8 @@ fun PlayerSurface(
                 this.player = player.exoPlayer
                 useController = false
                 this.resizeMode = resizeMode
+                // 避免切换页面时显示默认黑色 shutter 帧
+                setShutterBackgroundColor(AndroidColor.TRANSPARENT)
                 layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -50,6 +54,10 @@ fun PlayerSurface(
         },
         update = { view ->
             view.player = player.exoPlayer
+        },
+        onRelease = { view ->
+            // 显式解绑，防止 View 退出组合后仍短暂持有最后一帧
+            view.player = null
         },
         modifier = modifier.background(Color.Black)
     )

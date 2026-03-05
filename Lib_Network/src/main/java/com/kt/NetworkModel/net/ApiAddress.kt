@@ -45,6 +45,30 @@ class ApiAddress {
          * 首页精选
          */
         const val EYEPETIZER_HOME_SELECTED = "api/v4/tabs/selected"
+
+        /**
+         * 发现页
+         */
+        const val EYEPETIZER_DISCOVERY = "api/v4/discovery"
+
+        /**
+         * 关注页
+         */
+        const val EYEPETIZER_FOLLOW = "api/v4/tabs/follow"
+
+        /**
+         * 发现-热门
+         */
+        const val EYEPETIZER_DISCOVERY_HOT = "api/v4/discovery/hot"
+
+        /**
+         * 发现-分类
+         */
+        const val EYEPETIZER_DISCOVERY_CATEGORY = "api/v4/discovery/category"
+
+        /**
+         * 发现-作者
+         */
+        const val EYEPETIZER_PGCS_ALL = "api/v4/pgcs/all"
     }
 }
-

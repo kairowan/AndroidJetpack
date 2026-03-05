@@ -23,13 +23,15 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import coil.compose.AsyncImage
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
-import com.kotlinmvvm.core.player.FullscreenVideoPlayer
-import com.kotlinmvvm.core.player.IPlayer
-import com.kotlinmvvm.core.player.PlayerFeature
-import com.kotlinmvvm.core.player.PlayerState
-import com.kotlinmvvm.core.player.VideoPlayerView
-import com.kotlinmvvm.core.player.collectState
-import com.kotlinmvvm.core.player.rememberPlayer
+import com.kotlinmvvm.core.player.api.IPlayer
+import com.kotlinmvvm.core.player.api.PlayerState
+import com.kotlinmvvm.core.player.ext.collectState
+import com.kotlinmvvm.core.player.provider.rememberPlayer
+import com.kotlinmvvm.core.player.ui.FullscreenVideoPlayer
+import com.kotlinmvvm.core.player.ui.VideoPlayerView
+import com.kotlinmvvm.feature.detail.model.BrandedPlayerControlsConfig
+import com.kotlinmvvm.feature.detail.model.VideoFullscreenMode
+import com.kotlinmvvm.feature.detail.player.ResumePlaybackFeature
 
 /**
  * @author 浩楠
@@ -43,12 +45,6 @@ import com.kotlinmvvm.core.player.rememberPlayer
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
  * @Description: TODO
  */
-
-private enum class VideoFullscreenMode {
-    NONE,
-    PORTRAIT,
-    LANDSCAPE
-}
 
 @Composable
 fun VideoDetailScreen(
@@ -206,45 +202,6 @@ fun VideoDetailScreen(
                 }
             }
         }
-    }
-}
-
-private class ResumePlaybackFeature(
-    private val readPosition: () -> Long,
-    private val readIsPlaying: () -> Boolean,
-    private val readSpeed: () -> Float,
-    private val onSave: (positionMs: Long, isPlaying: Boolean, speed: Float) -> Unit
-) : PlayerFeature {
-
-    private var appliedForUrl: String? = null
-
-    override fun onUrlChanged(player: IPlayer, url: String, autoPlay: Boolean) {
-        if (appliedForUrl == url) return
-        appliedForUrl = url
-
-        val savedPosition = readPosition()
-        if (savedPosition > 0L) {
-            player.seekTo(savedPosition)
-        }
-
-        val savedSpeed = readSpeed()
-        if (savedSpeed > 0f) {
-            player.setSpeed(savedSpeed)
-        }
-
-        if (!readIsPlaying()) {
-            player.pause()
-        }
-    }
-
-    override fun onDetach(player: IPlayer) {
-        val snapshot = player.state.value
-        onSave(
-            snapshot.position.coerceAtLeast(0L),
-            snapshot.isPlaying,
-            snapshot.speed
-        )
-        appliedForUrl = null
     }
 }
 

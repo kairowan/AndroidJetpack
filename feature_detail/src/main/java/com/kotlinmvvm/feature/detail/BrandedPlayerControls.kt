@@ -50,32 +50,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.kotlinmvvm.core.player.IPlayer
-import com.kotlinmvvm.core.player.PlayState
-import com.kotlinmvvm.core.player.PlayerState
+import com.kotlinmvvm.core.player.api.IPlayer
+import com.kotlinmvvm.core.player.api.PlayState
+import com.kotlinmvvm.core.player.api.PlayerState
+import com.kotlinmvvm.feature.detail.model.BrandedPlayerControlsConfig
 import kotlinx.coroutines.delay
-
-/**
- * @author 浩楠
- *
- * @date 2026-2-28
- *
- *      _              _           _     _   ____  _             _ _
- *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
- *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
- *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
- *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: TODO
- */
-
-data class BrandedPlayerControlsConfig(
-    val autoHideMs: Long = 2800L,
-    val replayMs: Long = 10_000L,
-    val forwardMs: Long = 10_000L,
-    val accentColor: Color = Color(0xFF2DE39B),
-    val showSpeedControl: Boolean = true,
-    val speedOptions: List<Float> = listOf(1f, 1.25f, 1.5f, 2f)
-)
 
 @Composable
 fun BrandedPlayerControls(

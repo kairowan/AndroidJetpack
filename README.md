@@ -67,6 +67,87 @@ feature_shorts      // 短视频流
 - 可挂载功能插件：`features: List<PlayerFeature>`
 - 默认控制层可通过 `controlConfig/controlStyle/controlIcons/controlActions` 配置
 
+## 播放器使用说明（Compose + XML）
+
+### 1) Compose 页面使用
+
+常用导入：
+
+```kotlin
+import com.kotlinmvvm.core.player.provider.rememberPlayer
+import com.kotlinmvvm.core.player.ui.VideoPlayerView
+import com.kotlinmvvm.core.player.ui.FullscreenVideoPlayer
+```
+
+最小示例：
+
+```kotlin
+@Composable
+fun DemoVideo(url: String) {
+    val player = rememberPlayer()
+    VideoPlayerView(
+        url = url,
+        player = player
+    )
+}
+```
+
+短视频流示例可使用：
+
+```kotlin
+import com.kotlinmvvm.core.player.ui.ShortsPager
+import com.kotlinmvvm.core.player.ui.ShortsOverlay
+import com.kotlinmvvm.core.player.model.ShortsItem
+```
+
+### 2) XML + 代码方式（直接绑定 PlayerView）
+
+布局中使用 `androidx.media3.ui.PlayerView`：
+
+```xml
+<androidx.media3.ui.PlayerView
+    android:id="@+id/playerView"
+    android:layout_width="match_parent"
+    android:layout_height="220dp" />
+```
+
+Fragment/Activity 中：
+
+```kotlin
+import com.kotlinmvvm.core.player.facade.PlayerFactory
+import com.kotlinmvvm.core.player.facade.PlayerLifecycleBinder
+
+val player = PlayerFactory.create(requireContext())
+PlayerLifecycleBinder.bind(viewLifecycleOwner.lifecycle, player)
+binding.playerView.player = player.exoPlayer
+player.play(url)
+```
+
+### 3) XML 中间层方式（推荐）
+
+布局中直接放中间层 View：
+
+```xml
+<com.kotlinmvvm.core.player.xml.VideoPlayerHostView
+    android:id="@+id/videoHost"
+    android:layout_width="match_parent"
+    android:layout_height="220dp" />
+```
+
+代码中只做生命周期绑定和播放：
+
+```kotlin
+binding.videoHost.bindLifecycle(viewLifecycleOwner.lifecycle)
+binding.videoHost.play(url)
+```
+
+可选 API：
+- `createAndAttachPlayer()`
+- `attachPlayer(player)`
+- `setUseController(true/false)`
+- `setResizeMode(...)`
+- `detachPlayer(releasePlayer = true)`
+
 ## 快速运行
 
 ### 环境要求

@@ -1,12 +1,14 @@
 package com.ghn.cocknovel.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -70,12 +72,21 @@ fun AppNavHost(
     val backStack = rememberNavBackStack(AppDestination.Home)
     val currentDestination = backStack.lastOrNull()
     var shortsFullscreen by remember { mutableStateOf(false) }
+    var shortsDeactivateSignal by remember { mutableIntStateOf(0) }
+    val navContentBackground = when (currentDestination) {
+        is AppDestination.Shorts, is AppDestination.Detail -> Color.Black
+        else -> MaterialTheme.colorScheme.background
+    }
 
     val showBottomBar = currentDestination is AppDestination.Home ||
             (currentDestination is AppDestination.Shorts && !shortsFullscreen)
 
     fun navigateToTopLevel(destination: AppDestination) {
         if (currentDestination == destination) return
+        if (currentDestination is AppDestination.Shorts && destination !is AppDestination.Shorts) {
+            shortsDeactivateSignal += 1
+            shortsFullscreen = false
+        }
         while (backStack.size > 1) {
             backStack.removeAt(backStack.lastIndex)
         }
@@ -91,15 +102,26 @@ fun AppNavHost(
     }
 
     Scaffold(
+        containerColor = navContentBackground,
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                ) {
                     navItems.forEach { item ->
                         NavigationBarItem(
                             icon = { Icon(item.icon, contentDescription = item.label) },
                             label = { Text(item.label) },
                             selected = currentDestination == item.destination,
-                            onClick = { navigateToTopLevel(item.destination) }
+                            onClick = { navigateToTopLevel(item.destination) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.White,
+                                selectedTextColor = Color.Black,
+                                unselectedIconColor = Color.Black,
+                                unselectedTextColor = Color.Black,
+                                indicatorColor = Color.Black
+                            )
                         )
                     }
                 }
@@ -108,7 +130,9 @@ fun AppNavHost(
     ) { paddingValues ->
         NavDisplay(
             backStack = backStack,
-            modifier = modifier.padding(paddingValues),
+            modifier = modifier
+                .padding(paddingValues)
+                .background(navContentBackground),
             onBack = { popDestination() },
             entryProvider = entryProvider(
                 fallback = { key ->
@@ -127,6 +151,8 @@ fun AppNavHost(
                 }
                 entry<AppDestination.Shorts> {
                     ShortsRoute(
+                        isActive = currentDestination is AppDestination.Shorts,
+                        deactivateSignal = shortsDeactivateSignal,
                         onFullscreenChanged = { isFullscreen ->
                             shortsFullscreen = isFullscreen
                         }

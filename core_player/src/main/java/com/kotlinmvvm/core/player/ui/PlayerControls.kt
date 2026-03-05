@@ -1,78 +1,54 @@
-package com.kotlinmvvm.core.player
+package com.kotlinmvvm.core.player.ui
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
+import com.kotlinmvvm.core.player.api.IPlayer
+import com.kotlinmvvm.core.player.api.PlayState
+import com.kotlinmvvm.core.player.api.PlayerState
+import com.kotlinmvvm.core.player.defaults.PlayerControlsDefaults
+import com.kotlinmvvm.core.player.ext.collectState
+import com.kotlinmvvm.core.player.model.PlayerControlActions
+import com.kotlinmvvm.core.player.model.PlayerControlsConfig
+import com.kotlinmvvm.core.player.model.PlayerControlsIcons
+import com.kotlinmvvm.core.player.model.PlayerControlsStyle
 import kotlinx.coroutines.delay
 
 /**
- * @author 浩楠
- *
- * @date 2026-2-26
- *
- *      _              _           _     _   ____  _             _ _
- *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
- *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
- *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
- *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: TODO
- */
-
-data class PlayerControlsConfig(
-    val autoHideMs: Long = 3000L,
-    val enableAutoHide: Boolean = true,
-    val rewindMs: Long = 10_000L,
-    val forwardMs: Long = 10_000L,
-    val showTopBar: Boolean = true,
-    val showCenterControls: Boolean = true,
-    val showBottomBar: Boolean = true
-)
-
-data class PlayerControlsStyle(
-    val topBarStartColor: Color = Color.Black.copy(alpha = 0.7f),
-    val topBarEndColor: Color = Color.Transparent,
-    val bottomBarStartColor: Color = Color.Transparent,
-    val bottomBarEndColor: Color = Color.Black.copy(alpha = 0.72f),
-    val iconColor: Color = Color.White,
-    val timeTextColor: Color = Color.White,
-    val progressPlayedColor: Color = Color.White,
-    val progressBufferedColor: Color = Color.White.copy(alpha = 0.45f),
-    val progressUnplayedColor: Color = Color.White.copy(alpha = 0.2f),
-    val centerPlayButtonColor: Color = Color.Black.copy(alpha = 0.5f),
-    val progressTrackHeight: Float = 4f
-)
-
-data class PlayerControlsIcons(
-    val back: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
-    val rewind: ImageVector = Icons.Default.Replay10,
-    val play: ImageVector = Icons.Default.PlayArrow,
-    val pause: ImageVector = Icons.Default.Pause,
-    val forward: ImageVector = Icons.Default.Forward10
-)
-
-data class PlayerControlActions(
-    val onRewind: (IPlayer, Long) -> Unit = { player, ms -> player.rewind(ms) },
-    val onToggle: (IPlayer) -> Unit = { player -> player.toggle() },
-    val onForward: (IPlayer, Long) -> Unit = { player, ms -> player.forward(ms) },
-    val onSeekProgress: (IPlayer, Float) -> Unit = { player, progress -> player.seekTo(progress) }
-)
-
-/**
- * 播放器控制层
+ * 播放器控制层。
  */
 @Composable
 fun PlayerControls(
@@ -87,17 +63,32 @@ fun PlayerControls(
     extraControls: @Composable RowScope.() -> Unit = {}
 ) {
     val state = player.collectState()
-    var visible by remember { mutableStateOf(true) }
-    var lastTouch by remember { mutableLongStateOf(0L) }
-    
-    // 自动隐藏
-    LaunchedEffect(lastTouch, state.isPlaying) {
-        if (config.enableAutoHide && state.isPlaying && visible) {
-            delay(config.autoHideMs)
-            visible = false
+    var controlsVisible by remember { mutableStateOf(true) }
+    var interactionToken by remember { mutableIntStateOf(0) }
+
+    fun markInteraction(keepVisible: Boolean = true) {
+        if (keepVisible) controlsVisible = true
+        interactionToken += 1
+    }
+
+    LaunchedEffect(state.isPlaying) {
+        if (!state.isPlaying) {
+            controlsVisible = true
         }
     }
-    
+
+    LaunchedEffect(
+        config.enableAutoHide,
+        config.autoHideMs,
+        state.isPlaying,
+        controlsVisible,
+        interactionToken
+    ) {
+        if (!config.enableAutoHide || !state.isPlaying || !controlsVisible) return@LaunchedEffect
+        delay(config.autoHideMs)
+        controlsVisible = false
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -105,25 +96,23 @@ fun PlayerControls(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
-                visible = !visible
-                lastTouch = System.currentTimeMillis()
+                controlsVisible = !controlsVisible
+                interactionToken += 1
             }
     ) {
-        // 缓冲指示器
         if (state.playState == PlayState.Buffering) {
             CircularProgressIndicator(
                 color = Color.White,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-        
+
         AnimatedVisibility(
-            visible = visible,
+            visible = controlsVisible,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
             Box(Modifier.fillMaxSize()) {
-                // 顶部
                 if (config.showTopBar) {
                     TopBar(
                         title = title,
@@ -133,8 +122,7 @@ fun PlayerControls(
                         modifier = Modifier.align(Alignment.TopCenter)
                     )
                 }
-                
-                // 中间
+
                 if (config.showCenterControls) {
                     CenterControls(
                         state = state,
@@ -142,28 +130,27 @@ fun PlayerControls(
                         style = style,
                         onRewind = {
                             actions.onRewind(player, config.rewindMs)
-                            lastTouch = System.currentTimeMillis()
+                            markInteraction()
                         },
                         onToggle = {
                             actions.onToggle(player)
-                            lastTouch = System.currentTimeMillis()
+                            markInteraction()
                         },
                         onForward = {
                             actions.onForward(player, config.forwardMs)
-                            lastTouch = System.currentTimeMillis()
+                            markInteraction()
                         },
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                
-                // 底部
+
                 if (config.showBottomBar) {
                     BottomBar(
                         state = state,
                         style = style,
                         onSeek = {
                             actions.onSeekProgress(player, it)
-                            lastTouch = System.currentTimeMillis()
+                            markInteraction()
                         },
                         extraControls = extraControls,
                         modifier = Modifier.align(Alignment.BottomCenter)
@@ -186,15 +173,19 @@ private fun TopBar(
         modifier = modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(listOf(style.topBarStartColor, style.topBarEndColor)))
-            .padding(8.dp),
+            .padding(PlayerControlsDefaults.TOP_BAR_PADDING),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        onBack?.let {
-            IconButton(onClick = it) {
-                Icon(icon, null, tint = style.iconColor)
+        onBack?.let { handleBack ->
+            IconButton(onClick = handleBack) {
+                Icon(icon, contentDescription = null, tint = style.iconColor)
             }
         }
-        Text(title, color = style.timeTextColor, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = title,
+            color = style.timeTextColor,
+            style = MaterialTheme.typography.titleMedium
+        )
     }
 }
 
@@ -210,29 +201,39 @@ private fun CenterControls(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(PlayerControlsDefaults.CENTER_BUTTON_SPACING),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onRewind, Modifier.size(48.dp)) {
-            Icon(icons.rewind, null, tint = style.iconColor, modifier = Modifier.size(36.dp))
+        IconButton(onClick = onRewind, modifier = Modifier.size(PlayerControlsDefaults.SIDE_BUTTON_SIZE)) {
+            Icon(
+                imageVector = icons.rewind,
+                contentDescription = null,
+                tint = style.iconColor,
+                modifier = Modifier.size(PlayerControlsDefaults.SIDE_ICON_SIZE)
+            )
         }
-        
+
         IconButton(
             onClick = onToggle,
             modifier = Modifier
-                .size(64.dp)
+                .size(PlayerControlsDefaults.PLAY_BUTTON_SIZE)
                 .background(style.centerPlayButtonColor, MaterialTheme.shapes.extraLarge)
         ) {
             Icon(
-                if (state.isPlaying) icons.pause else icons.play,
-                null,
+                imageVector = if (state.isPlaying) icons.pause else icons.play,
+                contentDescription = null,
                 tint = style.iconColor,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(PlayerControlsDefaults.PLAY_ICON_SIZE)
             )
         }
-        
-        IconButton(onClick = onForward, Modifier.size(48.dp)) {
-            Icon(icons.forward, null, tint = style.iconColor, modifier = Modifier.size(36.dp))
+
+        IconButton(onClick = onForward, modifier = Modifier.size(PlayerControlsDefaults.SIDE_BUTTON_SIZE)) {
+            Icon(
+                imageVector = icons.forward,
+                contentDescription = null,
+                tint = style.iconColor,
+                modifier = Modifier.size(PlayerControlsDefaults.SIDE_ICON_SIZE)
+            )
         }
     }
 }
@@ -249,7 +250,10 @@ private fun BottomBar(
         modifier = modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(listOf(style.bottomBarStartColor, style.bottomBarEndColor)))
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(
+                horizontal = PlayerControlsDefaults.BOTTOM_BAR_HORIZONTAL_PADDING,
+                vertical = PlayerControlsDefaults.BOTTOM_BAR_VERTICAL_PADDING
+            )
     ) {
         PlayerProgressBar(
             value = state.progress,
@@ -257,19 +261,19 @@ private fun BottomBar(
             onValueChange = onSeek,
             style = style
         )
-        
+
         Row(
-            Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "${state.formatPosition()} / ${state.formatDuration()}",
+                text = "${state.formatPosition()} / ${state.formatDuration()}",
                 color = style.timeTextColor,
                 style = MaterialTheme.typography.bodySmall
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(PlayerControlsDefaults.BOTTOM_BAR_VERTICAL_PADDING),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 extraControls()
@@ -292,25 +296,25 @@ private fun PlayerProgressBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(26.dp),
+            .height(PlayerControlsDefaults.PROGRESS_SLIDER_HEIGHT),
         contentAlignment = Alignment.CenterStart
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(style.progressTrackHeight.dp)
+                .height(style.progressTrackHeight)
                 .background(style.progressUnplayedColor, trackShape)
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth(buffered)
-                .height(style.progressTrackHeight.dp)
+                .height(style.progressTrackHeight)
                 .background(style.progressBufferedColor, trackShape)
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth(played)
-                .height(style.progressTrackHeight.dp)
+                .height(style.progressTrackHeight)
                 .background(style.progressPlayedColor, trackShape)
         )
 

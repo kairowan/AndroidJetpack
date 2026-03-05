@@ -13,6 +13,15 @@ package com.kotlinmvvm.core.model
  * @Description: TODO
  */
 
+enum class EyepetizerFeedSource(val title: String) {
+    HOME_SELECTED("精选"),
+    DISCOVERY("发现"),
+    FOLLOW("关注"),
+    DISCOVERY_HOT("热门"),
+    DISCOVERY_CATEGORY("分类"),
+    PGCS_ALL("作者")
+}
+
 data class EyepetizerFeed(
     val items: List<EyepetizerFeedItem>,
     val nextPageUrl: String?

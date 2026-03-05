@@ -1,11 +1,14 @@
 package com.kotlinmvvm.feature.home
 
 import com.kotlinmvvm.core.data.repository.EyepetizerRepository
+import com.kotlinmvvm.core.model.EyepetizerFeedSource
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
 import com.kotlinmvvm.core.ui.base.BaseViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
@@ -16,6 +19,10 @@ class HomeViewModel(
     private var allItems: PersistentList<EyepetizerFeedItem> = persistentListOf()
     private var nextPageUrl: String? = null
     private val requestMutex = Mutex()
+    private var currentSource: EyepetizerFeedSource = EyepetizerFeedSource.HOME_SELECTED
+
+    private val _feedSource = MutableStateFlow(currentSource)
+    val feedSource = _feedSource.asStateFlow()
 
     init {
         loadInitial()
@@ -33,9 +40,25 @@ class HomeViewModel(
         launchRequest { loadNextPage() }
     }
 
-    private fun launchRequest(block: suspend () -> Unit) {
+    fun switchSource(source: EyepetizerFeedSource) {
+        if (source == currentSource) return
+        currentSource = source
+        _feedSource.value = source
+        launchRequest(waitIfBusy = true) { loadFirstPage() }
+    }
+
+    private fun launchRequest(
+        waitIfBusy: Boolean = false,
+        block: suspend () -> Unit
+    ) {
         viewModelScope.launch {
-            if (!requestMutex.tryLock()) return@launch
+            val locked = if (waitIfBusy) {
+                requestMutex.lock()
+                true
+            } else {
+                requestMutex.tryLock()
+            }
+            if (!locked) return@launch
             try {
                 block()
             } finally {
@@ -56,7 +79,7 @@ class HomeViewModel(
         allItems = persistentListOf()
         nextPageUrl = null
 
-        repository.getHomeFeed()
+        repository.getFeed(currentSource)
             .onSuccess { feed ->
                 allItems = allItems.addAll(feed.items)
                 nextPageUrl = feed.nextPageUrl
@@ -94,7 +117,7 @@ class HomeViewModel(
             )
         }
 
-        repository.getHomeFeed(url)
+        repository.getFeed(currentSource, url)
             .onSuccess { feed ->
                 allItems = allItems.addAll(feed.items)
                 nextPageUrl = feed.nextPageUrl

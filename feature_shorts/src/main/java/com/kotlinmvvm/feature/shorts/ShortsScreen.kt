@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fullscreen
@@ -24,18 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kotlinmvvm.core.data.repository.EyepetizerRepository
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
-import com.kotlinmvvm.core.player.ShortsPager
-import com.kotlinmvvm.core.player.ShortsItem
-import com.kotlinmvvm.core.player.ShortsOverlay
-import com.kotlinmvvm.core.player.rememberPlayer
+import com.kotlinmvvm.core.player.provider.rememberPlayer
+import com.kotlinmvvm.core.player.ui.ShortsOverlay
+import com.kotlinmvvm.core.player.ui.ShortsPager
 import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.ErrorContent
 import com.kotlinmvvm.core.ui.base.viewModelFactory
+import com.kotlinmvvm.feature.shorts.model.ShortsFullscreenMode
+import com.kotlinmvvm.feature.shorts.model.VideoItem
 
 /**
  * @author 浩楠
@@ -50,35 +54,29 @@ import com.kotlinmvvm.core.ui.base.viewModelFactory
  * @Description: TODO
  */
 
-private data class VideoItem(
-    val video: EyepetizerFeedItem.Video
-) : ShortsItem {
-    override val id: Any get() = video.id
-    override val videoUrl: String get() = video.playUrl
-}
-
-private enum class ShortsFullscreenMode {
-    NONE,
-    PORTRAIT,
-    LANDSCAPE
-}
-
 @Composable
 fun ShortsRoute(
     modifier: Modifier = Modifier,
-    repository: EyepetizerRepository = remember { EyepetizerRepository() },
-    viewModel: ShortsViewModel = viewModel(
+    isActive: Boolean = true,
+    deactivateSignal: Int = 0,
+    providedViewModel: ShortsViewModel? = null,
+    onFullscreenChanged: (Boolean) -> Unit = {}
+) {
+    val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
+    val owner = remember(context) { context.findViewModelStoreOwner() }
+    val repository = remember { EyepetizerRepository() }
+    val viewModel = providedViewModel ?: viewModel(
+        viewModelStoreOwner = owner ?: checkNotNull(LocalViewModelStoreOwner.current),
+        key = "shorts_root_view_model",
         factory = viewModelFactory {
             ShortsViewModel(repository)
         }
-    ),
-    onFullscreenChanged: (Boolean) -> Unit = {}
-) {
+    )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val player = rememberPlayer()
-    val context = LocalContext.current
-    val activity = remember(context) { context.findActivity() }
     var fullscreenModeName by rememberSaveable { mutableStateOf(ShortsFullscreenMode.NONE.name) }
+    var savedPageIndex by rememberSaveable { mutableIntStateOf(0) }
     val fullscreenMode = remember(fullscreenModeName) { ShortsFullscreenMode.valueOf(fullscreenModeName) }
     val isFullscreen = fullscreenMode != ShortsFullscreenMode.NONE
     val onFullscreenChangedState by rememberUpdatedState(onFullscreenChanged)
@@ -95,8 +93,33 @@ fun ShortsRoute(
         onFullscreenChangedState(isFullscreen)
     }
 
+    LaunchedEffect(isActive) {
+        if (!isActive) {
+            updateFullscreenMode(ShortsFullscreenMode.NONE)
+            player.pause()
+            player.stop()
+            player.clearVideoOutput()
+            onFullscreenChangedState(false)
+            activity?.applyVideoWindowMode(ShortsFullscreenMode.NONE)
+        }
+    }
+
+    LaunchedEffect(deactivateSignal) {
+        if (deactivateSignal > 0) {
+            updateFullscreenMode(ShortsFullscreenMode.NONE)
+            player.pause()
+            player.stop()
+            player.clearVideoOutput()
+            onFullscreenChangedState(false)
+            activity?.applyVideoWindowMode(ShortsFullscreenMode.NONE)
+        }
+    }
+
     DisposableEffect(activity) {
         onDispose {
+            player.pause()
+            player.stop()
+            player.clearVideoOutput()
             onFullscreenChangedState(false)
             activity?.applyVideoWindowMode(ShortsFullscreenMode.NONE)
         }
@@ -106,7 +129,13 @@ fun ShortsRoute(
         updateFullscreenMode(ShortsFullscreenMode.NONE)
     }
 
-    Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(if (isActive) Color.Black else Color.Transparent)
+    ) {
+        if (!isActive) return@Box
+
         when {
             state.isLoading && state.items.isEmpty() -> LoadingContent()
 
@@ -124,8 +153,26 @@ fun ShortsRoute(
                         Text("暂无视频", color = Color.White)
                     }
                 } else {
+                    val restoredPage = savedPageIndex.coerceIn(0, videos.lastIndex.coerceAtLeast(0))
+
+                    LaunchedEffect(restoredPage) {
+                        if (restoredPage != savedPageIndex) {
+                            savedPageIndex = restoredPage
+                        }
+                    }
+
+                    val pagerState = rememberPagerState(
+                        initialPage = restoredPage,
+                        pageCount = { videos.size }
+                    )
+
+                    LaunchedEffect(pagerState.currentPage) {
+                        savedPageIndex = pagerState.currentPage
+                    }
+
                     ShortsPager(
                         items = videos.map { VideoItem(it) },
+                        pagerState = pagerState,
                         player = player,
                         onPageChanged = { page ->
                             if (page >= videos.size - 3 && state.canLoadMore && !state.isLoadingMore) {
@@ -261,6 +308,14 @@ private tailrec fun Context.findActivity(): Activity? {
     return when (this) {
         is Activity -> this
         is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
+}
+
+private tailrec fun Context.findViewModelStoreOwner(): ViewModelStoreOwner? {
+    return when (this) {
+        is ViewModelStoreOwner -> this
+        is ContextWrapper -> baseContext.findViewModelStoreOwner()
         else -> null
     }
 }
