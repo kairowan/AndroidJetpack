@@ -8,6 +8,7 @@ android {
 
 dependencies {
     api(project(":core_designsystem"))
+    api(libs.kotlinx.collections.immutable)
     
     // ViewModel
     implementation(libs.lifecycle.viewmodel)

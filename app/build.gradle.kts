@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinmvvm.android.application.compose)
+    alias(libs.plugins.kotlin.serialization)
     id("org.jetbrains.kotlin.kapt")
 }
 

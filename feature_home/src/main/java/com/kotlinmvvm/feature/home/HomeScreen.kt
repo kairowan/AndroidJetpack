@@ -17,9 +17,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.kotlinmvvm.core.data.repository.EyepetizerRepository
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
+import com.kotlinmvvm.core.ui.component.ErrorContent
+import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.PagedList
-import com.kotlinmvvm.core.ui.component.UiStateContainer
 import com.kotlinmvvm.core.ui.base.viewModelFactory
+import com.kotlinmvvm.core.ui.state.PagedData
 
 /**
  * @author 浩楠
@@ -45,7 +47,7 @@ fun HomeRoute(
     ),
     onVideoClick: (EyepetizerFeedItem.Video) -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -58,27 +60,42 @@ fun HomeRoute(
             )
         }
     ) { paddingValues ->
-        UiStateContainer(
-            uiState = uiState,
-            onRetry = { viewModel.loadFeed() },
-            modifier = modifier.padding(paddingValues)
-        ) { data ->
-            PagedList(
-                data = data,
-                onRefresh = { viewModel.refresh() },
-                onLoadMore = { viewModel.loadMore() },
-                itemKey = { item ->
-                    when (item) {
-                        is EyepetizerFeedItem.Video -> "video_${item.id}"
-                        is EyepetizerFeedItem.TextHeader -> "header_${item.text.hashCode()}"
-                        is EyepetizerFeedItem.TextFooter -> "footer_${item.text.hashCode()}"
+        when {
+            state.isLoading && state.items.isEmpty() -> {
+                LoadingContent(modifier = modifier.padding(paddingValues))
+            }
+
+            state.errorMessage != null && state.items.isEmpty() -> {
+                ErrorContent(
+                    message = state.errorMessage ?: "Unknown error",
+                    onRetry = { viewModel.retry() },
+                    modifier = modifier.padding(paddingValues)
+                )
+            }
+
+            else -> {
+                PagedList(
+                    data = PagedData(
+                        items = state.items,
+                        isLoadingMore = state.isLoadingMore,
+                        canLoadMore = state.canLoadMore
+                    ),
+                    onRefresh = { viewModel.refresh() },
+                    onLoadMore = { viewModel.loadMore() },
+                    modifier = modifier.padding(paddingValues),
+                    itemKey = { item ->
+                        when (item) {
+                            is EyepetizerFeedItem.Video -> "video_${item.id}"
+                            is EyepetizerFeedItem.TextHeader -> "header_${item.text.hashCode()}"
+                            is EyepetizerFeedItem.TextFooter -> "footer_${item.text.hashCode()}"
+                        }
                     }
-                }
-            ) { item ->
-                when (item) {
-                    is EyepetizerFeedItem.Video -> VideoCard(video = item, onClick = { onVideoClick(item) })
-                    is EyepetizerFeedItem.TextHeader -> TextHeaderItem(text = item.text)
-                    is EyepetizerFeedItem.TextFooter -> TextFooterItem(text = item.text)
+                ) { item ->
+                    when (item) {
+                        is EyepetizerFeedItem.Video -> VideoCard(video = item, onClick = { onVideoClick(item) })
+                        is EyepetizerFeedItem.TextHeader -> TextHeaderItem(text = item.text)
+                        is EyepetizerFeedItem.TextFooter -> TextFooterItem(text = item.text)
+                    }
                 }
             }
         }

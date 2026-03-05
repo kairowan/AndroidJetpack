@@ -17,6 +17,7 @@ import com.kotlinmvvm.core.model.EyepetizerFeedItem
 import com.kotlinmvvm.feature.detail.VideoDetailScreen
 import com.kotlinmvvm.feature.home.HomeRoute
 import com.kotlinmvvm.feature.shorts.ShortsRoute
+import kotlinx.serialization.Serializable
 
 /**
  * @author 浩楠
@@ -31,9 +32,13 @@ import com.kotlinmvvm.feature.shorts.ShortsRoute
  * @Description: TODO
  */
 
+@Serializable
 private sealed interface AppDestination : NavKey {
+    @Serializable
     data object Home : AppDestination
+    @Serializable
     data object Shorts : AppDestination
+    @Serializable
     data class Detail(
         val videoId: Int,
         val title: String,

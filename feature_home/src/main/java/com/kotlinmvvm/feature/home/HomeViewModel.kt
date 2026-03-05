@@ -2,51 +2,122 @@ package com.kotlinmvvm.feature.home
 
 import com.kotlinmvvm.core.data.repository.EyepetizerRepository
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
-import com.kotlinmvvm.core.ui.base.BasePagedViewModel
-import com.kotlinmvvm.core.ui.base.PagedResult
-
-/**
- * @author 浩楠
- *
- * @date 2026-2-28
- *
- *      _              _           _     _   ____  _             _ _
- *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
- *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
- *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
- *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: TODO
- */
+import com.kotlinmvvm.core.ui.base.BaseViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 
 class HomeViewModel(
     private val repository: EyepetizerRepository
-) : BasePagedViewModel<EyepetizerFeedItem>() {
+) : BaseViewModel<HomeState>(HomeState()) {
+
+    private var allItems: PersistentList<EyepetizerFeedItem> = persistentListOf()
+    private var nextPageUrl: String? = null
+    private val requestMutex = Mutex()
 
     init {
-        loadFeed()
+        loadInitial()
     }
 
-    fun loadFeed() {
-        loadFirst {
-            repository.getHomeFeed().map { feed ->
-                PagedResult(
-                    items = feed.items,
-                    nextPageUrl = feed.nextPageUrl
-                )
-            }
-        }
+    fun loadInitial() {
+        launchRequest { loadFirstPage() }
     }
+
+    fun refresh() = loadInitial()
+
+    fun retry() = loadInitial()
 
     fun loadMore() {
-        loadMore { url ->
-            repository.getHomeFeed(url).map { feed ->
-                PagedResult(
-                    items = feed.items,
-                    nextPageUrl = feed.nextPageUrl
-                )
+        launchRequest { loadNextPage() }
+    }
+
+    private fun launchRequest(block: suspend () -> Unit) {
+        viewModelScope.launch {
+            if (!requestMutex.tryLock()) return@launch
+            try {
+                block()
+            } finally {
+                requestMutex.unlock()
             }
         }
     }
 
-    fun refresh() = loadFeed()
+    private suspend fun loadFirstPage() {
+        reduce {
+            copy(
+                isLoading = true,
+                isLoadingMore = false,
+                errorMessage = null
+            )
+        }
+
+        allItems = persistentListOf()
+        nextPageUrl = null
+
+        repository.getHomeFeed()
+            .onSuccess { feed ->
+                allItems = allItems.addAll(feed.items)
+                nextPageUrl = feed.nextPageUrl
+                reduce {
+                    copy(
+                        isLoading = false,
+                        items = allItems,
+                        isLoadingMore = false,
+                        canLoadMore = !feed.nextPageUrl.isNullOrEmpty(),
+                        errorMessage = null
+                    )
+                }
+            }
+            .onFailure { error ->
+                reduce {
+                    copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        errorMessage = error.localizedMessage ?: "Unknown error"
+                    )
+                }
+            }
+    }
+
+    private suspend fun loadNextPage() {
+        val current = state.value
+        if (current.isLoading || current.isLoadingMore || !current.canLoadMore) return
+
+        val url = nextPageUrl ?: return
+
+        reduce {
+            copy(
+                isLoadingMore = true,
+                errorMessage = null
+            )
+        }
+
+        repository.getHomeFeed(url)
+            .onSuccess { feed ->
+                allItems = allItems.addAll(feed.items)
+                nextPageUrl = feed.nextPageUrl
+                reduce {
+                    copy(
+                        items = allItems,
+                        isLoadingMore = false,
+                        canLoadMore = !feed.nextPageUrl.isNullOrEmpty(),
+                        errorMessage = null
+                    )
+                }
+            }
+            .onFailure { error ->
+                reduce {
+                    copy(
+                        isLoadingMore = false,
+                        errorMessage = if (allItems.isEmpty()) {
+                            error.localizedMessage ?: "Unknown error"
+                        } else {
+                            errorMessage
+                        }
+                    )
+                }
+            }
+    }
 }

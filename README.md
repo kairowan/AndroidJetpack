@@ -1,13 +1,13 @@
 # KotlinMvvm（Compose 多模块版）
 
-一个基于 **Jetpack Compose + 模块化 + 协程 + Retrofit/OkHttp + StateFlow** 的开眼（Eyepetizer）客户端示例工程。
+一个基于 **Jetpack Compose + 模块化 + 协程 + Retrofit/OkHttp + UDF** 的开眼（Eyepetizer）客户端示例工程。
 
-> 说明：项目名历史上叫 `MVVM`，但当前 Compose 主链路已经按 **单向数据流（MVI 风格）** 组织（`UiState + ViewModel + Repository`）。
+> 说明：项目名历史上叫 `MVVM`，但当前 Compose 主链路已经按 **UDF（State + ViewModel 方法）** 组织。
 
 ## 项目现状（与代码一致）
 
 - UI：Jetpack Compose + Material3
-- 架构：MVI 风格 UDF（`UiState` + `StateFlow`）
+- 架构：UDF（`StateFlow<State>` + ViewModel methods + `reduce`）
 - 导航：`Navigation3`（`androidx.navigation3.runtime/ui`）
 - 图片加载：`Coil`
 - 播放器：`Media3 ExoPlayer`（含缓存、预加载、可插拔控制层）
@@ -21,7 +21,7 @@ app                 // 应用壳层、Navigation3 路由、主入口
 Lib_Network         // 网络基础能力（Retrofit/OkHttp/ApiService）
 core_model          // 领域模型（EyepetizerFeed / EyepetizerFeedItem）
 core_data           // 数据仓库层（EyepetizerRepository、BaseApiRepository）
-core_ui             // UI 基类与通用组件（BaseViewModel、PagedList、UiStateContainer）
+core_ui             // UI 基类与通用组件（BaseViewModel、PagedList）
 core_designsystem   // 主题与设计系统
 core_player         // Compose 播放器能力（Media3）
 feature_home        // 首页列表
@@ -33,8 +33,8 @@ feature_shorts      // 短视频流
 
 当前 Compose 页面统一采用：
 
-1. `Screen` 只负责渲染和交互分发  
-2. `ViewModel`（`BaseViewModel` / `BasePagedViewModel`）管理 `UiState`  
+1. `Screen` 只负责渲染和调用 `ViewModel` 方法  
+2. `ViewModel` 负责执行业务逻辑并 `reduce` 新 `State`  
 3. `Repository` 负责数据获取和映射  
 4. `ApiService` 由 `RetrofitClient` 提供  
 

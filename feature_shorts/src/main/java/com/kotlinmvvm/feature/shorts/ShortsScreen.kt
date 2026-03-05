@@ -35,7 +35,6 @@ import com.kotlinmvvm.core.player.ShortsOverlay
 import com.kotlinmvvm.core.player.rememberPlayer
 import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.ErrorContent
-import com.kotlinmvvm.core.ui.state.UiState
 import com.kotlinmvvm.core.ui.base.viewModelFactory
 
 /**
@@ -75,7 +74,7 @@ fun ShortsRoute(
     ),
     onFullscreenChanged: (Boolean) -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val player = rememberPlayer()
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
@@ -108,14 +107,18 @@ fun ShortsRoute(
     }
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
-        when (val state = uiState) {
-            is UiState.Loading -> LoadingContent()
-            is UiState.Error -> ErrorContent(
-                message = state.message,
-                onRetry = { viewModel.loadShorts() }
-            )
-            is UiState.Success -> {
-                val videos = state.data.items
+        when {
+            state.isLoading && state.items.isEmpty() -> LoadingContent()
+
+            state.errorMessage != null && state.items.isEmpty() -> {
+                ErrorContent(
+                    message = state.errorMessage ?: "Unknown error",
+                    onRetry = { viewModel.retry() }
+                )
+            }
+
+            else -> {
+                val videos = state.items
                 if (videos.isEmpty()) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("暂无视频", color = Color.White)
@@ -125,14 +128,14 @@ fun ShortsRoute(
                         items = videos.map { VideoItem(it) },
                         player = player,
                         onPageChanged = { page ->
-                            if (page >= videos.size - 3 && state.data.canLoadMore) {
+                            if (page >= videos.size - 3 && state.canLoadMore && !state.isLoadingMore) {
                                 viewModel.loadMore()
                             }
                         }
                     ) { item, isCurrent ->
                         ShortsOverlay(Modifier.align(Alignment.BottomCenter)) {
                             val video = item.video
-                            
+
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 AsyncImage(
                                     model = video.authorIcon,
@@ -149,18 +152,18 @@ fun ShortsRoute(
                                     color = Color.White
                                 )
                             }
-                            
+
                             Spacer(Modifier.height(12.dp))
-                            
+
                             Text(
                                 video.title,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.White,
                                 maxLines = 2
                             )
-                            
+
                             Spacer(Modifier.height(8.dp))
-                            
+
                             Text(
                                 "#${video.category}",
                                 style = MaterialTheme.typography.bodyMedium,

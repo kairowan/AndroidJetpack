@@ -14,6 +14,7 @@ core-ktx="1.13.1"
 appcompat="1.7.0-rc01"
 kotlinx-core="1.7.3"
 kotlinx-android="1.7.3"
+kotlinx-immutable="0.3.8"
 coordinatorlayout="1.2.0"
 constraintlayout="2.1.4"
 material="1.12.0"
@@ -63,6 +64,7 @@ lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-kt
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-core={ group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-core" }
 kotlinx-coroutines-android={ group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-android" }
+kotlinx-collections-immutable={ group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinx-immutable" }
 androidx-core-ktx={ group = "androidx.core", name = "core", version.ref = "core-ktx" }
 androidx-coordinatorlayout={ group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 androidx-constraintlayout={ group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
@@ -143,3 +145,4 @@ kotlinmvvm-android-application-compose = { id = "kotlinmvvm.android.application.
 kotlinmvvm-android-library = { id = "kotlinmvvm.android.library", version = "unspecified" }
 kotlinmvvm-android-library-compose = { id = "kotlinmvvm.android.library.compose", version = "unspecified" }
 kotlinmvvm-android-feature = { id = "kotlinmvvm.android.feature", version = "unspecified" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
