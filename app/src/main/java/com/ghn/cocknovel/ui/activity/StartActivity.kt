@@ -35,11 +35,6 @@ class StartActivity : BaseActivity<ActivityStartBinding, BookStoreViewModel>() {
         }
         mBinding.btSignIn.setOnClickListener {
             mViewModel.getMain("18507174506")
-//            if (!TextUtils.isEmpty(mBinding?.startEdtextName?.text.toString()) && !TextUtils.isEmpty(mBinding?.startEdtextPassword?.text.toString())){
-//
-//            }else{
-//                showMsg("账号密码不能为空")
-//            }
         }
     }
 

@@ -7,6 +7,7 @@ import com.ghn.eventmodule.EventChannel
 import com.ghn.commonmodule.ext.MVUtils
 import com.kt.NetworkModel.helper.NetConfigHelper
 import com.kt.network.net.ExceptionHandle
+import com.kt.network.net.NetServiceFactory
 import com.kt.network.net.RetrofitClient
 import com.tencent.mmkv.MMKV
 import android.util.Log
@@ -30,6 +31,7 @@ open class BaseApplication : MultiDexApplication() {
         this.initMMkv()
         // 初始化 handler头
         RetrofitClient.init(AppHeaderProvider())
+        NetServiceFactory.init(this)
         // 初始化 Toast 
         NetConfigHelper.init(NetworkCallbackImpl())
         EventChannel.setErrorHandler { t ->
