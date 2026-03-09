@@ -38,6 +38,8 @@ sealed class GlobalEvent {
 }
 
 open class BookStoreViewModel(application: Application) : BaseViewModel(application) {
+
+    private val loginService by  lazy { LoginService() }
     companion object {
         val TAG: String? = BookStoreViewModel::class.simpleName
         val mLogin = MutableLiveData<LoginBean>()
@@ -69,7 +71,7 @@ open class BookStoreViewModel(application: Application) : BaseViewModel(applicat
      */
     open fun getMain(phoneNumber: String) {
         launchOnlyresult({
-            LoginService.requestVerifyCode(phoneNumber)
+            loginService.requestVerifyCode(phoneNumber)
         }, {
             Log.i(TAG, "getMain: $it")
 //            if (it?.id != null) {
