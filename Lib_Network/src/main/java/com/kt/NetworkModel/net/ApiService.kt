@@ -12,7 +12,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Streaming
 import retrofit2.http.Url
-import com.kt.NetworkModel.bean.eyepetizer.EyepetizerHomeResponse
 
 /**
  * @author 浩楠
@@ -73,45 +72,4 @@ interface ApiService {
         @Header("Range") range: String
     ): Response
 
-    /**
-     * Eyepetizer 首页数据
-     */
-    @GET(ApiAddress.EYEPETIZER_HOME_SELECTED)
-    suspend fun getEyepetizerHome(): EyepetizerHomeResponse
-
-    /**
-     * Eyepetizer 加载更多
-     */
-    @GET
-    suspend fun getEyepetizerHomeMore(@Url nextPageUrl: String): EyepetizerHomeResponse
-
-    /**
-     * Eyepetizer 发现
-     */
-    @GET(ApiAddress.EYEPETIZER_DISCOVERY)
-    suspend fun getEyepetizerDiscovery(): EyepetizerHomeResponse
-
-    /**
-     * Eyepetizer 关注
-     */
-    @GET(ApiAddress.EYEPETIZER_FOLLOW)
-    suspend fun getEyepetizerFollow(): EyepetizerHomeResponse
-
-    /**
-     * Eyepetizer 发现-热门
-     */
-    @GET(ApiAddress.EYEPETIZER_DISCOVERY_HOT)
-    suspend fun getEyepetizerDiscoveryHot(): EyepetizerHomeResponse
-
-    /**
-     * Eyepetizer 发现-分类
-     */
-    @GET(ApiAddress.EYEPETIZER_DISCOVERY_CATEGORY)
-    suspend fun getEyepetizerDiscoveryCategory(): EyepetizerHomeResponse
-
-    /**
-     * Eyepetizer 发现-作者
-     */
-    @GET(ApiAddress.EYEPETIZER_PGCS_ALL)
-    suspend fun getEyepetizerPgcsAll(): EyepetizerHomeResponse
 }

@@ -10,8 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kotlinmvvm.core.ui.state.PagedData
-import com.kotlinmvvm.core.ui.state.UiState
+import com.kotlinmvvm.core.ui.model.PagedListBehavior
+import com.kotlinmvvm.core.ui.model.UiComponentDefaults
+import com.kotlinmvvm.core.state.PagedData
+import com.kotlinmvvm.core.state.UiState
 
 /**
  * @author 浩楠
@@ -43,6 +45,8 @@ fun LoadingContent(modifier: Modifier = Modifier) {
 fun ErrorContent(
     message: String,
     onRetry: () -> Unit,
+    title: String = UiComponentDefaults.feedbackCopy.errorTitle,
+    retryLabel: String = UiComponentDefaults.feedbackCopy.retryLabel,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -50,7 +54,7 @@ fun ErrorContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "加载失败",
+            text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.error
         )
@@ -62,7 +66,7 @@ fun ErrorContent(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetry) {
-            Text("重试")
+            Text(retryLabel)
         }
     }
 }
@@ -72,7 +76,7 @@ fun ErrorContent(
  */
 @Composable
 fun EmptyContent(
-    message: String = "暂无数据",
+    message: String = UiComponentDefaults.feedbackCopy.emptyMessage,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -104,7 +108,7 @@ fun LoadMoreIndicator(modifier: Modifier = Modifier) {
  */
 @Composable
 fun NoMoreContent(
-    text: String = "— 没有更多了 —",
+    text: String = UiComponentDefaults.feedbackCopy.noMoreMessage,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -153,6 +157,7 @@ fun <T> PagedList(
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
+    behavior: PagedListBehavior = UiComponentDefaults.pagedListBehavior,
     itemKey: ((T) -> Any)? = null,
     itemContent: @Composable (T) -> Unit
 ) {
@@ -161,7 +166,10 @@ fun <T> PagedList(
     val shouldLoadMore by remember {
         derivedStateOf {
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null && lastVisibleItem.index >= data.items.size - 3
+            behavior.shouldLoadMore(
+                lastVisibleIndex = lastVisibleItem?.index,
+                itemCount = data.items.size
+            )
         }
     }
 

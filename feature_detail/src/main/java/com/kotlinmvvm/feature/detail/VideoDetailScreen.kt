@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,16 +21,18 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import coil.compose.AsyncImage
+import com.kotlinmvvm.core.data.state.VideoDetailState
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
+import com.kotlinmvvm.core.model.categoryDurationLabel
 import com.kotlinmvvm.core.player.api.IPlayer
 import com.kotlinmvvm.core.player.api.PlayerState
 import com.kotlinmvvm.core.player.ext.collectState
+import com.kotlinmvvm.core.player.feature.ResumePlaybackFeature
 import com.kotlinmvvm.core.player.provider.rememberPlayer
 import com.kotlinmvvm.core.player.ui.FullscreenVideoPlayer
 import com.kotlinmvvm.core.player.ui.VideoPlayerView
 import com.kotlinmvvm.feature.detail.model.BrandedPlayerControlsConfig
-import com.kotlinmvvm.feature.detail.model.VideoFullscreenMode
-import com.kotlinmvvm.feature.detail.player.ResumePlaybackFeature
+import com.kotlinmvvm.feature.media.shared.VideoDetailPagePresenter
 
 /**
  * @author 浩楠
@@ -43,41 +44,44 @@ import com.kotlinmvvm.feature.detail.player.ResumePlaybackFeature
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: TODO
+ * @Description: 详情页播放器与详情信息展示界面
  */
 
 @Composable
 fun VideoDetailScreen(
     video: EyepetizerFeedItem.Video,
+    state: VideoDetailState,
     onBack: () -> Unit,
+    onEnterPortraitFullscreen: () -> Unit,
+    onEnterLandscapeFullscreen: () -> Unit,
+    onExitFullscreen: () -> Unit,
+    onSavePlaybackSnapshot: (positionMs: Long, isPlaying: Boolean, speed: Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val player = rememberPlayer()
     val playerState = player.collectState()
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
-    var fullscreenModeName by rememberSaveable { mutableStateOf(VideoFullscreenMode.NONE.name) }
-    val fullscreenMode = remember(fullscreenModeName) { VideoFullscreenMode.valueOf(fullscreenModeName) }
-    val isFullscreen = fullscreenMode != VideoFullscreenMode.NONE
-    val controlsConfig = remember {
-        BrandedPlayerControlsConfig(
-            autoHideMs = 2600L,
-            replayMs = 8_000L,
-            forwardMs = 12_000L
+    val latestState = rememberUpdatedState(state)
+    val latestSavePlaybackSnapshot = rememberUpdatedState(onSavePlaybackSnapshot)
+    val fullscreenMode = state.fullscreenMode
+    val isFullscreen = state.isFullscreen
+    val pageModel = remember(video, state) {
+        VideoDetailPagePresenter.present(
+            video = video,
+            state = state
         )
     }
-    var savedPositionMs by rememberSaveable(video.id) { mutableLongStateOf(0L) }
-    var savedIsPlaying by rememberSaveable(video.id) { mutableStateOf(true) }
-    var savedSpeed by rememberSaveable(video.id) { mutableFloatStateOf(1f) }
+    val controlsConfig = remember {
+        BrandedPlayerControlsConfig()
+    }
     val resumeFeature = remember(video.id) {
         ResumePlaybackFeature(
-            readPosition = { savedPositionMs },
-            readIsPlaying = { savedIsPlaying },
-            readSpeed = { savedSpeed },
+            readPosition = { latestState.value.playbackSnapshot.positionMs },
+            readIsPlaying = { latestState.value.playbackSnapshot.isPlaying },
+            readSpeed = { latestState.value.playbackSnapshot.speed },
             onSave = { positionMs, isPlaying, speed ->
-                savedPositionMs = positionMs
-                savedIsPlaying = isPlaying
-                savedSpeed = speed
+                latestSavePlaybackSnapshot.value(positionMs, isPlaying, speed)
             }
         )
     }
@@ -85,15 +89,7 @@ fun VideoDetailScreen(
 
     // 实时同步保存播放快照，避免横竖屏切换时因生命周期先后导致进度丢失。
     LaunchedEffect(checkpointSecond, playerState.isPlaying, playerState.speed) {
-        if (playerState.position > 0L) {
-            savedPositionMs = playerState.position
-        }
-        savedIsPlaying = playerState.isPlaying
-        savedSpeed = playerState.speed
-    }
-
-    fun updateFullscreenMode(mode: VideoFullscreenMode) {
-        fullscreenModeName = mode.name
+        onSavePlaybackSnapshot(playerState.position, playerState.isPlaying, playerState.speed)
     }
 
     LaunchedEffect(activity, fullscreenMode) {
@@ -102,20 +98,12 @@ fun VideoDetailScreen(
 
     DisposableEffect(activity) {
         onDispose {
-            activity?.applyVideoWindowMode(VideoFullscreenMode.NONE)
+            activity?.applyVideoWindowMode(VideoDetailState.FullscreenMode.NONE)
         }
     }
 
     BackHandler(enabled = isFullscreen) {
-        updateFullscreenMode(VideoFullscreenMode.NONE)
-    }
-
-    val handleBack = {
-        if (isFullscreen) {
-            updateFullscreenMode(VideoFullscreenMode.NONE)
-        } else {
-            onBack()
-        }
+        onBack()
     }
 
     val customControls: @Composable BoxScope.(IPlayer, PlayerState) -> Unit = { controlledPlayer, state ->
@@ -123,32 +111,32 @@ fun VideoDetailScreen(
             player = controlledPlayer,
             state = state,
             title = video.title,
-            onBack = handleBack,
+            onBack = onBack,
             isFullscreen = isFullscreen,
-            isLandscapeFullscreen = fullscreenMode == VideoFullscreenMode.LANDSCAPE,
-            onEnterPortraitFullscreen = { updateFullscreenMode(VideoFullscreenMode.PORTRAIT) },
-            onEnterLandscapeFullscreen = { updateFullscreenMode(VideoFullscreenMode.LANDSCAPE) },
-            onExitFullscreen = { updateFullscreenMode(VideoFullscreenMode.NONE) },
+            isLandscapeFullscreen = fullscreenMode == VideoDetailState.FullscreenMode.LANDSCAPE,
+            onEnterPortraitFullscreen = onEnterPortraitFullscreen,
+            onEnterLandscapeFullscreen = onEnterLandscapeFullscreen,
+            onExitFullscreen = onExitFullscreen,
             config = controlsConfig
         )
     }
 
     if (isFullscreen) {
         FullscreenVideoPlayer(
-            url = video.playUrl,
+            url = pageModel.playUrl,
             player = player,
-            title = video.title,
-            onBack = handleBack,
+            title = pageModel.title,
+            onBack = onBack,
             controlsContent = customControls,
             features = listOf(resumeFeature)
         )
     } else {
         Column(modifier = modifier.fillMaxSize()) {
             VideoPlayerView(
-                url = video.playUrl,
+                url = pageModel.playUrl,
                 player = player,
-                title = video.title,
-                onBack = handleBack,
+                title = pageModel.title,
+                onBack = onBack,
                 controlsContent = customControls,
                 features = listOf(resumeFeature)
             )
@@ -161,7 +149,7 @@ fun VideoDetailScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = video.title,
+                    text = pageModel.title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -169,7 +157,7 @@ fun VideoDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "#${video.category} · ${formatDuration(video.duration)}",
+                    text = pageModel.metadataLabel,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -178,24 +166,24 @@ fun VideoDetailScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
-                        model = video.authorIcon,
-                        contentDescription = video.authorName,
+                        model = pageModel.authorIcon,
+                        contentDescription = pageModel.authorName,
                         modifier = Modifier
                             .size(48.dp)
                             .background(Color.Gray, shape = MaterialTheme.shapes.small)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = video.authorName,
+                        text = pageModel.authorName,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
                 }
 
-                if (video.description.isNotEmpty()) {
+                if (pageModel.descriptionText.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = video.description,
+                        text = pageModel.descriptionText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -205,18 +193,18 @@ fun VideoDetailScreen(
     }
 }
 
-private fun Activity.applyVideoWindowMode(mode: VideoFullscreenMode) {
+private fun Activity.applyVideoWindowMode(mode: VideoDetailState.FullscreenMode) {
     val targetOrientation = when (mode) {
-        VideoFullscreenMode.NONE -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        VideoFullscreenMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        VideoFullscreenMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        VideoDetailState.FullscreenMode.NONE -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        VideoDetailState.FullscreenMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        VideoDetailState.FullscreenMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     }
     if (requestedOrientation != targetOrientation) {
         requestedOrientation = targetOrientation
     }
 
     val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-    if (mode == VideoFullscreenMode.NONE) {
+    if (mode == VideoDetailState.FullscreenMode.NONE) {
         insetsController.show(WindowInsetsCompat.Type.systemBars())
     } else {
         insetsController.systemBarsBehavior =
@@ -231,10 +219,4 @@ private tailrec fun Context.findActivity(): Activity? {
         is ContextWrapper -> baseContext.findActivity()
         else -> null
     }
-}
-
-private fun formatDuration(seconds: Int): String {
-    val m = seconds / 60
-    val s = seconds % 60
-    return "%d:%02d".format(m, s)
 }

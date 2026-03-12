@@ -34,12 +34,21 @@ include(":Lib_Network")
 
 // Core Modules
 include(":core_designsystem")
+include(":core_design_tokens")
 include(":core_ui")
+include(":core_ui_contract")
+include(":core_state")
+include(":core_legacy_network")
+include(":shared_ios")
 include(":core_model")
 include(":core_data")
+include(":core_navigation")
+include(":core_playback")
 include(":core_player")
 
 // Feature Modules
 include(":feature_home")
+include(":feature_home_shared")
+include(":feature_media_shared")
 include(":feature_detail")
 include(":feature_shorts")

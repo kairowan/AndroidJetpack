@@ -30,7 +30,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":Lib_Network"))
     implementation(project(":feature_home"))
     implementation(project(":feature_detail"))
     implementation(project(":feature_shorts"))
@@ -38,6 +37,7 @@ dependencies {
     implementation(project(":core_ui"))
     implementation(project(":core_data"))
     implementation(project(":core_model"))
+    implementation(project(":core_navigation"))
     
     implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
@@ -47,6 +47,8 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.apt)
+
+    testImplementation(libs.test.junit)
 }
 
 kapt {

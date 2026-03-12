@@ -38,11 +38,9 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -54,6 +52,8 @@ import com.kotlinmvvm.core.player.api.IPlayer
 import com.kotlinmvvm.core.player.api.PlayState
 import com.kotlinmvvm.core.player.api.PlayerState
 import com.kotlinmvvm.feature.detail.model.BrandedPlayerControlsConfig
+import com.kotlinmvvm.core.player.state.PlaybackSpeedStepper
+import com.kotlinmvvm.core.player.state.PlayerControlsStateHolder
 import kotlinx.coroutines.delay
 
 @Composable
@@ -71,13 +71,23 @@ fun BrandedPlayerControls(
     config: BrandedPlayerControlsConfig = BrandedPlayerControlsConfig(),
     endActions: @Composable RowScope.() -> Unit = {}
 ) {
-    var visible by remember { mutableStateOf(true) }
-    var interactionTick by remember { mutableLongStateOf(0L) }
+    val behavior = config.controlsConfig
+    val controlsStateHolder = remember { PlayerControlsStateHolder() }
+    val controlsState by controlsStateHolder.state.collectAsState()
 
-    LaunchedEffect(interactionTick, state.isPlaying, config.autoHideMs) {
-        if (state.isPlaying && visible) {
-            delay(config.autoHideMs)
-            visible = false
+    LaunchedEffect(state.isPlaying) {
+        controlsStateHolder.onPlaybackChanged(state.isPlaying)
+    }
+
+    LaunchedEffect(
+        controlsState.interactionVersion,
+        controlsState.isVisible,
+        state.isPlaying,
+        behavior.autoHideMs
+    ) {
+        if (PlayerControlsStateHolder.shouldAutoHide(state.isPlaying, behavior, controlsState)) {
+            delay(behavior.autoHideMs)
+            controlsStateHolder.hideControls()
         }
     }
 
@@ -88,8 +98,7 @@ fun BrandedPlayerControls(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
-                visible = !visible
-                interactionTick = System.currentTimeMillis()
+                controlsStateHolder.onSurfaceTap()
             }
     ) {
         if (state.playState == PlayState.Buffering) {
@@ -100,7 +109,7 @@ fun BrandedPlayerControls(
         }
 
         AnimatedVisibility(
-            visible = visible,
+            visible = controlsState.isVisible,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -121,16 +130,16 @@ fun BrandedPlayerControls(
                     state = state,
                     accentColor = config.accentColor,
                     onReplay = {
-                        player.rewind(config.replayMs)
-                        interactionTick = System.currentTimeMillis()
+                        player.rewind(behavior.rewindMs)
+                        controlsStateHolder.markInteraction()
                     },
                     onToggle = {
                         player.toggle()
-                        interactionTick = System.currentTimeMillis()
+                        controlsStateHolder.markInteraction()
                     },
                     onForward = {
-                        player.forward(config.forwardMs)
-                        interactionTick = System.currentTimeMillis()
+                        player.forward(behavior.forwardMs)
+                        controlsStateHolder.markInteraction()
                     },
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -140,13 +149,13 @@ fun BrandedPlayerControls(
                     accentColor = config.accentColor,
                     onSeek = {
                         player.seekTo(it)
-                        interactionTick = System.currentTimeMillis()
+                        controlsStateHolder.markInteraction()
                     },
-                    showSpeedControl = config.showSpeedControl,
-                    speedOptions = config.speedOptions,
+                    showSpeedControl = behavior.showSpeedControl,
+                    speedOptions = behavior.speedOptions,
                     onNextSpeed = {
-                        player.setSpeed(nextSpeed(state.speed, config.speedOptions))
-                        interactionTick = System.currentTimeMillis()
+                        player.setSpeed(PlaybackSpeedStepper.nextSpeed(state.speed, behavior.speedOptions))
+                        controlsStateHolder.markInteraction()
                     },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
@@ -420,10 +429,4 @@ private fun MiniIconButton(
             tint = Color.White
         )
     }
-}
-
-private fun nextSpeed(current: Float, candidates: List<Float>): Float {
-    if (candidates.isEmpty()) return current
-    val index = candidates.indexOfFirst { value -> value >= current }.coerceAtLeast(0)
-    return if (index == candidates.lastIndex) candidates.first() else candidates[index + 1]
 }

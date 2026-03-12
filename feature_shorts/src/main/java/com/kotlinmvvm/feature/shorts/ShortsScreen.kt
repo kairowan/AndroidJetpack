@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,17 +28,17 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kotlinmvvm.core.data.state.ShortsPlaybackState
 import coil.compose.AsyncImage
 import com.kotlinmvvm.core.data.repository.EyepetizerRepository
-import com.kotlinmvvm.core.model.EyepetizerFeedItem
+import com.kotlinmvvm.core.data.repository.EyepetizerRepositoryFactory
 import com.kotlinmvvm.core.player.provider.rememberPlayer
 import com.kotlinmvvm.core.player.ui.ShortsOverlay
 import com.kotlinmvvm.core.player.ui.ShortsPager
 import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.ErrorContent
 import com.kotlinmvvm.core.ui.base.viewModelFactory
-import com.kotlinmvvm.feature.shorts.model.ShortsFullscreenMode
-import com.kotlinmvvm.feature.shorts.model.VideoItem
+import com.kotlinmvvm.feature.media.shared.ShortsPagePresenter
 
 /**
  * @author 浩楠
@@ -51,7 +50,7 @@ import com.kotlinmvvm.feature.shorts.model.VideoItem
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: TODO
+ * @Description: Shorts 短视频流页面
  */
 
 @Composable
@@ -59,31 +58,33 @@ fun ShortsRoute(
     modifier: Modifier = Modifier,
     isActive: Boolean = true,
     deactivateSignal: Int = 0,
+    repository: EyepetizerRepository? = null,
     providedViewModel: ShortsViewModel? = null,
     onFullscreenChanged: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
     val owner = remember(context) { context.findViewModelStoreOwner() }
-    val repository = remember { EyepetizerRepository() }
+    val routeRepository = repository ?: remember { EyepetizerRepositoryFactory.create() }
     val viewModel = providedViewModel ?: viewModel(
         viewModelStoreOwner = owner ?: checkNotNull(LocalViewModelStoreOwner.current),
         key = "shorts_root_view_model",
         factory = viewModelFactory {
-            ShortsViewModel(repository)
+            ShortsViewModel(routeRepository)
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val player = rememberPlayer()
-    var fullscreenModeName by rememberSaveable { mutableStateOf(ShortsFullscreenMode.NONE.name) }
-    var savedPageIndex by rememberSaveable { mutableIntStateOf(0) }
-    val fullscreenMode = remember(fullscreenModeName) { ShortsFullscreenMode.valueOf(fullscreenModeName) }
-    val isFullscreen = fullscreenMode != ShortsFullscreenMode.NONE
-    val onFullscreenChangedState by rememberUpdatedState(onFullscreenChanged)
-
-    fun updateFullscreenMode(mode: ShortsFullscreenMode) {
-        fullscreenModeName = mode.name
+    val playbackState by viewModel.playbackState.collectAsStateWithLifecycle()
+    val pageModel = remember(state, playbackState) {
+        ShortsPagePresenter.present(
+            state = state,
+            playbackState = playbackState
+        )
     }
+    val player = rememberPlayer()
+    val fullscreenMode = playbackState.fullscreenMode
+    val isFullscreen = playbackState.isFullscreen
+    val onFullscreenChangedState by rememberUpdatedState(onFullscreenChanged)
 
     LaunchedEffect(activity, fullscreenMode) {
         activity?.applyVideoWindowMode(fullscreenMode)
@@ -95,23 +96,23 @@ fun ShortsRoute(
 
     LaunchedEffect(isActive) {
         if (!isActive) {
-            updateFullscreenMode(ShortsFullscreenMode.NONE)
+            viewModel.exitFullscreen()
             player.pause()
             player.stop()
             player.clearVideoOutput()
             onFullscreenChangedState(false)
-            activity?.applyVideoWindowMode(ShortsFullscreenMode.NONE)
+            activity?.applyVideoWindowMode(ShortsPlaybackState.FullscreenMode.NONE)
         }
     }
 
     LaunchedEffect(deactivateSignal) {
         if (deactivateSignal > 0) {
-            updateFullscreenMode(ShortsFullscreenMode.NONE)
+            viewModel.exitFullscreen()
             player.pause()
             player.stop()
             player.clearVideoOutput()
             onFullscreenChangedState(false)
-            activity?.applyVideoWindowMode(ShortsFullscreenMode.NONE)
+            activity?.applyVideoWindowMode(ShortsPlaybackState.FullscreenMode.NONE)
         }
     }
 
@@ -121,12 +122,12 @@ fun ShortsRoute(
             player.stop()
             player.clearVideoOutput()
             onFullscreenChangedState(false)
-            activity?.applyVideoWindowMode(ShortsFullscreenMode.NONE)
+            activity?.applyVideoWindowMode(ShortsPlaybackState.FullscreenMode.NONE)
         }
     }
 
     BackHandler(enabled = isFullscreen) {
-        updateFullscreenMode(ShortsFullscreenMode.NONE)
+        viewModel.exitFullscreen()
     }
 
     Box(
@@ -137,27 +138,27 @@ fun ShortsRoute(
         if (!isActive) return@Box
 
         when {
-            state.isLoading && state.items.isEmpty() -> LoadingContent()
+            pageModel.isLoading && pageModel.videos.isEmpty() -> LoadingContent()
 
-            state.errorMessage != null && state.items.isEmpty() -> {
+            pageModel.errorMessage != null && pageModel.videos.isEmpty() -> {
                 ErrorContent(
-                    message = state.errorMessage ?: "Unknown error",
+                    message = pageModel.errorMessage ?: "Unknown error",
                     onRetry = { viewModel.retry() }
                 )
             }
 
             else -> {
-                val videos = state.items
+                val videos = pageModel.videos
                 if (videos.isEmpty()) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("暂无视频", color = Color.White)
+                        Text(pageModel.emptyMessage, color = Color.White)
                     }
                 } else {
-                    val restoredPage = savedPageIndex.coerceIn(0, videos.lastIndex.coerceAtLeast(0))
+                    val restoredPage = pageModel.currentPage
 
                     LaunchedEffect(restoredPage) {
-                        if (restoredPage != savedPageIndex) {
-                            savedPageIndex = restoredPage
+                        if (restoredPage != playbackState.currentPage) {
+                            viewModel.updateCurrentPage(restoredPage)
                         }
                     }
 
@@ -167,22 +168,22 @@ fun ShortsRoute(
                     )
 
                     LaunchedEffect(pagerState.currentPage) {
-                        savedPageIndex = pagerState.currentPage
+                        viewModel.updateCurrentPage(pagerState.currentPage)
                     }
 
                     ShortsPager(
-                        items = videos.map { VideoItem(it) },
+                        items = videos,
                         pagerState = pagerState,
                         player = player,
+                        itemKey = { it.id },
+                        videoUrlOf = { it.playUrl },
                         onPageChanged = { page ->
-                            if (page >= videos.size - 3 && state.canLoadMore && !state.isLoadingMore) {
+                            if (page >= videos.size - 3 && pageModel.canLoadMore && !pageModel.isLoadingMore) {
                                 viewModel.loadMore()
                             }
                         }
-                    ) { item, isCurrent ->
+                    ) { video, isCurrent ->
                         ShortsOverlay(Modifier.align(Alignment.BottomCenter)) {
-                            val video = item.video
-
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 AsyncImage(
                                     model = video.authorIcon,
@@ -193,7 +194,7 @@ fun ShortsRoute(
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Text(
-                                    "@${video.authorName}",
+                                    video.authorHandle,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -212,7 +213,7 @@ fun ShortsRoute(
                             Spacer(Modifier.height(8.dp))
 
                             Text(
-                                "#${video.category}",
+                                video.categoryTag,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White.copy(0.7f)
                             )
@@ -226,32 +227,24 @@ fun ShortsRoute(
                                     if (!isFullscreen) {
                                         ShortsControlIconButton(
                                             icon = Icons.Default.Fullscreen,
-                                            contentDescription = "竖屏全屏",
-                                            onClick = { updateFullscreenMode(ShortsFullscreenMode.PORTRAIT) }
+                                            contentDescription = pageModel.controlsCopy.enterPortraitFullscreenLabel,
+                                            onClick = viewModel::enterPortraitFullscreen
                                         )
                                         ShortsControlIconButton(
                                             icon = Icons.Default.ScreenRotation,
-                                            contentDescription = "横屏全屏",
-                                            onClick = { updateFullscreenMode(ShortsFullscreenMode.LANDSCAPE) }
+                                            contentDescription = pageModel.controlsCopy.enterLandscapeFullscreenLabel,
+                                            onClick = viewModel::enterLandscapeFullscreen
                                         )
                                     } else {
                                         ShortsControlIconButton(
                                             icon = Icons.Default.ScreenRotation,
-                                            contentDescription = if (fullscreenMode == ShortsFullscreenMode.LANDSCAPE) "切换竖屏" else "切换横屏",
-                                            onClick = {
-                                                updateFullscreenMode(
-                                                    if (fullscreenMode == ShortsFullscreenMode.LANDSCAPE) {
-                                                        ShortsFullscreenMode.PORTRAIT
-                                                    } else {
-                                                        ShortsFullscreenMode.LANDSCAPE
-                                                    }
-                                                )
-                                            }
+                                            contentDescription = pageModel.controlsCopy.toggleOrientationLabel,
+                                            onClick = viewModel::toggleFullscreenOrientation
                                         )
                                         ShortsControlIconButton(
                                             icon = Icons.Default.FullscreenExit,
-                                            contentDescription = "退出全屏",
-                                            onClick = { updateFullscreenMode(ShortsFullscreenMode.NONE) }
+                                            contentDescription = pageModel.controlsCopy.exitFullscreenLabel,
+                                            onClick = viewModel::exitFullscreen
                                         )
                                     }
                                 }
@@ -284,18 +277,18 @@ private fun ShortsControlIconButton(
     }
 }
 
-private fun Activity.applyVideoWindowMode(mode: ShortsFullscreenMode) {
+private fun Activity.applyVideoWindowMode(mode: ShortsPlaybackState.FullscreenMode) {
     val targetOrientation = when (mode) {
-        ShortsFullscreenMode.NONE -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        ShortsFullscreenMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        ShortsFullscreenMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        ShortsPlaybackState.FullscreenMode.NONE -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        ShortsPlaybackState.FullscreenMode.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        ShortsPlaybackState.FullscreenMode.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     }
     if (requestedOrientation != targetOrientation) {
         requestedOrientation = targetOrientation
     }
 
     val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-    if (mode == ShortsFullscreenMode.NONE) {
+    if (mode == ShortsPlaybackState.FullscreenMode.NONE) {
         insetsController.show(WindowInsetsCompat.Type.systemBars())
     } else {
         insetsController.systemBarsBehavior =

@@ -11,8 +11,7 @@ import androidx.media3.datasource.cache.CacheWriter
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import com.kotlinmvvm.core.player.defaults.PlayerDefaults
-import com.kotlinmvvm.core.player.defaults.VIDEO_CACHE_DIR
-import com.kotlinmvvm.core.player.defaults.VIDEO_CACHE_MAX_BYTES
+import com.kotlinmvvm.core.player.defaults.VideoCacheDefaults
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 internal class VideoCacheStore(
     private val appContext: Context,
-    private val maxBytes: Long = VIDEO_CACHE_MAX_BYTES
+    private val maxBytes: Long = VideoCacheDefaults.MAX_BYTES
 ) {
     private var simpleCache: SimpleCache? = null
     private val cacheLock = Any()
@@ -92,7 +91,7 @@ internal class VideoCacheStore(
         simpleCache?.let { return it }
         return synchronized(cacheLock) {
             simpleCache ?: run {
-                val cacheDir = File(appContext.cacheDir, VIDEO_CACHE_DIR)
+                val cacheDir = File(appContext.cacheDir, VideoCacheDefaults.DIRECTORY)
                 SimpleCache(
                     cacheDir,
                     LeastRecentlyUsedCacheEvictor(maxBytes),

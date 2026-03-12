@@ -19,58 +19,35 @@ import androidx.compose.ui.unit.sp
  * @Description: TODO
  */
 
-val Typography = Typography(
-    displayLarge = TextStyle(
+private fun AppTextStyleTokens.toComposeTextStyle(): TextStyle {
+    return TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 57.sp,
-        lineHeight = 64.sp,
-        letterSpacing = (-0.25).sp
-    ),
-    headlineLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 32.sp,
-        lineHeight = 40.sp
-    ),
-    headlineMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 28.sp,
-        lineHeight = 36.sp
-    ),
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
-        lineHeight = 28.sp
-    ),
-    titleMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.15.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
-    ),
-    labelLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
+        fontWeight = fontWeight.toComposeFontWeight(),
+        fontSize = fontSizeSp.sp,
+        lineHeight = lineHeightSp.sp,
+        letterSpacing = letterSpacingSp.sp
     )
+}
+
+private fun Int.toComposeFontWeight(): FontWeight {
+    return when (this) {
+        700 -> FontWeight.Bold
+        500 -> FontWeight.Medium
+        else -> FontWeight.Normal
+    }
+}
+
+private val TypographyTokens = AppThemeTokens.typography
+
+val Typography = Typography(
+    displayLarge = TypographyTokens.displayLarge.toComposeTextStyle(),
+    headlineLarge = TypographyTokens.headlineLarge.toComposeTextStyle(),
+    headlineMedium = TypographyTokens.headlineMedium.toComposeTextStyle(),
+    titleLarge = TypographyTokens.titleLarge.toComposeTextStyle(),
+    titleMedium = TypographyTokens.titleMedium.toComposeTextStyle(),
+    titleSmall = TypographyTokens.titleSmall.toComposeTextStyle(),
+    bodyLarge = TypographyTokens.bodyLarge.toComposeTextStyle(),
+    bodyMedium = TypographyTokens.bodyMedium.toComposeTextStyle(),
+    bodySmall = TypographyTokens.bodySmall.toComposeTextStyle(),
+    labelLarge = TypographyTokens.labelLarge.toComposeTextStyle()
 )

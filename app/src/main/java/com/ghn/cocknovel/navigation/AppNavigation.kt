@@ -1,25 +1,27 @@
 package com.ghn.cocknovel.navigation
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.kotlinmvvm.core.model.EyepetizerFeedItem
-import com.kotlinmvvm.feature.detail.VideoDetailScreen
+import com.kotlinmvvm.core.data.repository.EyepetizerRepository
+import com.kotlinmvvm.core.navigation.AppNavigationState
+import com.kotlinmvvm.core.navigation.AppRoute
+import com.kotlinmvvm.core.navigation.AppShellState
+import com.kotlinmvvm.feature.detail.VideoDetailRoute
 import com.kotlinmvvm.feature.home.HomeRoute
 import com.kotlinmvvm.feature.shorts.ShortsRoute
-import kotlinx.serialization.Serializable
 
 /**
  * @author 浩楠
@@ -31,74 +33,66 @@ import kotlinx.serialization.Serializable
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: TODO
+ * @Description: App 壳层导航，负责 Home/Shorts/Detail 的编排
  */
 
-@Serializable
-private sealed interface AppDestination : NavKey {
-    @Serializable
-    data object Home : AppDestination
-    @Serializable
-    data object Shorts : AppDestination
-    @Serializable
-    data class Detail(
-        val videoId: Int,
-        val title: String,
-        val description: String,
-        val coverUrl: String,
-        val playUrl: String,
-        val category: String,
-        val authorName: String,
-        val authorIcon: String,
-        val duration: Int
-    ) : AppDestination
-}
-
 private sealed class BottomNavItem(
-    val destination: AppDestination,
+    val topLevelRoute: AppRoute.TopLevel,
     val icon: ImageVector,
     val label: String
 ) {
-    data object Home : BottomNavItem(AppDestination.Home, Icons.Default.Home, "首页")
-    data object Shorts : BottomNavItem(AppDestination.Shorts, Icons.Default.PlayArrow, "短视频")
+    data object Home : BottomNavItem(AppRoute.TopLevel.HOME, Icons.Default.Home, "首页")
+    data object Shorts : BottomNavItem(AppRoute.TopLevel.SHORTS, Icons.Default.PlayArrow, "短视频")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
+    repository: EyepetizerRepository,
     modifier: Modifier = Modifier
 ) {
     val navItems = listOf(BottomNavItem.Home, BottomNavItem.Shorts)
     val backStack = rememberNavBackStack(AppDestination.Home)
-    val currentDestination = backStack.lastOrNull()
-    var shortsFullscreen by remember { mutableStateOf(false) }
-    var shortsDeactivateSignal by remember { mutableIntStateOf(0) }
-    val navContentBackground = when (currentDestination) {
-        is AppDestination.Shorts, is AppDestination.Detail -> Color.Black
-        else -> MaterialTheme.colorScheme.background
+    var shellState by rememberSaveable(stateSaver = AppShellStateSaver.Saver) {
+        mutableStateOf(AppShellState())
+    }
+    val navigationState = AppNavigationState.fromBackStack(
+        backStack = backStack.mapNotNull { (it as? AppDestination)?.toAppRoute() },
+        shellState = shellState
+    )
+    val currentRoute = navigationState.currentRoute
+
+    LaunchedEffect(currentRoute) {
+        shellState = shellState.onDestinationChanged(currentRoute)
     }
 
-    val showBottomBar = currentDestination is AppDestination.Home ||
-            (currentDestination is AppDestination.Shorts && !shortsFullscreen)
+    val navContentBackground = if (navigationState.usesDarkNavigationChrome()) {
+        Color.Black
+    } else {
+        MaterialTheme.colorScheme.background
+    }
+    val showBottomBar = navigationState.shouldShowBottomBar()
 
-    fun navigateToTopLevel(destination: AppDestination) {
-        if (currentDestination == destination) return
-        if (currentDestination is AppDestination.Shorts && destination !is AppDestination.Shorts) {
-            shortsDeactivateSignal += 1
-            shortsFullscreen = false
-        }
-        while (backStack.size > 1) {
+    fun syncBackStack(routes: List<AppRoute>) {
+        while (backStack.isNotEmpty()) {
             backStack.removeAt(backStack.lastIndex)
         }
-        if (backStack.lastOrNull() != destination) {
-            backStack.add(destination)
+        routes.forEach { route ->
+            backStack.add(route.toDestination())
         }
+    }
+
+    fun applyNavigationState(updatedState: AppNavigationState) {
+        shellState = updatedState.shellState
+        syncBackStack(updatedState.backStack)
+    }
+
+    fun navigateToTopLevel(route: AppRoute.TopLevel) {
+        applyNavigationState(navigationState.navigateToTopLevel(route))
     }
 
     fun popDestination() {
-        if (backStack.size > 1) {
-            backStack.removeAt(backStack.lastIndex)
-        }
+        applyNavigationState(navigationState.pop())
     }
 
     Scaffold(
@@ -113,8 +107,8 @@ fun AppNavHost(
                         NavigationBarItem(
                             icon = { Icon(item.icon, contentDescription = item.label) },
                             label = { Text(item.label) },
-                            selected = currentDestination == item.destination,
-                            onClick = { navigateToTopLevel(item.destination) },
+                            selected = currentRoute.topLevelRoute == item.topLevelRoute,
+                            onClick = { navigateToTopLevel(item.topLevelRoute) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.White,
                                 selectedTextColor = Color.Black,
@@ -142,58 +136,35 @@ fun AppNavHost(
                 }
             ) {
                 entry<AppDestination.Home> {
-                    shortsFullscreen = false
                     HomeRoute(
+                        repository = repository,
                         onVideoClick = { video ->
-                            backStack.add(video.toDetailDestination())
+                            applyNavigationState(navigationState.openDetail(video))
                         }
                     )
                 }
                 entry<AppDestination.Shorts> {
                     ShortsRoute(
-                        isActive = currentDestination is AppDestination.Shorts,
-                        deactivateSignal = shortsDeactivateSignal,
+                        isActive = currentRoute is AppRoute.Shorts,
+                        deactivateSignal = navigationState.shortsDeactivateSignal,
+                        repository = repository,
                         onFullscreenChanged = { isFullscreen ->
-                            shortsFullscreen = isFullscreen
+                            shellState = navigationState.onShortsFullscreenChanged(isFullscreen).shellState
                         }
                     )
                 }
                 entry<AppDestination.Detail> { destination ->
-                    shortsFullscreen = false
-                    VideoDetailScreen(
-                        video = destination.toVideo(),
-                        onBack = { popDestination() }
-                    )
+                    val detailRoute = destination.toAppRoute() as? AppRoute.Detail
+                    if (detailRoute == null) {
+                        Text("Invalid detail destination")
+                    } else {
+                        VideoDetailRoute(
+                            video = detailRoute.video,
+                            onBack = { popDestination() }
+                        )
+                    }
                 }
             }
         )
     }
-}
-
-private fun EyepetizerFeedItem.Video.toDetailDestination(): AppDestination.Detail {
-    return AppDestination.Detail(
-        videoId = id,
-        title = title,
-        description = description,
-        coverUrl = coverUrl,
-        playUrl = playUrl,
-        category = category,
-        authorName = authorName,
-        authorIcon = authorIcon,
-        duration = duration
-    )
-}
-
-private fun AppDestination.Detail.toVideo(): EyepetizerFeedItem.Video {
-    return EyepetizerFeedItem.Video(
-        id = videoId,
-        title = title,
-        description = description,
-        coverUrl = coverUrl,
-        playUrl = playUrl,
-        category = category,
-        authorName = authorName,
-        authorIcon = authorIcon,
-        duration = duration
-    )
 }

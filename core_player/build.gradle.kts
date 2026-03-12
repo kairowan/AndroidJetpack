@@ -8,6 +8,7 @@ android {
 
 dependencies {
     implementation(project(":core_designsystem"))
+    api(project(":core_playback"))
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
     implementation(libs.media3.datasource)

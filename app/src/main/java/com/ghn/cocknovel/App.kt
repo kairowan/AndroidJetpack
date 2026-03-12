@@ -5,6 +5,8 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Process
+import com.kotlinmvvm.core.data.di.AppContainer
+import com.kotlinmvvm.core.data.network.NetworkRuntime
 
 /**
  * @author 浩楠
@@ -20,11 +22,14 @@ import android.os.Process
  */
 
 class App : Application() {
+    val appContainer: AppContainer by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        AppContainer()
+    }
+
     override fun onCreate() {
         super.onCreate()
         if (isMainProcess()) {
-            instance = this
-            com.kt.network.net.RetrofitClient.getInstance(this)
+            NetworkRuntime.initialize(this)
         }
     }
 
@@ -34,11 +39,5 @@ class App : Application() {
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val processName = activityManager.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName
         return processName == packageName
-    }
-
-    companion object {
-        private lateinit var instance: App
-        fun get(): App = instance
-        fun context(): Context = instance.applicationContext
     }
 }

@@ -1,129 +1,72 @@
 package com.kotlinmvvm.feature.shorts
 
-import com.kotlinmvvm.core.data.repository.EyepetizerRepository
-import com.kotlinmvvm.core.model.EyepetizerFeedItem
-import com.kotlinmvvm.core.ui.base.BaseViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
+import com.kotlinmvvm.core.data.repository.EyepetizerRepository
+import com.kotlinmvvm.core.data.state.ShortsFeedStateHolder
+import com.kotlinmvvm.core.data.state.ShortsPlaybackStateHolder
 
+/**
+ * @author 浩楠
+ *
+ * @date 2026-3-9
+ *
+ *      _              _           _     _   ____  _             _ _
+ *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
+ *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
+ *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
+ *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
+ * @Description: Shorts Android 状态包装 ViewModel
+ */
 class ShortsViewModel(
     private val repository: EyepetizerRepository
-) : BaseViewModel<ShortsState>(ShortsState()) {
+) : ViewModel() {
+    private val stateHolder = ShortsFeedStateHolder(
+        scope = viewModelScope,
+        repository = repository
+    )
+    private val playbackStateHolder = ShortsPlaybackStateHolder()
 
-    private var allItems: PersistentList<EyepetizerFeedItem.Video> = persistentListOf()
-    private var nextPageUrl: String? = null
-    private val requestMutex = Mutex()
+    val state = stateHolder.state
+    val playbackState = playbackStateHolder.state
 
     init {
-        loadInitial()
+        stateHolder.loadInitial()
     }
 
     fun loadInitial() {
-        launchRequest { loadFirstPage() }
+        stateHolder.loadInitial()
     }
 
-    fun refresh() = loadInitial()
+    fun refresh() {
+        stateHolder.refresh()
+    }
 
-    fun retry() = loadInitial()
+    fun retry() {
+        stateHolder.retry()
+    }
 
     fun loadMore() {
-        launchRequest { loadNextPage() }
+        stateHolder.loadMore()
     }
 
-    private fun launchRequest(block: suspend () -> Unit) {
-        viewModelScope.launch {
-            if (!requestMutex.tryLock()) return@launch
-            try {
-                block()
-            } finally {
-                requestMutex.unlock()
-            }
-        }
+    fun updateCurrentPage(page: Int) {
+        playbackStateHolder.updateCurrentPage(page)
     }
 
-    private suspend fun loadFirstPage() {
-        reduce {
-            copy(
-                isLoading = true,
-                isLoadingMore = false,
-                errorMessage = null
-            )
-        }
-
-        allItems = persistentListOf()
-        nextPageUrl = null
-
-        repository.getHomeFeed()
-            .map { feed ->
-                feed.items.filterIsInstance<EyepetizerFeedItem.Video>() to feed.nextPageUrl
-            }
-            .onSuccess { (videos, nextUrl) ->
-                allItems = allItems.addAll(videos)
-                nextPageUrl = nextUrl
-                reduce {
-                    copy(
-                        isLoading = false,
-                        items = allItems,
-                        isLoadingMore = false,
-                        canLoadMore = !nextUrl.isNullOrEmpty(),
-                        errorMessage = null
-                    )
-                }
-            }
-            .onFailure { error ->
-                reduce {
-                    copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        errorMessage = error.localizedMessage ?: "Unknown error"
-                    )
-                }
-            }
+    fun enterPortraitFullscreen() {
+        playbackStateHolder.enterPortraitFullscreen()
     }
 
-    private suspend fun loadNextPage() {
-        val current = state.value
-        if (current.isLoading || current.isLoadingMore || !current.canLoadMore) return
+    fun enterLandscapeFullscreen() {
+        playbackStateHolder.enterLandscapeFullscreen()
+    }
 
-        val url = nextPageUrl ?: return
+    fun toggleFullscreenOrientation() {
+        playbackStateHolder.toggleFullscreenOrientation()
+    }
 
-        reduce {
-            copy(
-                isLoadingMore = true,
-                errorMessage = null
-            )
-        }
-
-        repository.getHomeFeed(url)
-            .map { feed ->
-                feed.items.filterIsInstance<EyepetizerFeedItem.Video>() to feed.nextPageUrl
-            }
-            .onSuccess { (videos, nextUrl) ->
-                allItems = allItems.addAll(videos)
-                nextPageUrl = nextUrl
-                reduce {
-                    copy(
-                        items = allItems,
-                        isLoadingMore = false,
-                        canLoadMore = !nextUrl.isNullOrEmpty(),
-                        errorMessage = null
-                    )
-                }
-            }
-            .onFailure { error ->
-                reduce {
-                    copy(
-                        isLoadingMore = false,
-                        errorMessage = if (allItems.isEmpty()) {
-                            error.localizedMessage ?: "Unknown error"
-                        } else {
-                            errorMessage
-                        }
-                    )
-                }
-            }
+    fun exitFullscreen() {
+        playbackStateHolder.exitFullscreen()
     }
 }

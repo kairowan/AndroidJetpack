@@ -22,6 +22,7 @@ android {
 }
 
 dependencies {
+    api(project(":core_legacy_network"))
     api(libs.okhttp.okhttp4.logging)
     api(libs.okhttp.okhttp4)
     api(libs.retrofit.retrofit2)

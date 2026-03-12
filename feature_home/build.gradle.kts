@@ -9,4 +9,5 @@ android {
 dependencies {
     api(project(":core_model"))
     api(project(":core_data"))
+    implementation(project(":feature_home_shared"))
 }

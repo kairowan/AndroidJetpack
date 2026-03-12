@@ -9,22 +9,7 @@ import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
-import com.kotlinmvvm.core.player.api.IPlayer
 import com.kotlinmvvm.core.player.defaults.PlayerControlsDefaults
-import com.kotlinmvvm.core.player.defaults.PlayerDefaults
-
-/**
- * 控制层行为配置。
- */
-data class PlayerControlsConfig(
-    val autoHideMs: Long = PlayerControlsDefaults.AUTO_HIDE_MS,
-    val enableAutoHide: Boolean = true,
-    val rewindMs: Long = PlayerDefaults.SEEK_INTERVAL_MS,
-    val forwardMs: Long = PlayerDefaults.SEEK_INTERVAL_MS,
-    val showTopBar: Boolean = true,
-    val showCenterControls: Boolean = true,
-    val showBottomBar: Boolean = true
-)
 
 /**
  * 控制层视觉样式。
@@ -52,14 +37,4 @@ data class PlayerControlsIcons(
     val play: ImageVector = Icons.Default.PlayArrow,
     val pause: ImageVector = Icons.Default.Pause,
     val forward: ImageVector = Icons.Default.Forward10
-)
-
-/**
- * 控制层操作回调。
- */
-data class PlayerControlActions(
-    val onRewind: (IPlayer, Long) -> Unit = { player, ms -> player.rewind(ms) },
-    val onToggle: (IPlayer) -> Unit = { player -> player.toggle() },
-    val onForward: (IPlayer, Long) -> Unit = { player, ms -> player.forward(ms) },
-    val onSeekProgress: (IPlayer, Float) -> Unit = { player, progress -> player.seekTo(progress) }
 )

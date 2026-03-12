@@ -8,9 +8,10 @@ android {
 
 dependencies {
     api(project(":core_designsystem"))
+    api(project(":core_ui_contract"))
+    api(project(":core_state"))
     api(libs.kotlinx.collections.immutable)
-    
-    // ViewModel
+
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.kotlinx.core)
 }

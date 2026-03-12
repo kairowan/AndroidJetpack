@@ -41,6 +41,7 @@ class RetrofitClient private constructor(var context: Context) {
         private var retrofitClient: RetrofitClient? = null
         private const val DEFAULT_TIME_OUT = 15
         private val sRetrofitManager: MutableMap<Int, Retrofit> = HashMap()
+        private val sRetrofitByBaseUrl: MutableMap<String, Retrofit> = HashMap()
         private var globalHeaderProvider: IHeaderProvider? = null
 
         fun init(provider: IHeaderProvider) {
@@ -113,6 +114,16 @@ class RetrofitClient private constructor(var context: Context) {
         } else retrofitManager.create(interfaceServer!!)
     }
 
+    fun <T> getByBaseUrl(interfaceServer: Class<T>, baseUrl: String): T {
+        val normalizedBaseUrl = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
+        val retrofitManager = sRetrofitByBaseUrl[normalizedBaseUrl]
+        return if (retrofitManager == null) {
+            createByBaseUrl(interfaceServer, normalizedBaseUrl)
+        } else {
+            retrofitManager.create(interfaceServer)
+        }
+    }
+
     /**
      *
      */
@@ -128,6 +139,16 @@ class RetrofitClient private constructor(var context: Context) {
         if (interfaceServer == null) {
             throw RuntimeException("The Api InterfaceServer is null!")
         }
+        return retrofit.create(interfaceServer)
+    }
+
+    private fun <T> createByBaseUrl(interfaceServer: Class<T>, baseUrl: String, update: Boolean = false): T {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(createOkHttpClient(true, update))
+            .build()
+        sRetrofitByBaseUrl[baseUrl] = retrofit
         return retrofit.create(interfaceServer)
     }
 

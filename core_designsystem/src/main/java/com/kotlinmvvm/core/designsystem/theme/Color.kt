@@ -15,27 +15,22 @@ import androidx.compose.ui.graphics.Color
  * @Description: TODO
  */
 
-// Light Theme Colors
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// AppThemeTokens stores Android-style ARGB values (0xAARRGGBB), not Compose ColorLongs.
+private fun Long.toComposeColor(): Color = Color(toInt())
 
-// Dark Theme Colors
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+private val LightTokens = AppThemeTokens.lightColors
+private val DarkTokens = AppThemeTokens.darkColors
 
-// Brand Colors
-val Primary = Color(0xFF1976D2)
-val PrimaryVariant = Color(0xFF1565C0)
-val Secondary = Color(0xFF03DAC6)
-val Background = Color(0xFFFFFBFE)
-val Surface = Color(0xFFFFFBFE)
-val Error = Color(0xFFB00020)
+val Primary = LightTokens.primaryArgb.toComposeColor()
+val Secondary = LightTokens.secondaryArgb.toComposeColor()
+val Background = LightTokens.backgroundArgb.toComposeColor()
+val Surface = LightTokens.surfaceArgb.toComposeColor()
+val Error = LightTokens.errorArgb.toComposeColor()
+val OnSurfaceVariant = LightTokens.onSurfaceVariantArgb.toComposeColor()
 
-// Dark Brand Colors
-val PrimaryDark = Color(0xFF90CAF9)
-val PrimaryVariantDark = Color(0xFF64B5F6)
-val SecondaryDark = Color(0xFF03DAC6)
-val BackgroundDark = Color(0xFF121212)
-val SurfaceDark = Color(0xFF121212)
+val PrimaryDark = DarkTokens.primaryArgb.toComposeColor()
+val SecondaryDark = DarkTokens.secondaryArgb.toComposeColor()
+val BackgroundDark = DarkTokens.backgroundArgb.toComposeColor()
+val SurfaceDark = DarkTokens.surfaceArgb.toComposeColor()
+val ErrorDark = DarkTokens.errorArgb.toComposeColor()
+val OnSurfaceVariantDark = DarkTokens.onSurfaceVariantArgb.toComposeColor()

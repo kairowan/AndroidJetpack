@@ -26,11 +26,9 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -45,6 +43,7 @@ import com.kotlinmvvm.core.player.model.PlayerControlActions
 import com.kotlinmvvm.core.player.model.PlayerControlsConfig
 import com.kotlinmvvm.core.player.model.PlayerControlsIcons
 import com.kotlinmvvm.core.player.model.PlayerControlsStyle
+import com.kotlinmvvm.core.player.state.PlayerControlsStateHolder
 import kotlinx.coroutines.delay
 
 /**
@@ -63,30 +62,25 @@ fun PlayerControls(
     extraControls: @Composable RowScope.() -> Unit = {}
 ) {
     val state = player.collectState()
-    var controlsVisible by remember { mutableStateOf(true) }
-    var interactionToken by remember { mutableIntStateOf(0) }
-
-    fun markInteraction(keepVisible: Boolean = true) {
-        if (keepVisible) controlsVisible = true
-        interactionToken += 1
-    }
+    val controlsStateHolder = remember { PlayerControlsStateHolder() }
+    val controlsState by controlsStateHolder.state.collectAsState()
 
     LaunchedEffect(state.isPlaying) {
-        if (!state.isPlaying) {
-            controlsVisible = true
-        }
+        controlsStateHolder.onPlaybackChanged(state.isPlaying)
     }
 
     LaunchedEffect(
         config.enableAutoHide,
         config.autoHideMs,
         state.isPlaying,
-        controlsVisible,
-        interactionToken
+        controlsState.isVisible,
+        controlsState.interactionVersion
     ) {
-        if (!config.enableAutoHide || !state.isPlaying || !controlsVisible) return@LaunchedEffect
+        if (!PlayerControlsStateHolder.shouldAutoHide(state.isPlaying, config, controlsState)) {
+            return@LaunchedEffect
+        }
         delay(config.autoHideMs)
-        controlsVisible = false
+        controlsStateHolder.hideControls()
     }
 
     Box(
@@ -96,8 +90,7 @@ fun PlayerControls(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
-                controlsVisible = !controlsVisible
-                interactionToken += 1
+                controlsStateHolder.onSurfaceTap()
             }
     ) {
         if (state.playState == PlayState.Buffering) {
@@ -108,7 +101,7 @@ fun PlayerControls(
         }
 
         AnimatedVisibility(
-            visible = controlsVisible,
+            visible = controlsState.isVisible,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -130,15 +123,15 @@ fun PlayerControls(
                         style = style,
                         onRewind = {
                             actions.onRewind(player, config.rewindMs)
-                            markInteraction()
+                            controlsStateHolder.markInteraction()
                         },
                         onToggle = {
                             actions.onToggle(player)
-                            markInteraction()
+                            controlsStateHolder.markInteraction()
                         },
                         onForward = {
                             actions.onForward(player, config.forwardMs)
-                            markInteraction()
+                            controlsStateHolder.markInteraction()
                         },
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -150,7 +143,7 @@ fun PlayerControls(
                         style = style,
                         onSeek = {
                             actions.onSeekProgress(player, it)
-                            markInteraction()
+                            controlsStateHolder.markInteraction()
                         },
                         extraControls = extraControls,
                         modifier = Modifier.align(Alignment.BottomCenter)

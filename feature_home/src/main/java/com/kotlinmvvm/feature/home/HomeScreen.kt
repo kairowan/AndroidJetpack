@@ -24,13 +24,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModelStoreOwner
 import coil.compose.AsyncImage
 import com.kotlinmvvm.core.data.repository.EyepetizerRepository
-import com.kotlinmvvm.core.model.EyepetizerFeedSource
+import com.kotlinmvvm.core.data.repository.EyepetizerRepositoryFactory
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
+import com.kotlinmvvm.core.state.PagedData
 import com.kotlinmvvm.core.ui.component.ErrorContent
 import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.PagedList
 import com.kotlinmvvm.core.ui.base.viewModelFactory
-import com.kotlinmvvm.core.ui.state.PagedData
+import com.kotlinmvvm.feature.home.shared.HomeFeedCatalog
+import com.kotlinmvvm.feature.home.shared.HomeFeedEntryType
+import com.kotlinmvvm.feature.home.shared.HomeFeedPagePresenter
+import com.kotlinmvvm.feature.home.shared.HomeVideoCardModel
 
 /**
  * @author 浩楠
@@ -49,21 +53,28 @@ import com.kotlinmvvm.core.ui.state.PagedData
 @Composable
 fun HomeRoute(
     modifier: Modifier = Modifier,
+    repository: EyepetizerRepository? = null,
     providedViewModel: HomeViewModel? = null,
     onVideoClick: (EyepetizerFeedItem.Video) -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val owner = remember(context) { context.findViewModelStoreOwner() }
-    val repository = remember { EyepetizerRepository() }
+    val routeRepository = repository ?: remember { EyepetizerRepositoryFactory.create() }
     val viewModel = providedViewModel ?: viewModel(
         viewModelStoreOwner = owner ?: checkNotNull(LocalViewModelStoreOwner.current),
         key = "home_root_view_model",
         factory = viewModelFactory {
-            HomeViewModel(repository)
+            HomeViewModel(routeRepository)
         }
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val selectedSource by viewModel.feedSource.collectAsStateWithLifecycle()
+    val pageModel = remember(state, selectedSource) {
+        HomeFeedPagePresenter.present(
+            state = state,
+            selectedSource = selectedSource
+        )
+    }
     val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
 
     Scaffold(
@@ -84,12 +95,12 @@ fun HomeRoute(
                 .fillMaxSize()
         ) {
             FeedSourceSelector(
-                selectedSource = selectedSource,
+                selectedSourceKey = pageModel.selectedSourceKey,
                 onSelected = viewModel::switchSource
             )
 
             when {
-                state.isLoading && state.items.isEmpty() -> {
+                pageModel.isLoading && pageModel.entries.isEmpty() -> {
                     LoadingContent(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -97,9 +108,9 @@ fun HomeRoute(
                     )
                 }
 
-                state.errorMessage != null && state.items.isEmpty() -> {
+                pageModel.errorMessage != null && pageModel.entries.isEmpty() -> {
                     ErrorContent(
-                        message = state.errorMessage ?: "Unknown error",
+                        message = pageModel.errorMessage ?: "Unknown error",
                         onRetry = { viewModel.retry() },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -110,9 +121,9 @@ fun HomeRoute(
                 else -> {
                     PagedList(
                         data = PagedData(
-                            items = state.items,
-                            isLoadingMore = state.isLoadingMore,
-                            canLoadMore = state.canLoadMore
+                            items = pageModel.entries,
+                            isLoadingMore = pageModel.isLoadingMore,
+                            canLoadMore = pageModel.canLoadMore
                         ),
                         onRefresh = { viewModel.refresh() },
                         onLoadMore = { viewModel.loadMore() },
@@ -120,18 +131,23 @@ fun HomeRoute(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
-                        itemKey = { item ->
-                            when (item) {
-                                is EyepetizerFeedItem.Video -> "video_${item.id}"
-                                is EyepetizerFeedItem.TextHeader -> "header_${item.text.hashCode()}"
-                                is EyepetizerFeedItem.TextFooter -> "footer_${item.text.hashCode()}"
-                            }
-                        }
+                        itemKey = { item -> item.stableKey }
                     ) { item ->
-                        when (item) {
-                            is EyepetizerFeedItem.Video -> VideoCard(video = item, onClick = { onVideoClick(item) })
-                            is EyepetizerFeedItem.TextHeader -> TextHeaderItem(text = item.text)
-                            is EyepetizerFeedItem.TextFooter -> TextFooterItem(text = item.text)
+                        when (item.type) {
+                            HomeFeedEntryType.VIDEO -> {
+                                val video = item.video
+                                if (video != null) {
+                                    VideoCard(
+                                        video = video,
+                                        onClick = {
+                                            viewModel.findVideo(video.id)?.let(onVideoClick)
+                                        }
+                                    )
+                                }
+                            }
+
+                            HomeFeedEntryType.HEADER -> TextHeaderItem(text = item.text.orEmpty())
+                            HomeFeedEntryType.FOOTER -> TextFooterItem(text = item.text.orEmpty())
                         }
                     }
                 }
@@ -142,8 +158,8 @@ fun HomeRoute(
 
 @Composable
 private fun FeedSourceSelector(
-    selectedSource: EyepetizerFeedSource,
-    onSelected: (EyepetizerFeedSource) -> Unit,
+    selectedSourceKey: String,
+    onSelected: (com.kotlinmvvm.core.model.EyepetizerFeedSource) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -153,10 +169,10 @@ private fun FeedSourceSelector(
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        EyepetizerFeedSource.values().forEach { source ->
+        HomeFeedCatalog.sourceOptions.forEach { source ->
             FilterChip(
-                selected = source == selectedSource,
-                onClick = { onSelected(source) },
+                selected = source.key == selectedSourceKey,
+                onClick = { onSelected(source.source) },
                 label = { Text(source.title) }
             )
         }
@@ -164,7 +180,7 @@ private fun FeedSourceSelector(
 }
 
 @Composable
-fun VideoCard(video: EyepetizerFeedItem.Video, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun VideoCard(video: HomeVideoCardModel, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -183,7 +199,7 @@ fun VideoCard(video: EyepetizerFeedItem.Video, onClick: () -> Unit, modifier: Mo
                 Column(modifier = Modifier.weight(1f)) {
                     Text(video.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("${video.authorName} / #${video.category}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(video.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }

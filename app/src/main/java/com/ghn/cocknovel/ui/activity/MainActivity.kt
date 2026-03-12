@@ -4,11 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import com.ghn.cocknovel.navigation.AppNavHost
-import com.kotlinmvvm.core.designsystem.theme.AppTheme
+import com.ghn.cocknovel.App
+import com.ghn.cocknovel.ui.AppRoot
 
 /**
  * @author 浩楠
@@ -27,12 +24,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val appContainer = (application as App).appContainer
         setContent {
-            AppTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    AppNavHost()
-                }
-            }
+            AppRoot(appContainer = appContainer)
         }
     }
 }

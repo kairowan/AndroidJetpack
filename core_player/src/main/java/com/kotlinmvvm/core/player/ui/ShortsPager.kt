@@ -21,8 +21,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import com.kotlinmvvm.core.player.api.IPlayer
+import com.kotlinmvvm.core.player.defaults.ShortsPlaybackDefaults
 import com.kotlinmvvm.core.player.defaults.ShortsPagerDefaults
 import com.kotlinmvvm.core.player.model.ShortsItem
+import com.kotlinmvvm.core.player.planning.ShortsPreloadPlanner
 import com.kotlinmvvm.core.player.provider.rememberPlayer
 
 /**
@@ -30,27 +32,31 @@ import com.kotlinmvvm.core.player.provider.rememberPlayer
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun <T : ShortsItem> ShortsPager(
+fun <T> ShortsPager(
     items: List<T>,
     modifier: Modifier = Modifier,
     pagerState: PagerState = rememberPagerState { items.size },
     player: IPlayer = rememberPlayer(),
-    preloadCount: Int = ShortsPagerDefaults.PRELOAD_COUNT,
+    preloadCount: Int = ShortsPlaybackDefaults.PRELOAD_COUNT,
     onPageChanged: (Int) -> Unit = {},
+    itemKey: (T) -> Any,
+    videoUrlOf: (T) -> String,
     overlay: @Composable BoxScope.(T, Boolean) -> Unit = { _, _ -> }
 ) {
     val currentPage = pagerState.currentPage
     val currentItem = items.getOrNull(currentPage)
 
-    LaunchedEffect(currentPage, currentItem?.videoUrl, items.size, preloadCount) {
+    LaunchedEffect(currentPage, currentItem?.let(videoUrlOf), items.size, preloadCount) {
         onPageChanged(currentPage)
         if (currentItem == null) return@LaunchedEffect
 
-        player.play(currentItem.videoUrl)
+        player.play(videoUrlOf(currentItem))
 
-        val urlsToPreload = items.preloadUrlsFrom(
-            page = currentPage,
-            count = preloadCount
+        val urlsToPreload = ShortsPreloadPlanner.planUrls(
+            items = items,
+            currentPage = currentPage,
+            preloadCount = preloadCount,
+            videoUrlOf = videoUrlOf
         )
         if (urlsToPreload.isNotEmpty()) {
             player.preload(urlsToPreload)
@@ -60,7 +66,7 @@ fun <T : ShortsItem> ShortsPager(
     VerticalPager(
         state = pagerState,
         modifier = modifier.fillMaxSize(),
-        key = { index -> items[index].id }
+        key = { index -> itemKey(items[index]) }
     ) { page ->
         val item = items[page]
         ShortsPage(
@@ -72,17 +78,28 @@ fun <T : ShortsItem> ShortsPager(
     }
 }
 
-private fun <T : ShortsItem> List<T>.preloadUrlsFrom(
-    page: Int,
-    count: Int
-): List<String> {
-    if (count <= 0 || isEmpty()) return emptyList()
-
-    val start = page + 1
-    if (start !in indices) return emptyList()
-
-    val endExclusive = (start + count).coerceAtMost(size)
-    return subList(start, endExclusive).map { it.videoUrl }
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun <T : ShortsItem> ShortsPager(
+    items: List<T>,
+    modifier: Modifier = Modifier,
+    pagerState: PagerState = rememberPagerState { items.size },
+    player: IPlayer = rememberPlayer(),
+    preloadCount: Int = ShortsPlaybackDefaults.PRELOAD_COUNT,
+    onPageChanged: (Int) -> Unit = {},
+    overlay: @Composable BoxScope.(T, Boolean) -> Unit = { _, _ -> }
+) {
+    ShortsPager(
+        items = items,
+        modifier = modifier,
+        pagerState = pagerState,
+        player = player,
+        preloadCount = preloadCount,
+        onPageChanged = onPageChanged,
+        itemKey = { it.id },
+        videoUrlOf = { it.videoUrl },
+        overlay = overlay
+    )
 }
 
 @Composable

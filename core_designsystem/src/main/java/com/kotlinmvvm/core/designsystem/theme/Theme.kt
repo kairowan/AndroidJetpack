@@ -27,14 +27,18 @@ private val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,
     secondary = SecondaryDark,
     background = BackgroundDark,
-    surface = SurfaceDark
+    surface = SurfaceDark,
+    error = ErrorDark,
+    onSurfaceVariant = OnSurfaceVariantDark
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
     secondary = Secondary,
     background = Background,
-    surface = Surface
+    surface = Surface,
+    error = Error,
+    onSurfaceVariant = OnSurfaceVariant
 )
 
 @Composable

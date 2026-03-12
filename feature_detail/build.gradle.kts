@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":core_data"))
     implementation(project(":core_model"))
     implementation(project(":core_player"))
+    implementation(project(":feature_media_shared"))
     
     implementation(libs.androidx.activity.compose)
     implementation(libs.coil.compose)
