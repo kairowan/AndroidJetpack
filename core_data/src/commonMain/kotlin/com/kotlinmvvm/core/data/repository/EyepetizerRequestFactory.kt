@@ -2,7 +2,10 @@ package com.kotlinmvvm.core.data.repository
 
 import com.kotlinmvvm.core.model.EyepetizerFeedSource
 
-internal const val EYEPETIZER_BASE_URL: String = "http://baobab.kaiyanapp.com/"
+internal const val EYEPETIZER_BASE_URL: String = "https://baobab.kaiyanapp.com/"
+private const val EYEPETIZER_HOST: String = "baobab.kaiyanapp.com"
+private const val EYEPETIZER_HTTP_HOST_PREFIX: String = "http://$EYEPETIZER_HOST/"
+private const val EYEPETIZER_HTTPS_HOST_PREFIX: String = "https://$EYEPETIZER_HOST/"
 
 /**
  * @author 浩楠
@@ -39,14 +42,20 @@ internal object EyepetizerRequestFactory {
 
     private fun String?.toAbsoluteUrlOrNull(): String? {
         if (this.isNullOrBlank()) return null
-        if (startsWith("http://") || startsWith("https://")) {
-            return this
+        val normalizedUrl = when {
+            startsWith(EYEPETIZER_HTTP_HOST_PREFIX) ->
+                EYEPETIZER_HTTPS_HOST_PREFIX + removePrefix(EYEPETIZER_HTTP_HOST_PREFIX)
+
+            else -> this
+        }
+        if (normalizedUrl.startsWith("http://") || normalizedUrl.startsWith("https://")) {
+            return normalizedUrl
         }
         val normalizedBaseUrl = EYEPETIZER_BASE_URL.removeSuffix("/")
-        return if (startsWith("/")) {
-            normalizedBaseUrl + this
+        return if (normalizedUrl.startsWith("/")) {
+            normalizedBaseUrl + normalizedUrl
         } else {
-            "$normalizedBaseUrl/$this"
+            "$normalizedBaseUrl/$normalizedUrl"
         }
     }
 

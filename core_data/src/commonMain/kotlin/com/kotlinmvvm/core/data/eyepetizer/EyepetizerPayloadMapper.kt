@@ -6,7 +6,7 @@ import com.kotlinmvvm.core.model.EyepetizerFeedItem
 internal fun EyepetizerPayloadResponse.toDomainFeed(): EyepetizerFeed {
     return EyepetizerFeed(
         items = itemList.flatMap { item -> item.toDomainItems() },
-        nextPageUrl = nextPageUrl
+        nextPageUrl = nextPageUrl.toAtsSafeUrl()
     )
 }
 
@@ -33,18 +33,19 @@ private fun EyepetizerPayloadItem.toVideoItem(): EyepetizerFeedItem.Video? {
     val payload = data ?: return null
     if (type != TYPE_VIDEO && payload.dataType != DATA_TYPE_VIDEO) return null
     val id = payload.id ?: return null
-    val playUrl = payload.playUrl.orEmpty()
+    val playUrl = payload.playUrl.toAtsSafeUrl().orEmpty()
     if (playUrl.isBlank()) return null
 
     return EyepetizerFeedItem.Video(
         id = id,
         title = payload.title.orEmpty(),
         description = payload.description.orEmpty(),
-        coverUrl = payload.cover?.feed ?: payload.cover?.detail.orEmpty(),
+        coverUrl = payload.cover?.feed.toAtsSafeUrl()
+            ?: payload.cover?.detail.toAtsSafeUrl().orEmpty(),
         playUrl = playUrl,
         category = payload.category.orEmpty(),
         authorName = payload.author?.name.orEmpty(),
-        authorIcon = payload.author?.icon.orEmpty(),
+        authorIcon = payload.author?.icon.toAtsSafeUrl().orEmpty(),
         duration = payload.duration ?: 0
     )
 }
@@ -78,6 +79,8 @@ private const val TYPE_LEFT_ALIGN_TEXT_HEADER = "leftAlignTextHeader"
 private const val DATA_TYPE_VIDEO = "VideoBeanForClient"
 private const val DATA_TYPE_TEXT_HEADER = "TextHeader"
 private const val DATA_TYPE_TEXT_FOOTER = "TextFooter"
+private const val HTTP_PREFIX = "http://"
+private const val HTTPS_PREFIX = "https://"
 
 private val HEADER_CONTAINER_TYPES = setOf(
     "videoCollectionWithCover",
@@ -88,3 +91,16 @@ private val HEADER_CONTAINER_TYPES = setOf(
     "squareCardCollection",
     "bannerCollection"
 )
+
+private fun String?.toAtsSafeUrl(): String? {
+    if (this.isNullOrBlank()) return this
+    val value = trim()
+    if (!value.startsWith(HTTP_PREFIX)) return value
+
+    val host = value.removePrefix(HTTP_PREFIX).substringBefore("/")
+    return if (host == "kaiyanapp.com" || host.endsWith(".kaiyanapp.com")) {
+        HTTPS_PREFIX + value.removePrefix(HTTP_PREFIX)
+    } else {
+        value
+    }
+}
