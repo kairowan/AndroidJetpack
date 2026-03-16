@@ -62,4 +62,3 @@ dependencies {
 //    implementation(libs.androidx.navigation.ui)
     kapt(libs.apt)
 }
-

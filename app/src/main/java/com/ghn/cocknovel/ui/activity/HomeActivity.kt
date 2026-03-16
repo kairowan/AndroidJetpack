@@ -34,19 +34,7 @@ class HomeActivity : BaseActivity<HomeActivityBinding, BaseViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val container = mBinding.statusContainer // ID 来自 xml 中的 FrameLayout
-//        val contentView = mBinding.root.getChildAt(0) // 你的 layout_home_content 是第一个子 View
-//
-//        // 初始化 StatusController
-//        statusController = StatusController.bind(container, contentView) {
-//            val inflater = layoutInflater
-//            setLoadingView(inflater.inflate(R.layout.layout_custom_loading, container, false))
-//            setEmptyView(inflater.inflate(R.layout.layout_custom_empty, container, false))
-//            setErrorView(inflater.inflate(R.layout.layout_custom_error, container, false))
-//            setRetryAction { }
-//        }
 
-        Log.i("Route", "跳转过来了")
     }
 
     override fun initParam() {

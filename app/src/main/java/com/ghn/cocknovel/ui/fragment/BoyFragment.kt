@@ -7,7 +7,6 @@ import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.databinding.FragmentBoyBinding
 import com.ghn.cocknovel.viewmodel.RecommendViewModel
 import com.ghn.routermodule.AppRouter
-import com.ghn.routermodule.RouterPath
 
 
 class BoyFragment : BaseFragment<FragmentBoyBinding, RecommendViewModel>(){
@@ -27,13 +26,13 @@ class BoyFragment : BaseFragment<FragmentBoyBinding, RecommendViewModel>(){
 
     override fun initView() {
         mBinding.TvNav.setOnClickListener {
-            AppRouter.goTo(RouterPath.Main.HOME)
+            AppRouter.openHome()
         }
         mBinding.TvNavElse.setOnClickListener {
-           AppRouter.geToKey()
+           AppRouter.openUserKey()
         }
         mBinding.TvNavKey.setOnClickListener {
-            AppRouter.goToProfile("https://www.baidu.com/")
+            AppRouter.openWeb("https://www.baidu.com/")
         }
 
     }

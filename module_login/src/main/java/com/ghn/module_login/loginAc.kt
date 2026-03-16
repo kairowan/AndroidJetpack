@@ -34,7 +34,7 @@ class loginAc: BaseActivity<ActivityLoginBinding, BaseViewModel>() {
     }
 
     override fun initData() {
-        initLogin()
+
     }
 
 }

@@ -11,7 +11,6 @@ import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.ActivityMainBinding
 import com.ghn.cocknovel.utils.DebugEntryHelper
 import com.ghn.routermodule.AppRouter
-import com.ghn.routermodule.RouterPath
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
@@ -31,7 +30,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
     }
 
     override fun initView() {
-        AppRouter.goTo(RouterPath.Login.LoginAC)
+        AppRouter.openLogin()
         Log.i("initView", "1111111")
         DebugEntryHelper.attachToActivity(this)
         mBinding.navView.post {
@@ -84,5 +83,4 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
 
 
 }
-
 

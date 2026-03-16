@@ -41,7 +41,7 @@ object DebugEntryHelper {
             alpha = 0.8f
             setOnClickListener {
                 Log.i("attachToActivity", "点击事件: ")
-                AppRouter.goToNet()
+                AppRouter.openNetworkCapture()
 //                val className = "cn.coderpig.cp_network_capture.ui.activity.NetworkCaptureActivity"
 //                try {
 //                    val clazz = Class.forName(className)

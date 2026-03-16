@@ -102,7 +102,7 @@ class GirlFragment : BaseFragment<FragmentGirlBinding, BookStoreViewModel>(), Vi
             }
             R.id.btn9 ->{
                 EventChannel.post(DemoLoginEvent("activity扩展event函数"))
-                AppRouter.geToKey()
+                AppRouter.openUserKey()
             }
         }
     }
