@@ -8,6 +8,9 @@ import com.kt.NetworkModel.helper.NetConfigHelper
 import org.json.JSONException
 import retrofit2.HttpException
 import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import kotlinx.coroutines.CancellationException
 
 /**
  * @author 浩楠
@@ -24,6 +27,9 @@ import java.net.ConnectException
 @SuppressLint("StaticFieldLeak")
 object ExceptionHandle {
     fun handleException(e: Throwable): ResponseThrowable {
+        if (e is CancellationException) {
+            throw e
+        }
         val ex: ResponseThrowable = when (e) {
             is ResponseThrowable -> e
             is HttpException -> handleHttpException(e)
@@ -35,13 +41,13 @@ object ExceptionHandle {
                 ResponseThrowable(ERROR.NETWORD_ERROR, e)
             }
             is javax.net.ssl.SSLException -> ResponseThrowable(ERROR.SSL_ERROR, e)
-            is java.net.SocketTimeoutException -> {
+            is SocketTimeoutException -> {
                 NetConfigHelper.callback?.onToast("网络连接失败。请稍后再试")
                 ResponseThrowable(ERROR.TIMEOUT_ERROR, e)
             }
-            is java.net.UnknownHostException -> {
+            is UnknownHostException -> {
                 NetConfigHelper.callback?.onToast("网络连接失败。请稍后再试")
-                ResponseThrowable(ERROR.TIMEOUT_ERROR, e)
+                ResponseThrowable(ERROR.NETWORD_ERROR, e)
             }
             else -> {
                 if (!e.message.isNullOrEmpty()) ResponseThrowable(1000, e.message!!, e)
@@ -50,12 +56,16 @@ object ExceptionHandle {
         }
         return ex
     }
+
     private fun handleHttpException(e: HttpException): ResponseThrowable {
         val ex: ResponseThrowable
         when (e.code()) {
             404 -> {
                 NetConfigHelper.callback?.onToast("网络地址错误。请稍后再试")
                 ex = ResponseThrowable(ERROR.NOT_FOUND, e)
+            }
+            401, 403 -> {
+                ex = ResponseThrowable(ERROR.TOKEN_EMPTY, e)
             }
             400 -> {
                 ex = ResponseThrowable(ERROR.TOKEN_EMPTY, e)

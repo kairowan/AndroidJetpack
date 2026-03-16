@@ -10,12 +10,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.basemodel.base.basevm.BaseViewModel
 import com.example.basemodel.base.SingleLiveEvent
-import com.ghn.cocknovel.net.DataService
 import com.ghn.cocknovel.ui.activity.MainActivity
 import com.ghn.cocknovel.ui.activity.SetActivity
 import com.ghn.cocknovel.ui.activity.SwitchActivity
 import com.ghn.eventmodule.EventChannel
 import com.ghn.eventmodule.collectIn
+import com.ghn.module_login.network.LoginService
 import com.kt.NetworkModel.bean.LoginBean
 
 /**
@@ -38,6 +38,8 @@ sealed class GlobalEvent {
 }
 
 open class BookStoreViewModel(application: Application) : BaseViewModel(application) {
+
+    private val loginService by  lazy { LoginService() }
     companion object {
         val TAG: String? = BookStoreViewModel::class.simpleName
         val mLogin = MutableLiveData<LoginBean>()
@@ -69,7 +71,7 @@ open class BookStoreViewModel(application: Application) : BaseViewModel(applicat
      */
     open fun getMain(phoneNumber: String) {
         launchOnlyresult({
-            DataService.login(1, phoneNumber)
+            loginService.requestVerifyCode(phoneNumber)
         }, {
             Log.i(TAG, "getMain: $it")
 //            if (it?.id != null) {

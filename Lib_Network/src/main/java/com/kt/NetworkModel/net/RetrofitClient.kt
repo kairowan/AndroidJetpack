@@ -2,12 +2,14 @@ package com.kt.network.net
 
 import android.annotation.SuppressLint
 import android.content.Context
+import com.kt.NetworkModel.helper.NetConfigHelper
 import com.kt.NetworkModel.net.interceptor.Level
 import com.kt.NetworkModel.net.interceptor.LoggingInterceptor
+import com.kt.NetworkModel.net.interceptor.RetryInterceptor
+import com.kt.NetworkModel.net.interceptor.HTTPDNSInterceptor
 import com.kt.ktmvvm.lib.BuildConfig
 import com.kt.ktmvvm.net.event.OkHttpEventListener
 import com.kt.network.net.dns.OkHttpDNS
-import com.kt.NetworkModel.net.interceptor.HTTPDNSInterceptor
 import com.kt.NetworkModel.provider.IHeaderProvider
 import com.kt.network.net.interceptor.NoNetworkInterceptor
 import okhttp3.Cache
@@ -17,17 +19,17 @@ import okhttp3.OkHttpClient
 import okhttp3.internal.platform.Platform
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-class RetrofitClient private constructor(var context: Context) {
+class RetrofitClient private constructor(private val context: Context) {
 
 
     companion object {
         @SuppressLint("StaticFieldLeak")
         @Volatile
         private var retrofitClient: RetrofitClient? = null
-        private const val DEFAULT_TIME_OUT = 15
-        private val sRetrofitManager: MutableMap<Int, Retrofit> = HashMap()
+        private val sRetrofitManager: MutableMap<Int, Retrofit> = ConcurrentHashMap()
         private var globalHeaderProvider: IHeaderProvider? = null
 
         fun init(provider: IHeaderProvider) {
@@ -35,9 +37,10 @@ class RetrofitClient private constructor(var context: Context) {
         }
 
         fun getInstance(context: Context?): RetrofitClient {
+            val appContext = context?.applicationContext
+                ?: throw IllegalStateException("RetrofitClient must be initialized with a non-null context")
             return retrofitClient ?: synchronized(this) {
-                (retrofitClient ?: context?.applicationContext?.let { RetrofitClient(it) }
-                    .also { retrofitClient = it }) as RetrofitClient
+                retrofitClient ?: RetrofitClient(appContext).also { retrofitClient = it }
             }
         }
 
@@ -47,45 +50,84 @@ class RetrofitClient private constructor(var context: Context) {
     /**
      * 创建连接客户端
      */
-    private fun createOkHttpClient(optimization: Boolean, update: Boolean): OkHttpClient {
-        val builder = OkHttpClient.Builder()
-        var captureInterceptor: Interceptor? = null
-        try {
-            val clazz =
-                Class.forName("com.ghn.feature.capture.interceptor.CaptureInterceptor")
-            val constructor = clazz.getDeclaredConstructor()
-            captureInterceptor = constructor.newInstance() as Interceptor
-        } catch (e: Exception) {
-            e.printStackTrace()
+    private fun createOkHttpClient(update: Boolean): OkHttpClient {
+        val config = NetConfigHelper.networkConfig
+        return OkHttpClient.Builder()
+            .applyBaseConfig(config)
+            .applyDebugTlsIfNeeded()
+            .applyBusinessInterceptors(config, loadCaptureInterceptor())
+            .applyLogging(update)
+            .build()
+    }
+
+    private fun OkHttpClient.Builder.applyBaseConfig(
+        config: NetConfigHelper.NetworkConfig
+    ): OkHttpClient.Builder = apply {
+        connectTimeout(config.connectTimeoutSeconds, TimeUnit.SECONDS)
+        writeTimeout(config.writeTimeoutSeconds, TimeUnit.SECONDS)
+        readTimeout(config.readTimeoutSeconds, TimeUnit.SECONDS)
+        connectionPool(ConnectionPool(8, 10, TimeUnit.SECONDS))
+        dns(OkHttpDNS.get(context))
+        eventListenerFactory(OkHttpEventListener.FACTORY)
+    }
+
+    private fun OkHttpClient.Builder.applyDebugTlsIfNeeded(): OkHttpClient.Builder = apply {
+        if (!BuildConfig.DEBUG) return@apply
+        val trustManager = TrustAllCerts()
+        val sslSocketFactory = TrustAllCerts.createSSLSocketFactory() ?: return@apply
+        sslSocketFactory(sslSocketFactory, trustManager)
+        hostnameVerifier(TrustAllCerts.TrustAllHostnameVerifier())
+    }
+
+    private fun OkHttpClient.Builder.applyBusinessInterceptors(
+        config: NetConfigHelper.NetworkConfig,
+        captureInterceptor: Interceptor?
+    ): OkHttpClient.Builder = apply {
+        addInterceptorIf(config.enableHeaderInterceptor) {
+            HTTPDNSInterceptor(globalHeaderProvider)
         }
-        builder.connectTimeout(DEFAULT_TIME_OUT.toLong(), TimeUnit.SECONDS)
-            .writeTimeout(DEFAULT_TIME_OUT.toLong(), TimeUnit.SECONDS)
-            .readTimeout(DEFAULT_TIME_OUT.toLong(), TimeUnit.SECONDS)
-            .connectionPool(ConnectionPool(8, 10, TimeUnit.SECONDS)) //添加这两行代码
-            .dns(OkHttpDNS.get(context))
-            .eventListenerFactory(OkHttpEventListener.FACTORY)
-        if (BuildConfig.DEBUG) {
-            builder.sslSocketFactory(TrustAllCerts.createSSLSocketFactory()!!, TrustAllCerts())
-                .hostnameVerifier(TrustAllCerts.TrustAllHostnameVerifier())
+        if (config.enableCache) {
+            cache(Cache(context.cacheDir, config.cacheSizeBytes))
         }
-        if (optimization) {
-            builder.addInterceptor(HTTPDNSInterceptor(context,globalHeaderProvider))
-                .cache(context?.cacheDir?.let { Cache(it, 50 * 1024 * 1024L) })//缓存目录
-                .addInterceptor(NoNetworkInterceptor(context))//无网拦截器\
+        addInterceptorIf(config.enableNoNetworkInterceptor) {
+            NoNetworkInterceptor(context)
         }
-        if (captureInterceptor != null) {
-            builder.addInterceptor(captureInterceptor)
+        addInterceptorIf(config.enableRetryInterceptor && config.retryCount > 0) {
+            RetryInterceptor(config.retryCount, config.retryIntervalMillis)
         }
-        if (update==false) {
-            builder.addNetworkInterceptor(LoggingInterceptor().apply {
+        captureInterceptor?.let(::addInterceptor)
+    }
+
+    private fun OkHttpClient.Builder.applyLogging(update: Boolean): OkHttpClient.Builder = apply {
+        if (update) return@apply
+        addNetworkInterceptor(
+            LoggingInterceptor().apply {
                 isDebug = BuildConfig.DEBUG
                 level = Level.BASIC
                 type = Platform.INFO
                 requestTag = "Request"
-                requestTag = "Response"
-            })
+                responseTag = "Response"
+            }
+        )
+    }
+
+    private fun OkHttpClient.Builder.addInterceptorIf(
+        condition: Boolean,
+        interceptorProvider: () -> Interceptor
+    ) {
+        if (condition) {
+            addInterceptor(interceptorProvider())
         }
-        return builder.build()
+    }
+
+    private fun loadCaptureInterceptor(): Interceptor? {
+        return try {
+            val clazz = Class.forName("com.ghn.feature.capture.interceptor.CaptureInterceptor")
+            val constructor = clazz.getDeclaredConstructor()
+            constructor.newInstance() as Interceptor
+        } catch (_: Exception) {
+            null
+        }
     }
 
 
@@ -94,28 +136,21 @@ class RetrofitClient private constructor(var context: Context) {
      * 所以，就根据类型来从map中取出对应的client
      */
     fun <T> getDefault(interfaceServer: Class<T>?, hostType: Int): T {
-        val retrofitManager = sRetrofitManager[hostType]
-        return if (retrofitManager == null) {
-            create(interfaceServer, hostType)
-        } else retrofitManager.create(interfaceServer!!)
+        val service = interfaceServer
+            ?: throw RuntimeException("The Api InterfaceServer is null!")
+        val retrofitManager = sRetrofitManager[hostType] ?: synchronized(sRetrofitManager) {
+            sRetrofitManager[hostType] ?: createRetrofit(hostType).also {
+                sRetrofitManager[hostType] = it
+            }
+        }
+        return retrofitManager.create(service)
     }
 
-    /**
-     *
-     */
-    private fun <T> create(interfaceServer: Class<T>?, hostType: Int, update: Boolean = false): T {
-
-        val retrofit: Retrofit = Retrofit.Builder()
+    private fun createRetrofit(hostType: Int, update: Boolean = false): Retrofit {
+        return Retrofit.Builder()
             .baseUrl(BaseUrlConstants.getHost(hostType))
             .addConverterFactory(GsonConverterFactory.create())
-//            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .client(createOkHttpClient(true, update))
+            .client(createOkHttpClient(update))
             .build()
-        sRetrofitManager[hostType] = retrofit
-        if (interfaceServer == null) {
-            throw RuntimeException("The Api InterfaceServer is null!")
-        }
-        return retrofit.create(interfaceServer)
     }
-
 }
