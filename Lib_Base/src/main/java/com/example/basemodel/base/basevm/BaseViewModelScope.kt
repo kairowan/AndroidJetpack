@@ -1,9 +1,11 @@
 package com.example.basemodel.base.basevm
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kt.network.net.ExceptionHandle
 import com.kt.network.net.ResponseThrowable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -27,8 +29,10 @@ interface BaseViewModelScope {
         scope.launch {
             try {
                 block()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
-                // 可拓展日志记录
+                Log.e("BaseViewModelScope", "Unhandled exception in launchUI", e)
             }
         }
     }

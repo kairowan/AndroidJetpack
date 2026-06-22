@@ -21,8 +21,8 @@ import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentMineBinding
 import com.ghn.cocknovel.viewmodel.BookStoreViewModel
-import com.kt.NetworkModel.utils.BitmapUtils
-import com.kt.NetworkModel.utils.CameraUtils
+import com.kt.network.utils.BitmapUtils
+import com.kt.network.utils.CameraUtils
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date

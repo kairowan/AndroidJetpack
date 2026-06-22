@@ -8,17 +8,19 @@ import androidx.databinding.library.baseAdapters.BR
 import androidx.multidex.MultiDex
 import com.drake.brv.utils.BRV
 import com.example.basemodel.base.BaseApplication
-import com.ghn.commonmodule.ext.MVUtils
+import com.ghn.cocknovel.di.appModules
 import com.kairowan.lib_ui_common.helper.ToastHelper
 import com.kt.ktmvvm.lib.BuildConfig
 import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
-import com.tencent.mmkv.MMKV
 import com.therouter.TheRouter
 import me.jessyan.autosize.AutoSize
 import me.jessyan.autosize.AutoSizeConfig
 import me.jessyan.autosize.unit.Subunits
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.GlobalContext
+import org.koin.core.context.startKoin
 
 
 /**
@@ -38,6 +40,7 @@ open class App : BaseApplication() {
         super.onCreate()
         if (isMainProcess()) {
             instance = this
+            initKoin()
             this.initAuto()
 
             this.initAdp()
@@ -64,7 +67,13 @@ open class App : BaseApplication() {
             .setSupportSubunits(Subunits.MM)
     }
 
-
+    private fun initKoin() {
+        if (GlobalContext.getOrNull() != null) return
+        startKoin {
+            androidContext(this@App)
+            modules(appModules)
+        }
+    }
 
     private fun initAdp() {
         BRV.modelId = BR._all
@@ -82,15 +91,12 @@ open class App : BaseApplication() {
         super.attachBaseContext(base)
         MultiDex.install(this)
         instance = this
-
     }
-
 
     companion object {
         private lateinit var instance: App
 
         fun get(): App = instance
         fun context(): Context = instance.applicationContext
-
     }
 }

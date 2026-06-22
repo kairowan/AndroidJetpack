@@ -3,7 +3,7 @@ package com.example.basemodel.base.init
 import android.os.Build
 import com.blankj.utilcode.util.AppUtils
 import com.ghn.commonmodule.ext.MVUtils
-import com.kt.NetworkModel.provider.IHeaderProvider
+import com.kt.network.provider.IHeaderProvider
 import com.kt.ktmvvm.lib.BuildConfig
 import java.util.Locale
 import java.util.UUID

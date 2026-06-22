@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.ksp)
     id("kotlin-kapt")
 }
 android {
@@ -49,10 +50,15 @@ android {
     }
 }
 
+ksp {
+    arg("KOIN_DEFAULT_MODULE", "false")
+}
+
 dependencies {
     implementation(project(":Lib_Base"))
     implementation(project(":Feature_Capture"))
     implementation(project(":module_login"))
+    implementation(libs.koin.annotations)
 
 //    implementation(libs.github.titlebar)
 //    implementation(libs.github.xbanner)
@@ -61,4 +67,5 @@ dependencies {
 //    implementation(libs.androidx.navigation.fragment)
 //    implementation(libs.androidx.navigation.ui)
     kapt(libs.apt)
+    ksp(libs.koin.ksp.compiler)
 }

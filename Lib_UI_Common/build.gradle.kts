@@ -32,11 +32,4 @@ dependencies {
     api(libs.dialogs.lifecycle)
     api(libs.dialogs.core)
     api(libs.github.lqdbrv)
-
-    api(libs.github.titlebar)
-    api(libs.github.xbanner)
-    api(libs.github.xxPermissions)
-
-    api(libs.androidx.navigation.fragment)
-    api(libs.androidx.navigation.ui)
 }

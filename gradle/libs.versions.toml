@@ -25,8 +25,6 @@ material="1.12.0"
 okhttp3-logging="3.6.0"
 okhttp4="4.10.0"
 retrofit="2.9.0"
-rxjava="2.9.0"
-rxlifecycle="4.0.2"
 glide="4.13.2"
 room="2.4.2"
 annotations="24.0.1"
@@ -47,6 +45,9 @@ xbanner="androidx_v1.2.6"
 liangjingkanji-brv="1.6.1"
 easywindow="10.6"
 activity = "1.8.0"
+koin = "4.0.4"
+koinAnnotations = "2.0.1"
+ksp = "2.0.21-1.0.28"
 
 
 
@@ -59,7 +60,7 @@ lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmode
 lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-core={ group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-core" }
-kotlinx-android={ group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-android" }
+kotlinx-android={ group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-android" }
 androidx-core-ktx={ group = "androidx.core", name = "core", version.ref = "core-ktx" }
 androidx-coordinatorlayout={ group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 androidx-constraintlayout={ group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
@@ -73,12 +74,9 @@ retrofit-retrofit2={ group = "com.squareup.retrofit2", name = "retrofit", versio
 retrofit-retrofit2-gson={ group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 retrofit-retrofit2-scalars={ group = "com.squareup.retrofit2", name = "converter-scalars", version.ref = "retrofit" }
 router = { module = "cn.therouter:router", version.ref = "router" }
-rxjava-adapter={ group = "com.squareup.retrofit2", name = "adapter-rxjava2", version.ref = "rxjava" }
-rxlifecycle-rxlifecycle4-android={ group = "com.trello.rxlifecycle4", name = "rxlifecycle-android", version.ref = "rxlifecycle" }
-rxlifecycle-rxlifecycle4-components={ group = "com.trello.rxlifecycle4", name = "rxlifecycle-components", version.ref = "rxlifecycle" }
 github-glide={ group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 androidx-room-runtime={ group = "androidx.room", name = "room-runtime", version.ref = "room" }
-androidx-room-compiler={ group = "androidx.room", name = "room-comliler", version.ref = "room" }
+androidx-room-compiler={ group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx={ group = "androidx.room", name = "room-ktx", version.ref = "room" }
 jetbrains-annotations={ group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 aliyun-httpdns={ group = "com.aliyun.ams", name = "alicloud-android-httpdns", version.ref = "httpdns" }
@@ -100,10 +98,12 @@ github-xbanner={ group = "com.github.xiaohaibin", name = "XBanner", version.ref 
 github-lqdbrv={group = "com.github.liangjingkanji",name="BRV",version.ref="liangjingkanji-brv"}
 github-easywindow = { module = "com.github.getActivity:EasyWindow", version.ref = "easywindow" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koinAnnotations" }
+koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinAnnotations" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-
-
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

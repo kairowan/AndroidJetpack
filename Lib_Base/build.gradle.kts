@@ -3,7 +3,6 @@ import com.android.build.api.dsl.LibraryExtension
 plugins {
     id ("com.android.library")
     id ("org.jetbrains.kotlin.android")
-    kotlin("kapt")
 }
 android {
     (this as LibraryExtension).namespace ="com.ghn.lib.base"
@@ -19,6 +18,5 @@ dependencies {
 
     api(libs.androidx.room.ktx)
     api(libs.androidx.room.runtime)
-    api(libs.rxlifecycle.rxlifecycle4.android)
-    api(libs.rxlifecycle.rxlifecycle4.components)
+    api(libs.koin.android)
 }

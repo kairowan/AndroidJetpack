@@ -16,8 +16,8 @@ import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentRecommendBinding
 import com.ghn.cocknovel.databinding.ItemHomeBinding
+import com.ghn.cocknovel.model.BannerItem
 import com.ghn.cocknovel.viewmodel.RecommendViewModel
-import com.kt.NetworkModel.bean.WBanner
 import com.kt.network.bean.datas
 import com.stx.xhb.androidx.transformers.Transformer
 
@@ -49,7 +49,6 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
     override fun lazyLoadData() {
         Log.d("lazyLoadData", "22222")
         mViewModel.getBanner()
-        mViewModel.flowbanner()
     }
 
     @SuppressLint("SetTextI18n")
@@ -65,7 +64,7 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
             //Transformer还有很多效果，感兴趣的朋友可以自行尝试
             mBinding.homexbanner.setPageTransformer(Transformer.Scale)
             mBinding.homexbanner.loadImage { banner, model, view, position ->
-                Glide.with(this@RecommendFragment).load((model as WBanner.Data).imagePath)
+                Glide.with(this@RecommendFragment).load((model as BannerItem).imagePath)
                     .into(view as ImageView)
             }
         }
@@ -96,6 +95,5 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
 
     }
 }
-
 
 

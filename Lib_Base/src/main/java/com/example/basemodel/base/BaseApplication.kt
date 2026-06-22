@@ -5,7 +5,7 @@ import com.example.basemodel.base.init.AppHeaderProvider
 import com.example.basemodel.base.init.NetworkCallbackImpl
 import com.ghn.eventmodule.EventChannel
 import com.ghn.commonmodule.ext.MVUtils
-import com.kt.NetworkModel.helper.NetConfigHelper
+import com.kt.network.helper.NetConfigHelper
 import com.kt.network.net.ExceptionHandle
 import com.kt.network.net.NetServiceFactory
 import com.kt.network.net.RetrofitClient
