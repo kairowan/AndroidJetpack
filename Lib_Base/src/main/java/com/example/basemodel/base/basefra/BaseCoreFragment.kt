@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import com.example.basemodel.base.basevm.BaseViewModel
 import com.example.basemodel.base.baseint.IBaseView
+import org.koin.core.error.NoDefinitionFoundException
 import org.koin.androidx.viewmodel.ext.android.viewModelForClass
 import java.lang.reflect.ParameterizedType
 
@@ -30,7 +32,7 @@ abstract class BaseCoreFragment<V : ViewBinding, VM : BaseViewModel> :
         savedInstanceState: Bundle?
     ): View {
         mBinding = initContentView(inflater, container)
-        return mBinding.root
+        return wrapContentView(mBinding.root, inflater, container)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,8 +56,29 @@ abstract class BaseCoreFragment<V : ViewBinding, VM : BaseViewModel> :
         val modelClass = (javaClass.genericSuperclass as? ParameterizedType)
             ?.actualTypeArguments?.get(1) as? Class<VM>
             ?: throw IllegalStateException("Unable to resolve ViewModel type for ${javaClass.simpleName}. Ensure the class extends BaseFragment<XBinding, YourViewModel>.")
-        mViewModel = viewModelForClass(modelClass.kotlin).value
+        mViewModel = resolveViewModel(modelClass)
     }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun resolveViewModel(modelClass: Class<VM>): VM {
+        return try {
+            viewModelForClass(modelClass.kotlin).value
+        } catch (exception: NoDefinitionFoundException) {
+            if (modelClass != BaseViewModel::class.java) {
+                throw exception
+            }
+            ViewModelProvider(
+                this,
+                ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+            )[modelClass]
+        }
+    }
+
+    protected open fun wrapContentView(
+        contentView: View,
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): View = contentView
 
     open fun lazyLoadData() {}
 }

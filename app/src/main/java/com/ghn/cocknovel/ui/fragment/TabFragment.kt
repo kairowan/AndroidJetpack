@@ -10,7 +10,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.basemodel.base.basefra.BaseFragment
 import com.example.basemodel.base.BaseRecyclerAdapter
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentTabBinding
 import com.ghn.cocknovel.viewmodel.RecommendViewModel

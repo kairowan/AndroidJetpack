@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path
+        name="flowdownload_files"
+        path="." />
+    <cache-path
+        name="flowdownload_cache"
+        path="." />
+    <external-files-path
+        name="flowdownload_external_files"
+        path="." />
+    <external-cache-path
+        name="flowdownload_external_cache"
+        path="." />
+    <external-media-path
+        name="flowdownload_external_media"
+        path="." />
+    <external-path
+        name="flowdownload_external_storage"
+        path="." />
+</paths>

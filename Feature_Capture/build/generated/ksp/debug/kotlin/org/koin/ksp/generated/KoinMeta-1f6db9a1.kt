@@ -1,0 +1,5 @@
+package org.koin.ksp.generated
+
+public class _KSP_ComGhnFeatureCaptureDiCaptureModule
+public class _KSP_ComGhnFeatureCaptureWebCaptureWebBridgeModule
+public fun _KSP_ComGhnLibBaseWebBridgeWebBridgeModule() : Unit = Unit

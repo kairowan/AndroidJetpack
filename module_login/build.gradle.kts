@@ -4,7 +4,6 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     alias(libs.plugins.ksp)
-    id("kotlin-kapt")
 }
 
 android {
@@ -15,6 +14,8 @@ android {
     }
 }
 
+configureKotlinJvm()
+
 ksp {
     arg("KOIN_DEFAULT_MODULE", "false")
 }
@@ -22,6 +23,6 @@ ksp {
 dependencies {
     implementation(project(":Lib_Base"))
     implementation(libs.koin.annotations)
-    kapt(libs.apt)
+    ksp(libs.apt)
     ksp(libs.koin.ksp.compiler)
 }

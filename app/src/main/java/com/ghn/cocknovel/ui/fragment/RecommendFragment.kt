@@ -12,7 +12,6 @@ import com.bumptech.glide.Glide
 import com.drake.brv.utils.linear
 import com.drake.brv.utils.setup
 import com.example.basemodel.base.basefra.BaseFragment
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentRecommendBinding
 import com.ghn.cocknovel.databinding.ItemHomeBinding
@@ -95,5 +94,4 @@ class RecommendFragment : BaseFragment<FragmentRecommendBinding, RecommendViewMo
 
     }
 }
-
 

@@ -7,6 +7,7 @@ import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.internal.platform.Platform
 import okhttp3.internal.platform.Platform.Companion.INFO
 import java.io.IOException
@@ -137,7 +138,7 @@ class LoggingInterceptor : Interceptor {
                 segmentList,
                 requestId
             )
-            body = ResponseBody.create(contentType, bodyString)
+            body = bodyString.toResponseBody(contentType)
 //            val charset = body.contentType()?.charset(Charset.forName("UTF-8"))
 //                ?: Charset.forName("UTF-8")
         } else {

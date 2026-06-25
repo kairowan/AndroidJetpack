@@ -1,10 +1,7 @@
 package com.kt.network.utils
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
-import android.content.ContentUris
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -12,10 +9,8 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.util.Log
 import android.widget.ImageView
+import androidx.core.content.FileProvider
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -35,60 +30,33 @@ import java.io.IOException
  * @Description: TODO 相机、相册工具类
  */
 object CameraUtils {
-    /**
-     * 相机Intent
-     * @param context
-     * @param outputImagePath
-     * @return
-     */
-    fun getTakePhotoIntent(context: Context, outputImagePath: File): Intent {
-        // 激活相机
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        val state = Environment.getExternalStorageState()
-        if (state == Environment.MEDIA_MOUNTED) {
-            val getImageByCamera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            var mUri = Uri.fromFile(
-                File(
-                    Environment.getExternalStorageDirectory(),
-                    "/DCIM/Camera/"
-                            + System.currentTimeMillis().toString() + ".png"
-                )
+    fun getUriForFile(context: Context, file: File): Uri {
+        file.parentFile?.takeIf { !it.exists() }?.mkdirs()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.myFileProvider",
+                file
             )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                getImageByCamera.putExtra(MediaStore.EXTRA_OUTPUT, mUri)
-            }
-
-            // 判断存储卡是否可以用，可用进行存储
-//        if (hasSdcard()) {
-//            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-//                // 从文件中创建uri
-//                val uri = Uri.fromFile(outputImagePath)
-//                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-//            } else {
-//                //兼容android7.0 使用共享文件的形式
-//                val contentValues = ContentValues(1)
-//                contentValues.put(MediaStore.Images.Media.DATA, outputImagePath.absolutePath)
-//                val uri = context.applicationContext.contentResolver.insert(
-//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                    contentValues
-//                )
-//                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
-//            }
-//        }
+        } else {
+            Uri.fromFile(file)
         }
-        return intent
     }
 
-    /**
-     * 相册Intent
-     * @return
-     */
-    val getselectPhotoIntent: Intent
-        get() {
-            val intent = Intent("android.intent.action.GET_CONTENT")
-            intent.type = "image/*"
-            return intent
+    fun copyUriToFile(context: Context, sourceUri: Uri, targetFile: File): File? {
+        return try {
+            targetFile.parentFile?.takeIf { !it.exists() }?.mkdirs()
+            context.contentResolver.openInputStream(sourceUri)?.use { input ->
+                targetFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            } ?: return null
+            targetFile
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
         }
+    }
 
     /**
      * 判断sdcard是否被挂载
@@ -99,53 +67,6 @@ object CameraUtils {
     }
 
     /**
-     * 4.4及以上系统处理图片的方法
-     */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    fun getImageOnKitKatPath(data: Intent, context: Context): String? {
-        var imagePath: String? = null
-        val uri = data.data
-        Log.d("uri=intent.getData :", "" + uri)
-        if (DocumentsContract.isDocumentUri(context, uri)) {
-            //数据表里指定的行
-            val docId = DocumentsContract.getDocumentId(uri)
-            Log.d("getDocumentId(uri) :", "" + docId)
-            Log.d("uri.getAuthority() :", "" + uri!!.authority)
-            if ("com.android.providers.media.documents" == uri.authority) {
-                val id = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                val selection = MediaStore.Images.Media._ID + "=" + id
-                imagePath =
-                    getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection, context)
-            } else if ("com.android.providers.downloads.documents" == uri.authority) {
-                val contentUri = ContentUris.withAppendedId(
-                    Uri.parse("content://downloads/public_downloads"),
-                    java.lang.Long.valueOf(docId)
-                )
-                imagePath = getImagePath(contentUri, null, context)
-            }
-        } else if ("content".equals(uri!!.scheme, ignoreCase = true)) {
-            imagePath = getImagePath(uri, null, context)
-        }
-        return imagePath
-    }
-
-    /**
-     * 通过uri和selection来获取真实的图片路径,从相册获取图片时要用
-     */
-    @SuppressLint("Range")
-    fun getImagePath(uri: Uri?, selection: String?, context: Context): String? {
-        var path: String? = null
-        val cursor = context.contentResolver.query(uri!!, null, selection, null, null)
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
-            }
-            cursor.close()
-        }
-        return path
-    }
-
-    /**
      * 更改图片显示角度
      * @param filepath
      * @param orc_bitmap
@@ -153,54 +74,36 @@ object CameraUtils {
      */
     fun ImgUpdateDirection(filepath: String?, orc_bitmap: Bitmap?, iv: ImageView) {
         //图片旋转的角度
-        var orc_bitmap = orc_bitmap
+        val imagePath = filepath ?: return
+        var orcBitmap = orc_bitmap ?: return
         var digree = 0
-        //根据图片的filepath获取到一个ExifInterface的对象
-        var exif: ExifInterface? = null
         try {
-            exif = ExifInterface(filepath!!)
-            if (exif != null) {
-
-                // 读取图片中相机方向信息
-                val ori = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_UNDEFINED
-                )
-                digree = when (ori) {
-                    ExifInterface.ORIENTATION_ROTATE_90 -> 90
-                    ExifInterface.ORIENTATION_ROTATE_180 -> 180
-                    ExifInterface.ORIENTATION_ROTATE_270 -> 270
-                    else -> 0
-                }
+            val exif = ExifInterface(imagePath)
+            // 读取图片中相机方向信息
+            val ori = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED
+            )
+            digree = when (ori) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                else -> 0
             }
             //如果图片不为0
             if (digree != 0) {
                 // 旋转图片
                 val m = Matrix()
                 m.postRotate(digree.toFloat())
-                orc_bitmap = Bitmap.createBitmap(
-                    orc_bitmap!!, 0, 0, orc_bitmap.width,
-                    orc_bitmap.height, m, true
+                orcBitmap = Bitmap.createBitmap(
+                    orcBitmap, 0, 0, orcBitmap.width,
+                    orcBitmap.height, m, true
                 )
             }
-            if (orc_bitmap != null) {
-                iv.setImageBitmap(orc_bitmap)
-            }
+            iv.setImageBitmap(orcBitmap)
         } catch (e: IOException) {
             e.printStackTrace()
-            exif = null
         }
-    }
-
-    /**
-     * 4.4以下系统处理图片的方法
-     */
-    fun getImageBeforeKitKatPath(
-        data: Intent,
-        context: Context
-    ): String? {
-        val uri = data.data
-        return getImagePath(uri, null, context)
     }
 
     /**
@@ -249,4 +152,3 @@ object CameraUtils {
         return bitmap
     }
 }
-

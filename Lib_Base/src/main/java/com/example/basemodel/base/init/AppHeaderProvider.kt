@@ -2,7 +2,7 @@ package com.example.basemodel.base.init
 
 import android.os.Build
 import com.blankj.utilcode.util.AppUtils
-import com.ghn.commonmodule.ext.MVUtils
+import com.ghn.routermodule.auth.LoginSession
 import com.kt.network.provider.IHeaderProvider
 import com.kt.ktmvvm.lib.BuildConfig
 import java.util.Locale
@@ -24,8 +24,8 @@ class AppHeaderProvider : IHeaderProvider {
     override fun getHeaders(): Map<String, String> {
         val headers = mutableMapOf<String, String>()
 
-        val token = MVUtils.getString("token", "")
-        if (!token.isNullOrEmpty()) {
+        val token = LoginSession.token()
+        if (token.isNotEmpty()) {
              headers["Authorization"] = "Bearer $token"
         }
 

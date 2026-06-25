@@ -16,7 +16,10 @@ android {
 
 }
 
+configureKotlinJvm()
+
 dependencies {
+    api(libs.androidx.core.ktx)
     api(libs.okhttp.okhttp4.logging)
     api(libs.okhttp.okhttp4)
     api(libs.retrofit.retrofit2)

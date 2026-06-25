@@ -1,23 +1,19 @@
 package com.ghn.cocknovel.ui.fragment
 
-import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.basemodel.base.basefra.BaseFragment
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
-import com.ghn.cocknovel.databinding.FragmentBookstoreBinding
 import com.ghn.cocknovel.databinding.FragmentGirlBinding
 import com.ghn.cocknovel.viewmodel.BookStoreViewModel
-import com.ghn.cocknovel.viewmodel.GlobalEvent
 import com.ghn.eventmodule.EventChannel
 import com.ghn.eventmodule.EventChannel.observeEvent
 import com.ghn.eventmodule.collectIn
+import com.ghn.lib.base.aop.confirm.ConfirmAction
 import com.ghn.routermodule.AppRouter
-import kotlinx.coroutines.flow.merge
+import com.ghn.routermodule.aop.guard.PreventRepeat
 import java.util.Date
 
 data class DemoLoginEvent(val log: String)
@@ -48,6 +44,11 @@ class GirlFragment : BaseFragment<FragmentGirlBinding, BookStoreViewModel>(), Vi
 
     }
 
+    @PreventRepeat(
+        intervalMillis = 800L,
+        key = "girl_fragment_click",
+        toastOnBlocked = false
+    )
     override fun onClick(v: View?) {
         when(v?.id){
             R.id.btn1 ->{
@@ -75,8 +76,7 @@ class GirlFragment : BaseFragment<FragmentGirlBinding, BookStoreViewModel>(), Vi
                 }
             }
             R.id.btn6 ->{
-                EventChannel.clearStickyEvents<DemoLoginEvent>()
-                EventChannel.clearAllStickyEvents()
+                confirmClearStickyEvents()
             }
             R.id.btn7 ->{
                 EventChannel.observe<DemoLoginEvent>(sticky = true)
@@ -102,9 +102,19 @@ class GirlFragment : BaseFragment<FragmentGirlBinding, BookStoreViewModel>(), Vi
             }
             R.id.btn9 ->{
                 EventChannel.post(DemoLoginEvent("activity扩展event函数"))
-                AppRouter.openUserKey()
+                AppRouter.openUserKey(requireActivity())
             }
         }
+    }
+
+    @ConfirmAction(
+        title = "清空事件",
+        message = "确定清空当前所有 Sticky Event 吗？"
+    )
+    private fun confirmClearStickyEvents() {
+        EventChannel.clearStickyEvents<DemoLoginEvent>()
+        EventChannel.clearAllStickyEvents()
+        showMsg("Sticky Event 已清空")
     }
 //    private fun handleGlobalEvent(event: GlobalEvent) {
 //        when (event) {

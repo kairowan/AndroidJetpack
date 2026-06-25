@@ -2,14 +2,13 @@ package com.ghn.cocknovel.ui.activity
 
 import android.os.Bundle
 import com.example.basemodel.base.baseact.BaseActivity
-import com.ghn.cocknovel.BR
-import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.ActivitySetBinding
 import com.ghn.cocknovel.viewmodel.BookStoreViewModel
-import com.hjq.bar.OnTitleBarListener
-import com.hjq.bar.TitleBar
+import com.ghn.routermodule.RouterPath
+import com.therouter.router.Route
 
 
+@Route(path = RouterPath.Setting.SETTINGS)
 class SetActivity : BaseActivity<ActivitySetBinding, BookStoreViewModel>() {
 //    override fun initVariableId(): Int {
 //        return BR.mode
@@ -18,25 +17,18 @@ class SetActivity : BaseActivity<ActivitySetBinding, BookStoreViewModel>() {
     override fun initContentView(savedInstanceState: Bundle?): ActivitySetBinding =
         ActivitySetBinding.inflate(layoutInflater)
 
+    override fun useCommonTitleBar(): Boolean = true
+
+    override fun commonTitleBarTitle(): CharSequence = "设置"
 
     override fun initParam() {
 
     }
 
     override fun initView() {
-        mBinding.titlebar.setOnTitleBarListener(object : OnTitleBarListener {
-            override fun onLeftClick(titleBar: TitleBar) {
-                finish()
-            }
-
-            override fun onTitleClick(titleBar: TitleBar) {
-
-            }
-
-            override fun onRightClick(titleBar: TitleBar) {
-
-            }
-        })
+        mBinding.layoutFontSettings.setOnClickListener {
+            mViewModel.getSwitchFont()
+        }
     }
 
     override fun initViewObservable() {

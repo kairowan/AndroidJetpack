@@ -1,6 +1,11 @@
 package com.ghn.routermodule
 
-import com.therouter.TheRouter
+import android.content.Context
+import com.ghn.routermodule.aop.capture.NetworkCaptureAccess
+import com.ghn.routermodule.aop.feature.FeatureEnabled
+import com.ghn.routermodule.aop.guard.PreventRepeat
+import com.ghn.routermodule.auth.LoginRequired
+import com.ghn.routermodule.feature.FeatureKeys
 
 /**
  * @author 浩楠
@@ -14,35 +19,129 @@ import com.therouter.TheRouter
  */
 object AppRouter {
 
-    fun openHome() {
-        navigate(RouterPath.Main.HOME)
+    fun openHome(context: Context? = null) {
+        requireRouterService<MainPageRouter>().openHome(context)
     }
 
-    fun openUserKey() {
-        navigate(RouterPath.User.UserKEY)
+    @LoginRequired(message = "请先登录后再查看用户信息")
+    @PreventRepeat(
+        intervalMillis = 1200L,
+        key = "router_open_user_key",
+        message = "页面打开中，请勿重复操作"
+    )
+    fun openUserKey(context: Context? = null) {
+        requireRouterService<UserPageRouter>().openUserKey(context)
     }
 
-    fun openWeb(url: String) {
-        RouterPath.Web.WEBVIEW.navigate {
-            withString(RouterParams.KEY_WBE_URL, url)
+    @PreventRepeat(
+        intervalMillis = 800L,
+        key = "router_open_settings",
+        message = "页面打开中，请勿重复操作"
+    )
+    fun openSettings(context: Context? = null) {
+        requireRouterService<SettingPageRouter>().openSettings(context)
+    }
+
+    @FeatureEnabled(
+        featureKey = FeatureKeys.FONT_SETTINGS,
+        message = "字体设置功能暂未开放"
+    )
+    @PreventRepeat(
+        intervalMillis = 800L,
+        key = "router_open_font_settings",
+        message = "页面打开中，请勿重复操作"
+    )
+    fun openFontSettings(context: Context? = null) {
+        requireRouterService<SettingPageRouter>().openFontSettings(context)
+    }
+
+    fun openWeb(
+        url: String,
+        enableBridge: Boolean = false,
+        bridgeGroups: Set<String> = emptySet(),
+        context: Context? = null
+    ) {
+        if (!enableBridge && bridgeGroups.isEmpty()) {
+            openPlainWeb(url, context)
+            return
         }
+        openWeb(
+            WebPageRequest(
+                url = url,
+                enableBridge = enableBridge,
+                bridgeGroups = bridgeGroups
+            ),
+            context
+        )
     }
 
-    fun openNetworkCapture() {
-        requireService<NetworkCaptureRouter>().openNetworkCapture()
+    fun openPlainWeb(url: String, context: Context? = null) {
+        openWeb(WebPageRequest.normal(url), context)
     }
 
-    fun openLogin() {
-        requireService<LoginRouter>().openLogin()
+    fun openWeb(request: WebPageRequest, context: Context? = null) {
+        requireRouterService<WebPageRouter>().open(request.resolveForNavigation(), context)
     }
 
-    private inline fun <reified T : Any> requireService(): T {
-        return requireNotNull(TheRouter.get(T::class.java)) {
-            "TheRouter provider missing for ${T::class.java.name}"
-        }
+    fun openBridgeWeb(url: String, context: Context? = null) {
+        requireRouterService<CoreBridgeWebRouter>().open(url, context = context)
     }
 
-    private fun navigate(path: String) {
-        path.navigate()
+    fun openBridgeWeb(
+        url: String,
+        bridgeGroups: Set<String>,
+        context: Context? = null
+    ) {
+        openWeb(WebPageRequest.bridge(url, bridgeGroups), context)
+    }
+
+    fun openBridgeWeb(
+        url: String,
+        vararg bridgeGroups: String
+    ) {
+        openBridgeWeb(url, bridgeGroups.toSet())
+    }
+
+    fun openAuthWeb(
+        url: String,
+        extraGroups: Set<String> = emptySet(),
+        context: Context? = null
+    ) {
+        requireRouterService<AuthBridgeWebRouter>().open(url, extraGroups, context)
+    }
+
+    fun openAuthWeb(url: String, vararg extraGroups: String) {
+        openAuthWeb(url, extraGroups.toSet())
+    }
+
+    fun openCaptureWeb(
+        url: String,
+        extraGroups: Set<String> = emptySet(),
+        context: Context? = null
+    ) {
+        requireRouterService<CaptureBridgeWebRouter>().open(url, extraGroups, context)
+    }
+
+    fun openCaptureWeb(url: String, vararg extraGroups: String) {
+        openCaptureWeb(url, extraGroups.toSet())
+    }
+
+    @NetworkCaptureAccess
+    @PreventRepeat(
+        intervalMillis = 800L,
+        key = "router_open_network_capture",
+        message = "页面打开中，请勿重复操作"
+    )
+    fun openNetworkCapture(context: Context? = null) {
+        requireRouterService<NetworkCaptureRouter>().openNetworkCapture(context)
+    }
+
+    @PreventRepeat(
+        intervalMillis = 1200L,
+        key = "router_open_login",
+        message = "登录页打开中，请勿重复操作"
+    )
+    fun openLogin(loginRequestId: String? = null, context: Context? = null) {
+        requireRouterService<LoginRouter>().openLogin(loginRequestId, context)
     }
 }

@@ -8,7 +8,7 @@ import com.kt.network.net.ResponseThrowable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 
@@ -42,14 +42,17 @@ interface BaseViewModelScope {
         error: suspend CoroutineScope.(ResponseThrowable) -> Unit,
         complete: suspend CoroutineScope.() -> Unit
     ) {
-        coroutineScope {
-            try {
-                block()
-            } catch (e: Throwable) {
-                error(ExceptionHandle.handleException(e))
-            } finally {
-                complete()
-            }
+        // 直接复用当前协程上下文，避免再额外套一层 coroutineScope，
+        // 防止 AOP 包裹的 suspend 调用在恢复时对已完成的子作用域重复收尾。
+        val currentScope = CoroutineScope(currentCoroutineContext())
+        try {
+            currentScope.block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            currentScope.error(ExceptionHandle.handleException(e))
+        } finally {
+            currentScope.complete()
         }
     }
 }

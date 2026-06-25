@@ -3,17 +3,12 @@ package com.ghn.cocknovel.ui.fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.basemodel.base.basefra.BaseFragment
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.databinding.FragmentBoyBinding
 import com.ghn.cocknovel.viewmodel.RecommendViewModel
 import com.ghn.routermodule.AppRouter
 
 
 class BoyFragment : BaseFragment<FragmentBoyBinding, RecommendViewModel>(){
-//    override fun initVariableId(): Int {
-//        return BR.mode
-//    }
-
     override fun initContentView(
         inflater: LayoutInflater,
         container: ViewGroup?
@@ -26,13 +21,13 @@ class BoyFragment : BaseFragment<FragmentBoyBinding, RecommendViewModel>(){
 
     override fun initView() {
         mBinding.TvNav.setOnClickListener {
-            AppRouter.openHome()
+            AppRouter.openHome(requireActivity())
         }
         mBinding.TvNavElse.setOnClickListener {
-           AppRouter.openUserKey()
+           AppRouter.openUserKey(requireActivity())
         }
         mBinding.TvNavKey.setOnClickListener {
-            AppRouter.openWeb("https://www.baidu.com/")
+            AppRouter.openPlainWeb("https://www.baidu.com/", requireActivity())
         }
 
     }

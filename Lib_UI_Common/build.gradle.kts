@@ -9,6 +9,8 @@ android {
     configureAndroid()
 }
 
+configureKotlinJvm()
+
 dependencies {
     api(libs.github.titlebar)
     api(libs.github.xbanner)
@@ -24,7 +26,6 @@ dependencies {
 
     api(libs.github.glide)
 
-    api(libs.jessyan.autosize)
     api(libs.refresh.header.classics)
     api(libs.github.xpopup)
     api(libs.dialog.avi.library)

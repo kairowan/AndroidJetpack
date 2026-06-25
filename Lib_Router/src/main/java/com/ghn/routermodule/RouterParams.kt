@@ -13,6 +13,9 @@ package com.ghn.routermodule
  */
 object RouterParams {
     const val KEY_WBE_URL = "web_url"
+    const val KEY_WEB_ENABLE_BRIDGE = "web_enable_bridge"
+    const val KEY_WEB_BRIDGE_GROUPS = "web_bridge_groups"
+    const val KEY_LOGIN_REQUEST_ID = "login_request_id"
     const val KEY_USERNAME = "username"
     const val KEY_TOKEN = "token"
 }

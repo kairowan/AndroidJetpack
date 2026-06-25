@@ -17,8 +17,12 @@ import com.ghn.feature.capture.ui.adapter.NetworkLogAdapter
 import com.ghn.feature.capture.utils.binding
 import com.ghn.feature.capture.utils.fly
 import com.ghn.feature.capture.utils.nullOrThis
-
+import com.ghn.lib.base.aop.TraceTime
+import com.ghn.lib.base.aop.confirm.ConfirmAction
 import com.ghn.routermodule.RouterPath
+import com.ghn.routermodule.aop.page.PageAccessGuard
+import com.ghn.routermodule.aop.page.PageAccessGuardSupport
+import com.ghn.routermodule.feature.FeatureKeys
 import com.therouter.router.Route
 
 /**
@@ -27,6 +31,12 @@ import com.therouter.router.Route
  * Desc: 网络抓包页
  */
 @Route(path = RouterPath.Net.NETWORKCAPTURE)
+@PageAccessGuard(
+    debugOnly = true,
+    debugBlockedMessage = "抓包能力仅限调试环境",
+    featureKey = FeatureKeys.NETWORK_CAPTURE,
+    featureBlockedMessage = "抓包功能当前已关闭"
+)
 class NetworkCaptureActivity : AppCompatActivity() {
     private val mBinding by binding(ActivityNetworkCaptureBinding::inflate)
     private lateinit var mAdapter: NetworkLogAdapter
@@ -42,6 +52,9 @@ class NetworkCaptureActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (PageAccessGuardSupport.enforce(this)) {
+            return
+        }
         setContentView(R.layout.activity_network_capture)
         mBinding.apply {
             tvTitle.setOnClickListener {
@@ -60,8 +73,7 @@ class NetworkCaptureActivity : AppCompatActivity() {
                 }
             )
             ivClear.setOnClickListener {
-                NetworkCapture.clearNetworkLog()
-                loadData()
+                confirmClearLogs()
             }
             ivSettings.setOnClickListener { fly<ConfigSettingActivity>() }
             rvContent.apply {
@@ -98,9 +110,19 @@ class NetworkCaptureActivity : AppCompatActivity() {
         contentResolver.unregisterContentObserver(mObserver)
     }
 
+    @ConfirmAction(
+        title = "清空抓包记录",
+        message = "确定清空当前所有抓包记录吗？"
+    )
+    private fun confirmClearLogs() {
+        NetworkCapture.clearNetworkLog()
+        loadData()
+    }
+
     /**
      * 加载数据的方法
      * */
+    @TraceTime("network_capture_load_data", warnAtMillis = 24L)
     private fun loadData(filter: String? = null, isRefresh: Boolean = true) {
         if (isRefresh) {
             mCurPage = 0

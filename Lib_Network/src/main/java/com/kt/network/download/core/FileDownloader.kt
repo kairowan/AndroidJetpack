@@ -194,6 +194,7 @@ class FileDownloader private constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun okhttp3.Call.await(): Response {
         return suspendCancellableCoroutine { continuation ->
             val callback = object : okhttp3.Callback {
@@ -330,7 +331,6 @@ class FileDownloader private constructor(
     }
 
 }
-
 
 
 

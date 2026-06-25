@@ -4,23 +4,9 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Process
-import androidx.databinding.library.baseAdapters.BR
-import androidx.multidex.MultiDex
-import com.drake.brv.utils.BRV
 import com.example.basemodel.base.BaseApplication
-import com.ghn.cocknovel.di.appModules
-import com.kairowan.lib_ui_common.helper.ToastHelper
 import com.kt.ktmvvm.lib.BuildConfig
-import com.scwang.smart.refresh.footer.ClassicsFooter
-import com.scwang.smart.refresh.header.ClassicsHeader
-import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.therouter.TheRouter
-import me.jessyan.autosize.AutoSize
-import me.jessyan.autosize.AutoSizeConfig
-import me.jessyan.autosize.unit.Subunits
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.GlobalContext
-import org.koin.core.context.startKoin
 
 
 /**
@@ -40,12 +26,6 @@ open class App : BaseApplication() {
         super.onCreate()
         if (isMainProcess()) {
             instance = this
-            initKoin()
-            this.initAuto()
-
-            this.initAdp()
-            TheRouter.init(this)
-            ToastHelper.init(this)
         }
     }
 
@@ -58,38 +38,9 @@ open class App : BaseApplication() {
     }
 
 
-    private fun initAuto() {
-        AutoSize.initCompatMultiProcess(this);
-        AutoSize.checkAndInit(this)
-        AutoSizeConfig.getInstance().setCustomFragment(true).setExcludeFontScale(true)
-            .setPrivateFontScale(0.8f).setLog(false).setBaseOnWidth(true).setUseDeviceSize(true)
-            .unitsManager.setSupportDP(true).setDesignSize(2160F, 3840F).setSupportSP(true)
-            .setSupportSubunits(Subunits.MM)
-    }
-
-    private fun initKoin() {
-        if (GlobalContext.getOrNull() != null) return
-        startKoin {
-            androidContext(this@App)
-            modules(appModules)
-        }
-    }
-
-    private fun initAdp() {
-        BRV.modelId = BR._all
-        //指定刷新头和尾部
-        SmartRefreshLayout.setDefaultRefreshHeaderCreator { context, layout ->
-            ClassicsHeader(context)
-        }
-        SmartRefreshLayout.setDefaultRefreshFooterCreator { context, layout ->
-            ClassicsFooter(context)
-        }
-    }
-
     override fun attachBaseContext(base: Context?) {
         TheRouter.isDebug = BuildConfig.DEBUG
         super.attachBaseContext(base)
-        MultiDex.install(this)
         instance = this
     }
 

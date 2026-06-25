@@ -1,5 +1,6 @@
 package com.ghn.module_login.repository
 
+import com.ghn.lib.base.aop.TraceTime
 import com.ghn.module_login.network.LoginApiService
 import com.kt.network.net.NetworkApiFactory
 import org.koin.core.annotation.Single
@@ -23,6 +24,7 @@ class LoginRepository(
 
     private val loginApiService: LoginApiService = networkApiFactory.get()
 
+    @TraceTime("login_request_verify_code", warnAtMillis = 120L)
     suspend fun requestVerifyCode(phoneNumber: String) =
         loginApiService.requestVerifyCode(phoneNumber)
 }

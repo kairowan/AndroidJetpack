@@ -1,8 +1,7 @@
 package com.ghn.cocknovel.ui.adapter
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager2.adapter.FragmentStateAdapter
 
 /**
  * @author 浩楠
@@ -16,14 +15,14 @@ import androidx.fragment.app.FragmentPagerAdapter
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
  * 描述:
  */
-class TabLayoutAdapter(fm: FragmentManager,  val fragmentlist: List<Fragment>,  val listTitle: List<String>) : FragmentPagerAdapter(fm) {
-    override fun getItem(position: Int): Fragment {
-        return fragmentlist[position]
-    }
+class TabLayoutAdapter(
+    fragment: Fragment,
+    private val fragmentList: List<Fragment>,
+    private val listTitle: List<String>
+) : FragmentStateAdapter(fragment) {
+    override fun createFragment(position: Int): Fragment = fragmentList[position]
 
-    override fun getCount(): Int = listTitle.size
+    override fun getItemCount(): Int = listTitle.size
 
-    override fun getPageTitle(position: Int): CharSequence {
-        return listTitle.get(position)
-    }
+    fun getPageTitle(position: Int): CharSequence = listTitle[position]
 }

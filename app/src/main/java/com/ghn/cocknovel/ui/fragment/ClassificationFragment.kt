@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.example.basemodel.base.basefra.BaseFragment
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentClassificationBinding
 import com.ghn.cocknovel.viewmodel.RecommendViewModel

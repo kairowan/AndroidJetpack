@@ -57,13 +57,7 @@ object ToastHelper {
         lastMessage = message
         lastToastTime = now
 
-        if (toast == null) {
-            toast = Toast(appContext)
-            val view = LayoutInflater.from(appContext).inflate(R.layout.toast_utlis, null)
-            textView = view.findViewById(R.id.toast_message)
-            imageView = view.findViewById(R.id.toast_image)
-            toast?.view = view
-        }
+        ensureToastView()
 
         textView?.text = message
         imageView?.visibility = if (iconRes != null) View.VISIBLE else View.GONE
@@ -75,5 +69,17 @@ object ToastHelper {
         toast?.duration = duration
         toast?.setGravity(Gravity.CENTER, 0, 0)
         toast?.show()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun ensureToastView() {
+        if (toast != null) {
+            return
+        }
+        toast = Toast(appContext)
+        val view = LayoutInflater.from(appContext).inflate(R.layout.toast_utlis, null)
+        textView = view.findViewById(R.id.toast_message)
+        imageView = view.findViewById(R.id.toast_image)
+        toast?.view = view
     }
 }

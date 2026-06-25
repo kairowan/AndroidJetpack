@@ -5,9 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.google.android.material.tabs.TabLayoutMediator
 import com.example.basemodel.base.basefra.BaseFragment
-import com.ghn.cocknovel.BR
-import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentBookstoreBinding
 import com.ghn.cocknovel.ui.adapter.TabLayoutAdapter
 import com.ghn.cocknovel.viewmodel.BookStoreViewModel
@@ -17,7 +16,8 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 
 class BookstoreFragment : BaseFragment<FragmentBookstoreBinding, BookStoreViewModel>() {
     private val fragmentList = ArrayList<Fragment>()
-    var titles = ArrayList<String>()
+    private val titles = ArrayList<String>()
+    private var tabMediator: TabLayoutMediator? = null
 //    override fun initVariableId(): Int {
 //        return BR.model
 //    }
@@ -49,9 +49,12 @@ class BookstoreFragment : BaseFragment<FragmentBookstoreBinding, BookStoreViewMo
         titles.add("数据页面")
         titles.add("路由页面")
         titles.add("空")
-        mBinding.viewpage.adapter=
-            activity.let { TabLayoutAdapter(it!!.supportFragmentManager,fragmentList,titles) }
-        mBinding.mainTab.setupWithViewPager( mBinding.viewpage)
+        val adapter = TabLayoutAdapter(this, fragmentList, titles)
+        mBinding.viewpage.adapter = adapter
+        tabMediator?.detach()
+        tabMediator = TabLayoutMediator(mBinding.mainTab, mBinding.viewpage) { tab, position ->
+            tab.text = adapter.getPageTitle(position)
+        }.apply { attach() }
         mBinding.mainTab.getTabAt(0)!!.view.scaleX=1.5f
         mBinding.mainTab.getTabAt(0)!!.view.scaleY=1.5f
         mBinding.mainTab.addOnTabSelectedListener(object : OnTabSelectedListener {
@@ -68,5 +71,11 @@ class BookstoreFragment : BaseFragment<FragmentBookstoreBinding, BookStoreViewMo
                 (tab.view as View).scaleY = 1.5f
             }
         })
+    }
+
+    override fun onDestroyView() {
+        tabMediator?.detach()
+        tabMediator = null
+        super.onDestroyView()
     }
 }
