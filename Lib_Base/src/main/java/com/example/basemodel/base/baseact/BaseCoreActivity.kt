@@ -1,53 +1,55 @@
 package com.example.basemodel.base.baseact
 
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.LifecycleObserver
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import com.example.basemodel.base.basevm.BaseViewModel
 import com.therouter.TheRouter
-import com.trello.rxlifecycle4.components.support.RxAppCompatActivity
+import org.koin.core.error.NoDefinitionFoundException
+import org.koin.androidx.viewmodel.ext.android.viewModelForClass
 import java.lang.reflect.ParameterizedType
 
-/**
- * @author 浩楠
- * @date 2025/5/22 14:40
- *      _              _           _     _   ____  _             _ _
- *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
- *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
- *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
- *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- *  描述: TODO 最底层基类 绑定 ViewModel + ViewBinding
- */
 abstract class BaseCoreActivity<V : ViewBinding, VM : BaseViewModel> :
-    RxAppCompatActivity(), LifecycleObserver {
+    AppCompatActivity() {
 
     protected lateinit var mBinding: V
     protected lateinit var mViewModel: VM
 
-//    abstract fun initVariableId(): Int
     abstract fun initContentView(savedInstanceState: Bundle?): V
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = initContentView(savedInstanceState)
-        setContentView(mBinding.root)
+        setContentView(wrapContentView(mBinding.root))
 
         TheRouter.inject(this)
         initViewModel()
         lifecycle.addObserver(mViewModel)
     }
 
+    protected open fun wrapContentView(contentView: View): View = contentView
+
+    @Suppress("UNCHECKED_CAST")
     private fun initViewModel() {
         val modelClass = (javaClass.genericSuperclass as ParameterizedType)
             .actualTypeArguments[1] as Class<VM>
-        mViewModel = ViewModelProvider(this)[modelClass]
-        mViewModel.injectLifecycleProvider(this)
+        mViewModel = resolveViewModel(modelClass)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    @Suppress("UNCHECKED_CAST")
+    private fun resolveViewModel(modelClass: Class<VM>): VM {
+        return try {
+            viewModelForClass(modelClass.kotlin).value
+        } catch (exception: NoDefinitionFoundException) {
+            if (modelClass != BaseViewModel::class.java) {
+                throw exception
+            }
+            ViewModelProvider(
+                this,
+                ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+            )[modelClass]
+        }
     }
 }

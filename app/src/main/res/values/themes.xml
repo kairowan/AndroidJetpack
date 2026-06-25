@@ -16,6 +16,25 @@
         <!--        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>-->
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="Theme.Cocknovel.Start" parent="Theme.Cocknovel">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Cocknovel.Splash.Content" parent="Theme.Cocknovel.Start">
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+
+    <style name="Theme.Cocknovel.Start.Launcher" parent="Theme.Cocknovel.Splash.Content">
+        <!-- Android 11 及以下直接用启动图作为 starting window，避免先闪一层纯色背景。 -->
+        <item name="android:windowDisablePreview">false</item>
+        <item name="android:windowBackground">@drawable/background_image</item>
+    </style>
+
     <!--设置Tablayout字体大小-->
     <style name="TabLayoutTextSize" parent="TextAppearance.Design.Tab">
         <item name="android:textSize">18sp</item>

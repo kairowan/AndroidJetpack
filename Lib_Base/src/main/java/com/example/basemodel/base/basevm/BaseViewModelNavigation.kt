@@ -22,6 +22,7 @@ interface BaseViewModelNavigation : BaseViewModelLiveData {
     fun startActivity(clz: Class<out Activity>) {
         val params = hashMapOf<String, Any?>()
         params["CLASS"] = clz
+        @Suppress("UNCHECKED_CAST")
         uc.getStartActivityEvent().postValue(params as Map<String, Any>)
     }
 
@@ -32,6 +33,7 @@ interface BaseViewModelNavigation : BaseViewModelLiveData {
         val params = hashMapOf<String, Any?>()
         params["CLASS"] = clz
         params["BUNDLE"] = bundle
+        @Suppress("UNCHECKED_CAST")
         uc.getStartActivityEvent().postValue(params as Map<String, Any>)
     }
 
@@ -43,6 +45,7 @@ interface BaseViewModelNavigation : BaseViewModelLiveData {
         params["CLASS"] = clz
         params["BUNDLE"] = bundle
         params["REQUEST"] = requestCode
+        @Suppress("UNCHECKED_CAST")
         uc.getStartActivityEvent().postValue(params as Map<String, Any>)
     }
 
@@ -53,6 +56,7 @@ interface BaseViewModelNavigation : BaseViewModelLiveData {
         val params = mutableMapOf<String, Any?>()
         params["CANONICAL_NAME"] = packageName
         params["CLASS"] = className
+        @Suppress("UNCHECKED_CAST")
         uc.getStartModelActivityEvent().postValue(params as Map<String, Any>)
     }
 

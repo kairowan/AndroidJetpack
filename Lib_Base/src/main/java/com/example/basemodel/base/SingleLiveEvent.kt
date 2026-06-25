@@ -4,12 +4,11 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 open class SingleLiveEvent<T> : MutableLiveData<T?>() {
-    private val pendingObservers = ConcurrentHashMap<Observer<in T?>, AtomicBoolean>()
-    private val observerWrappers = ConcurrentHashMap<Observer<in T?>, Observer<T?>>()
+    private val pendingObservers = HashMap<Observer<in T?>, AtomicBoolean>()
+    private val observerWrappers = HashMap<Observer<in T?>, Observer<T?>>()
 
     @MainThread
     override fun observe(owner: LifecycleOwner, observer: Observer<in T?>) {

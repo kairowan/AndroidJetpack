@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.basemodel.base.basefra.BaseFragment
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.FragmentBookshelfBinding
 import com.ghn.cocknovel.viewmodel.RecommendViewModel

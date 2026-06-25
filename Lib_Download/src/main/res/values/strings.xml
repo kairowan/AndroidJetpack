@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flowdownload_action_pause">Pause</string>
+    <string name="flowdownload_action_resume">Resume</string>
+    <string name="flowdownload_action_cancel">Cancel</string>
+    <string name="flowdownload_action_retry">Retry</string>
+    <string name="flowdownload_action_open">Open</string>
+    <string name="flowdownload_action_install">Install</string>
+    <string name="flowdownload_action_share">Share</string>
+    <string name="flowdownload_action_share_chooser_title">Share file</string>
+
+    <string name="flowdownload_notification_title_success">%1$s download complete</string>
+    <string name="flowdownload_notification_title_failed">%1$s download failed</string>
+    <string name="flowdownload_notification_title_cancelled">%1$s cancelled</string>
+    <string name="flowdownload_notification_title_paused">%1$s paused</string>
+    <string name="flowdownload_notification_title_retry_waiting">%1$s waiting to retry</string>
+    <string name="flowdownload_notification_title_running">Downloading %1$s</string>
+
+    <string name="flowdownload_notification_message_progress">%1$d%% complete</string>
+    <string name="flowdownload_notification_message_transferring">Transferring file</string>
+    <string name="flowdownload_notification_message_starting">Preparing download connection</string>
+    <string name="flowdownload_notification_message_queued">Waiting for scheduler</string>
+    <string name="flowdownload_notification_message_retry_waiting_with_count">
+        Waiting to retry (%1$d/%2$d)
+    </string>
+    <string name="flowdownload_notification_message_retry_waiting">
+        Waiting to retry
+    </string>
+    <string name="flowdownload_notification_message_paused">
+        Resume supported from saved breakpoint
+    </string>
+    <string name="flowdownload_notification_message_success_content">
+        %1$s saved to the selected location
+    </string>
+    <string name="flowdownload_notification_message_success_file">File saved to %1$s</string>
+    <string name="flowdownload_notification_message_cancelled">Download cancelled</string>
+</resources>

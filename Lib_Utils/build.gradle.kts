@@ -10,6 +10,8 @@ android {
     configureAndroid()
 }
 
+configureKotlinJvm()
+
 dependencies {
     api(libs.androidx.core.ktx)
     api(libs.androidx.appcompat)
@@ -49,7 +51,6 @@ dependencies {
 //    api(libs.gencent.mmkv)
 //    api(libs.refresh.header.classics)
 //    api(libs.router)
-    api(libs.multidex)
 //    api(libs.github.xpopup)
 //    api(libs.dialogs.lifecycle)
 //    api(libs.dialogs.core)

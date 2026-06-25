@@ -9,6 +9,8 @@ android {
     configureAndroid()
 }
 
+configureKotlinJvm()
+
 dependencies {
     api(libs.github.titlebar)
     api(libs.github.xbanner)
@@ -24,7 +26,6 @@ dependencies {
 
     api(libs.github.glide)
 
-    api(libs.jessyan.autosize)
     api(libs.refresh.header.classics)
     api(libs.github.xpopup)
     api(libs.dialog.avi.library)
@@ -32,11 +33,4 @@ dependencies {
     api(libs.dialogs.lifecycle)
     api(libs.dialogs.core)
     api(libs.github.lqdbrv)
-
-    api(libs.github.titlebar)
-    api(libs.github.xbanner)
-    api(libs.github.xxPermissions)
-
-    api(libs.androidx.navigation.fragment)
-    api(libs.androidx.navigation.ui)
 }

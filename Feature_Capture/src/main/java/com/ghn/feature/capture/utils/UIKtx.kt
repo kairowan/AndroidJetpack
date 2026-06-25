@@ -70,14 +70,13 @@ inline fun <reified T : Activity> Activity.fly(
     intent: Intent = Intent(this, T::class.java),
     bundle: Bundle? = null,
     isFinish: Boolean = false,
-    requestCode: Int? = null,
     vararg params: Pair<String, Any> = emptyArray()
 ) {
     params.forEach { intent.putExtraEx(it) }
     bundle?.let { intent.putExtras(bundle) }
     try {
         intent.resolveActivity(packageManager)?.also {
-            if (requestCode == null) startActivity(intent) else startActivityForResult(intent, requestCode)
+            startActivity(intent)
             if (isFinish) finish()
         }
     } catch (e: ActivityNotFoundException) {
@@ -87,6 +86,7 @@ inline fun <reified T : Activity> Activity.fly(
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 fun Intent.putExtraEx(extra: Pair<String, Any>) {
     when (val data = extra.second) {
         is Array<*> -> {

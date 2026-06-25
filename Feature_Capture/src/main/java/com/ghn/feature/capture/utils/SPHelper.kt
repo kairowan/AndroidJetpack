@@ -2,6 +2,8 @@ package com.ghn.feature.capture.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.ghn.routermodule.feature.FeatureFlagStore
+import com.ghn.routermodule.feature.FeatureKeys
 
 /**
  * Author: zpj
@@ -12,8 +14,8 @@ internal val Context.sp: SharedPreferences get() = getSharedPreferences("cp_conf
 
 // 是否打开抓包开关
 internal var Context.isOpenNetworkCapture: Boolean
-    get() = sp.getBoolean("isOpenNetworkCapture", true)
-    set(value) = sp.edit().putBoolean("isOpenNetworkCapture", value).apply()
+    get() = FeatureFlagStore.isEnabled(FeatureKeys.NETWORK_CAPTURE, true)
+    set(value) = FeatureFlagStore.setEnabled(FeatureKeys.NETWORK_CAPTURE, value)
 
 // 是否折叠请求头
 internal var Context.isFoldRequestHeaders: Boolean

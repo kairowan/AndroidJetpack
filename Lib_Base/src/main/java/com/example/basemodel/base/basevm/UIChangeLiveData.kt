@@ -1,6 +1,5 @@
 package com.example.basemodel.base.basevm
 
-import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.example.basemodel.base.SingleLiveEvent
@@ -23,8 +22,6 @@ class UIChangeLiveData : SingleLiveEvent<Any?>() {
     private var onBackPressedEvent: SingleLiveEvent<Void>? = null
     private var setResultEvent: SingleLiveEvent<Map<String, String>>? = null
     private var finishResult: SingleLiveEvent<Int>? = null
-    private var startActivityForFragment: SingleLiveEvent<Map<String, Any>>? = null
-    private var setResultFragment: SingleLiveEvent<Map<String, Any>>? = null
     private var showDialog: SingleLiveEvent<String>? = null
     private var toastEvent: SingleLiveEvent<String>? = null
     private var dismissDialog: SingleLiveEvent<Void>? = null
@@ -46,18 +43,6 @@ class UIChangeLiveData : SingleLiveEvent<Any?>() {
         }
     }
 
-    fun getResultFragment(): SingleLiveEvent<Map<String, Any>> {
-        return createLiveData(setResultFragment).also {
-            setResultFragment = it
-        }
-    }
-
-    fun getStartActivityForFragment(): SingleLiveEvent<Map<String, Any>> {
-        return createLiveData(startActivityForFragment).also {
-            startActivityForFragment = it
-        }
-    }
-
     fun getFinishResult(): SingleLiveEvent<Int> {
         return createLiveData(finishResult).also {
             finishResult = it
@@ -72,7 +57,6 @@ class UIChangeLiveData : SingleLiveEvent<Any?>() {
     }
 
     fun getStartModelActivityEvent(): SingleLiveEvent<Map<String, Any>> {
-        Log.i("TAG", "getStartModelActivityEvent: 111")
         return createLiveData(getStartModelActivityEvent).also {
             getStartModelActivityEvent = it
         }

@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="com.google.android.gms.permisson.AD_ID" /> <!-- 网络权限 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 相机权限 -->
     <uses-permission android:name="android.permission.CAMERA" /> <!-- 读写文件权限 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -30,24 +31,10 @@
             android:name=".ui.activity.WebviewActivity"
             android:exported="false" />
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.cameraalbumtest.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
         <activity
             android:name=".ui.activity.MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -65,9 +52,18 @@
         </activity>
         <activity
             android:name=".ui.activity.StartActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Cocknovel.Start" />
+        <activity
+            android:name=".ui.activity.SplashActivity"
             android:exported="true"
-            android:theme="@style/start_photo">
+            android:noHistory="true"
+            android:theme="@style/Theme.Cocknovel.Start.Launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <meta-data
@@ -75,7 +71,7 @@
             android:value="360" />
         <meta-data
             android:name="design_height_in_dp"
-            android:value="640" /> <!-- 告知 XXPermissions 当前项目已经适配了分区存储特性 -->
+            android:value="640" />
         <meta-data
             android:name="ScopedStorage"
             android:value="true" />
@@ -84,12 +80,10 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.myFileProvider"
             android:exported="false"
-            android:grantUriPermissions="true"
-            tools:replace="android:authorities">
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"
-                tools:replace="android:resource" />
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 

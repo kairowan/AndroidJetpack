@@ -3,13 +3,9 @@ import com.android.build.api.dsl.LibraryExtension
 plugins {
     id("com.android.library")
     kotlin("android")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
 }
-kapt {
-    arguments {
-        arg("THEROUTER_MODULE_NAME", project.name)
-    }
-}
+
 android {
     (this as LibraryExtension).namespace = "com.ghn.feature.capture"
     configureAndroid()
@@ -18,8 +14,16 @@ android {
     }
 }
 
+configureKotlinJvm()
+
+ksp {
+    arg("KOIN_DEFAULT_MODULE", "false")
+}
+
 dependencies {
-    kapt(libs.apt)
+    ksp(libs.apt)
     implementation(project(":Lib_Base"))
+    implementation(libs.koin.annotations)
+    ksp(libs.koin.ksp.compiler)
 
 }

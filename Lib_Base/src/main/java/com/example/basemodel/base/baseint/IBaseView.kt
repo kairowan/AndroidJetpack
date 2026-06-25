@@ -20,22 +20,22 @@ interface IBaseView : DefaultLifecycleObserver {
     /**
      * 初始化界面传递参数，例如获取 intent 传值
      */
-    fun initParam()
+    fun initParam() {}
 
     /**
      * 初始化界面元素，例如 RecyclerView、按钮等 UI 元素
      */
-    fun initView()
+    fun initView() {}
 
     /**
      * 初始化界面观察者的监听，例如 LiveData、Flow 等
      */
-    fun initViewObservable()
+    fun initViewObservable() {}
 
     /**
      * 初始化数据，例如从网络/本地加载数据
      */
-    fun initData()
+    fun initData() {}
 
     override fun onCreate(owner: LifecycleOwner) {
         initParam()

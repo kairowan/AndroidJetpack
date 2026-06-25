@@ -3,12 +3,14 @@ import com.android.build.api.dsl.LibraryExtension
 plugins {
     id ("com.android.library")
     id ("org.jetbrains.kotlin.android")
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
 }
 android {
     (this as LibraryExtension).namespace ="com.ghn.lib.base"
     configureAndroid()
 }
+
+configureKotlinJvm()
 
 dependencies {
     api(project(":Lib_Ble"))
@@ -17,9 +19,12 @@ dependencies {
     api(project(":Lib_Router"))
     api(project(":Lib_Network"))
     api(project(":Lib_UI_Common"))
-
+    api(project(":Lib_Download"))
+    api(project(":Lib_Upload"))
+    api(libs.androidaop.annotation)
+    api(libs.androidaop.extra)
     api(libs.androidx.room.ktx)
     api(libs.androidx.room.runtime)
-    api(libs.rxlifecycle.rxlifecycle4.android)
-    api(libs.rxlifecycle.rxlifecycle4.components)
+    api(libs.koin.android)
+    ksp(libs.androidaop.apt)
 }

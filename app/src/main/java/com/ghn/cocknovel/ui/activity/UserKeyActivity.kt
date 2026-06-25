@@ -3,7 +3,6 @@ package com.ghn.cocknovel.ui.activity
 import android.os.Bundle
 import com.example.basemodel.base.baseact.BaseActivity
 import com.example.basemodel.base.basevm.BaseViewModel
-import com.ghn.cocknovel.BR
 import com.ghn.cocknovel.databinding.UserLeyActivityBinding
 import com.ghn.cocknovel.ui.fragment.DemoLoginEvent
 import com.ghn.eventmodule.EventChannel.observeEvent

@@ -2,12 +2,12 @@ package com.ghn.feature.capture.ui.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.ghn.feature.capture.R
 import com.ghn.feature.capture.databinding.ActivityNetworkLogBinding
 import com.ghn.feature.capture.ui.adapter.NetworkLogPagerAdapter
 import com.ghn.feature.capture.ui.fragment.RequestInfoFragment
 import com.ghn.feature.capture.ui.fragment.ResponseInfoFragment
 import com.ghn.feature.capture.utils.binding
+import com.google.android.material.tabs.TabLayoutMediator
 
 
 /**
@@ -21,17 +21,18 @@ class NetworkLogActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_network_log)
         mBinding.apply {
             NetworkCapture.currentNetworkLog?.let {
-                mPageAdapter = NetworkLogPagerAdapter(supportFragmentManager).apply {
+                mPageAdapter = NetworkLogPagerAdapter(this@NetworkLogActivity).apply {
                     addFragment(RequestInfoFragment.newInstance(), "请求")
                     addFragment(ResponseInfoFragment.newInstance(), "响应")
                 }
                 vpContent.adapter = mPageAdapter
-                tlContent.setupWithViewPager(vpContent)
+                TabLayoutMediator(tlContent, vpContent) { tab, position ->
+                    tab.text = mPageAdapter.getPageTitle(position)
+                }.attach()
                 // 去掉Tab长按提示文字
-                (0 until mPageAdapter.count).forEach { tlContent.getTabAt(it)?.view?.isLongClickable = false }
+                (0 until mPageAdapter.itemCount).forEach { tlContent.getTabAt(it)?.view?.isLongClickable = false }
             }
         }
 

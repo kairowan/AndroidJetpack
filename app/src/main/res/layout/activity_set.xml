@@ -9,26 +9,15 @@
         android:fitsSystemWindows="true"
         tools:context=".ui.activity.SetActivity">
 
-        <com.hjq.bar.TitleBar
-            android:id="@+id/titlebar"
-            android:layout_width="match_parent"
-            android:layout_height="45dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:title="设置"
-            app:titleColor="@color/hei"
-            app:titleSize="21sp"
-            app:titleStyle="bold" />
-
         <LinearLayout
             android:id="@+id/lly_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/titlebar">
+            app:layout_constraintTop_toTopOf="parent">
             <LinearLayout
-                android:onClick="@{()->mode.getSwitchFont()}"
+                android:id="@+id/layout_font_settings"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:gravity="center"

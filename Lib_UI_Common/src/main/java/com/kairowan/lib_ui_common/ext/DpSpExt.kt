@@ -2,6 +2,13 @@ package com.kairowan.lib_ui_common.ext
 
 import android.content.res.Resources
 import android.util.TypedValue
+
+private val systemResources: Resources
+    get() = Resources.getSystem()
+
+private val fontScaledDensity: Float
+    get() = systemResources.displayMetrics.density * systemResources.configuration.fontScale
+
 /**
  * @author 浩楠
  * @date 2025/6/11 16:59
@@ -18,10 +25,10 @@ import android.util.TypedValue
  */
 
 val Int.dp: Int
-    get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+    get() = (this * systemResources.displayMetrics.density).toInt()
 
 val Float.dp: Float
-    get() = this * Resources.getSystem().displayMetrics.density
+    get() = this * systemResources.displayMetrics.density
 
 /**
  * ========== sp → px ==========
@@ -31,14 +38,14 @@ val Int.sp: Int
     get() = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_SP,
         this.toFloat(),
-        Resources.getSystem().displayMetrics
+        systemResources.displayMetrics
     ).toInt()
 
 val Float.sp: Float
     get() = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_SP,
         this,
-        Resources.getSystem().displayMetrics
+        systemResources.displayMetrics
     )
 
 /**
@@ -46,37 +53,37 @@ val Float.sp: Float
  */
 
 val Int.pxToDp: Int
-    get() = (this / Resources.getSystem().displayMetrics.density).toInt()
+    get() = (this / systemResources.displayMetrics.density).toInt()
 
 val Float.pxToDp: Float
-    get() = this / Resources.getSystem().displayMetrics.density
+    get() = this / systemResources.displayMetrics.density
 
 /**
  * ========== px → sp ==========
  */
 
 val Int.pxToSp: Int
-    get() = (this / Resources.getSystem().displayMetrics.scaledDensity).toInt()
+    get() = (this / fontScaledDensity).toInt()
 
 val Float.pxToSp: Float
-    get() = this / Resources.getSystem().displayMetrics.scaledDensity
+    get() = this / fontScaledDensity
 
 /**
  * ========== dp → sp ==========
  */
 
 val Int.dpToSp: Int
-    get() = (this.dp / Resources.getSystem().displayMetrics.scaledDensity).toInt()
+    get() = (this.dp / fontScaledDensity).toInt()
 
 val Float.dpToSp: Float
-    get() = this.dp / Resources.getSystem().displayMetrics.scaledDensity
+    get() = this.dp / fontScaledDensity
 
 /**
  * ========== sp → dp ==========
  */
 
 val Int.spToDp: Int
-    get() = (this.sp / Resources.getSystem().displayMetrics.density).toInt()
+    get() = (this.sp / systemResources.displayMetrics.density).toInt()
 
 val Float.spToDp: Float
-    get() = this.sp / Resources.getSystem().displayMetrics.density
+    get() = this.sp / systemResources.displayMetrics.density

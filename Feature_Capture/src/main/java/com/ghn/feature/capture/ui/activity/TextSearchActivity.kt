@@ -14,6 +14,7 @@ import com.ghn.feature.capture.utils.LogHelper.TAG
 import com.ghn.feature.capture.utils.binding
 import com.ghn.feature.capture.utils.getColorRes
 import com.ghn.feature.capture.utils.longToast
+import com.ghn.lib.base.aop.TraceTime
 
 import java.util.regex.PatternSyntaxException
 
@@ -83,6 +84,7 @@ class TextSearchActivity : AppCompatActivity() {
     /**
      * 查找匹配文本
      * */
+    @TraceTime("capture_text_search_match", warnAtMillis = 16L)
     private fun searchMatchText() {
         mMatchRangeList.clear()
         mBinding.apply {

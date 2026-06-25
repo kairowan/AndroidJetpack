@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.Cocknovel.Start.Launcher" parent="Theme.SplashScreen">
+        <!-- Android 12+ 只保留系统启动页的过渡职责，真正的满屏图交给 SplashActivity 内容页。 -->
+        <item name="windowSplashScreenBackground">@color/transparent</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_transparent_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/transparent</item>
+        <item name="windowSplashScreenAnimationDuration">0</item>
+        <item name="postSplashScreenTheme">@style/Theme.Cocknovel.Splash.Content</item>
+    </style>
+</resources>

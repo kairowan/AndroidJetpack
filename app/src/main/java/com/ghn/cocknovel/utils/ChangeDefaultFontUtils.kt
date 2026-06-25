@@ -19,7 +19,8 @@ import java.lang.reflect.Field
 object ChangeDefaultFontUtils {
     fun setDefaultFont(
         context: Context,
-        staticTypefaceFieldName: String?, fontAssetName: String?
+        staticTypefaceFieldName: String,
+        fontAssetName: String
     ) {
         val regular = Typeface.createFromAsset(
             context.assets,
@@ -30,13 +31,13 @@ object ChangeDefaultFontUtils {
 
 
     private fun replaceFont(
-        staticTypefaceFieldName: String?,
+        staticTypefaceFieldName: String,
         newTypeface: Typeface?
     ) {
         try {
             val staticField: Field = Typeface::class.java
                 .getDeclaredField(staticTypefaceFieldName)
-            staticField.setAccessible(true)
+            staticField.isAccessible = true
             staticField.set(null, newTypeface)
         } catch (e: NoSuchFieldException) {
             e.printStackTrace()

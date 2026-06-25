@@ -1,7 +1,7 @@
 package com.example.basemodel.base.init
 
 import com.kairowan.lib_ui_common.helper.ToastHelper
-import com.kt.NetworkModel.callback.INetworkCallback
+import com.kt.network.callback.INetworkCallback
 
 /**
  * @author 浩楠

@@ -10,6 +10,8 @@ android {
     configureAndroid()
 }
 
+configureKotlinJvm()
+
 dependencies {
 
     implementation(libs.androidx.appcompat)

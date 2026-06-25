@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
+    id("android.aop")
 }
 android {
 
@@ -45,21 +46,34 @@ android {
 
     buildFeatures {
         viewBinding = true
-        dataBinding = true
     }
+}
+
+configureKotlinJvm()
+
+androidAopConfig {
+    include(
+        "com.ghn.cocknovel",
+        "com.ghn.feature.capture",
+        "com.ghn.module_login",
+        "com.ghn.routermodule"
+    )
+    exclude("kotlin.jvm", "kotlin.internal", "kotlinx.coroutines.internal", "kotlinx.coroutines.android")
+    verifyLeafExtends = false
+}
+
+ksp {
+    arg("KOIN_DEFAULT_MODULE", "false")
 }
 
 dependencies {
     implementation(project(":Lib_Base"))
     implementation(project(":Feature_Capture"))
     implementation(project(":module_login"))
-
-//    implementation(libs.github.titlebar)
-//    implementation(libs.github.xbanner)
-//    implementation(libs.github.xxPermissions)
-//
-//    implementation(libs.androidx.navigation.fragment)
-//    implementation(libs.androidx.navigation.ui)
-    kapt(libs.apt)
+    implementation(libs.koin.annotations)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.jessyan.autosize)
+    implementation(libs.github.jsBridge)
+    ksp(libs.apt)
+    ksp(libs.koin.ksp.compiler)
 }
-

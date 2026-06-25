@@ -20,6 +20,11 @@ object RouterPath {
         const val UserKEY = "/user/key"
     }
 
+    object Setting {
+        const val SETTINGS = "/setting/main"
+        const val FONT = "/setting/font"
+    }
+
     object Web {
         const val WEBVIEW = "/web/browser"
     }

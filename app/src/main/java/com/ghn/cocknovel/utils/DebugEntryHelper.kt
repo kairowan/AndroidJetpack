@@ -8,10 +8,14 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.ghn.cocknovel.R
-import com.kairowan.lib_ui_common.ext.dp
+import com.ghn.routermodule.aop.debug.DebugOnly
 import com.ghn.routermodule.AppRouter
-import com.kt.ktmvvm.lib.BuildConfig
+import com.ghn.routermodule.feature.FeatureFlagStore
+import com.ghn.routermodule.feature.FeatureKeys
+import com.kairowan.lib_ui_common.ext.dp
+import com.kairowan.lib_ui_common.helper.ToastHelper
 
 
 /**
@@ -26,9 +30,8 @@ import com.kt.ktmvvm.lib.BuildConfig
  */
 object DebugEntryHelper {
 
+    @DebugOnly
     fun attachToActivity(activity: Activity) {
-        if (!BuildConfig.DEBUG) return // 仅调试环境生效
-
         val context = activity
         val rootView = activity.window.decorView as? ViewGroup ?: return
 
@@ -41,15 +44,11 @@ object DebugEntryHelper {
             alpha = 0.8f
             setOnClickListener {
                 Log.i("attachToActivity", "点击事件: ")
-                AppRouter.goToNet()
-//                val className = "cn.coderpig.cp_network_capture.ui.activity.NetworkCaptureActivity"
-//                try {
-//                    val clazz = Class.forName(className)
-//                    val intent = Intent(context, clazz)
-//                    context.startActivity(intent)
-//                } catch (e: Exception) {
-//                    Toast.makeText(context, "抓包组件未集成", Toast.LENGTH_SHORT).show()
-//                }
+                AppRouter.openNetworkCapture(activity)
+            }
+            setOnLongClickListener {
+                showFeatureToggleDialog(activity)
+                true
             }
         }
 
@@ -63,5 +62,25 @@ object DebugEntryHelper {
         }
 
         rootView.addView(debugBtn, lp)
+    }
+
+    private fun showFeatureToggleDialog(activity: Activity) {
+        val items = arrayOf("抓包功能", "字体设置")
+        val keys = arrayOf(FeatureKeys.NETWORK_CAPTURE, FeatureKeys.FONT_SETTINGS)
+        val checkedItems = keys.map { FeatureFlagStore.isEnabled(it, true) }.toBooleanArray()
+        AlertDialog.Builder(activity)
+            .setTitle("功能开关")
+            .setMultiChoiceItems(items, checkedItems) { _, which, isChecked ->
+                checkedItems[which] = isChecked
+            }
+            .setPositiveButton("应用") { dialog, _ ->
+                keys.forEachIndexed { index, key ->
+                    FeatureFlagStore.setEnabled(key, checkedItems[index])
+                }
+                dialog.dismiss()
+                ToastHelper.showToast("功能开关已更新")
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 }

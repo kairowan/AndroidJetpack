@@ -10,18 +10,10 @@ import com.example.basemodel.base.basevm.BaseViewModel
 import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.ActivityMainBinding
 import com.ghn.cocknovel.utils.DebugEntryHelper
-import com.ghn.routermodule.AppRouter
-import com.ghn.routermodule.RouterPath
-import com.hjq.permissions.OnPermissionCallback
-import com.hjq.permissions.Permission
-import com.hjq.permissions.XXPermissions
+import com.ghn.lib.base.aop.permission.capability.RequireMediaPermission
 
 
 class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
-//    override fun initVariableId(): Int {
-//        return BR.mode
-//    }
-
     override fun initContentView(savedInstanceState: Bundle?): ActivityMainBinding =
         ActivityMainBinding.inflate(layoutInflater)
 
@@ -31,8 +23,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
     }
 
     override fun initView() {
-        AppRouter.goTo(RouterPath.Login.LoginAC)
-        Log.i("initView", "1111111")
         DebugEntryHelper.attachToActivity(this)
         mBinding.navView.post {
             val navController = findNavController(R.id.nav_host_fragment)
@@ -45,27 +35,14 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
     }
 
     override fun initData() {
-        XXPermissions.with(this).permission(Permission.CAMERA)
-            .permission(Permission.READ_MEDIA_IMAGES)
-            .request(object : OnPermissionCallback {
-                override fun onGranted(permissions: MutableList<String>, allGranted: Boolean) {
-                    if (!allGranted) {
-                        showMsg("获取部分权限成功，但部分权限未正常授予")
-                        return
-                    }
-                }
+        requestMediaPermission()
+    }
 
-                override fun onDenied(permissions: MutableList<String>, doNotAskAgain: Boolean) {
-                    if (doNotAskAgain) {
-                        showMsg("被永久拒绝授权，请手动授权")
-                        // 如果是被永久拒绝就跳转到应用权限系统设置页面
-                        XXPermissions.startPermissionActivity(this@MainActivity, permissions)
-                    } else {
-                        showMsg("获取权限失败")
-                    }
-                }
-            })
-        showMsgWithImage("提示", com.ghn.lib.base.R.mipmap.ic_my_handes)
+    @RequireMediaPermission(
+        tag = "main_media_permission"
+    )
+    private fun requestMediaPermission() {
+        showMsgWithImage("媒体权限已获取", com.ghn.lib.base.R.mipmap.ic_my_handes)
     }
 
     private var exitTime: Long = 0
@@ -84,5 +61,3 @@ class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
 
 
 }
-
-

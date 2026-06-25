@@ -21,20 +21,7 @@
 -keep class kotlin.** { *; }
 -keepclassmembers class kotlin.Metadata { *; }
 
-
--keep class dagger.** { *; }
--keep class javax.inject.** { *; }
--keep class com.google.dagger.** { *; }
--dontwarn dagger.**
--dontwarn javax.inject.**
--dontwarn com.google.dagger.**
-
-# Hilt 注入类保留注解信息
 -keepattributes *Annotation*
--keep class * {
-    @dagger.* <fields>;
-    @javax.inject.* <fields>;
-}
 
 # 保留 BannerModel 及其字段（最核心）
 -keep class **.WBanner$Data { *; }
@@ -53,11 +40,6 @@
 }
 
 
-# 如果没有使用注解也保守保留字段
--keepclassmembers class ** {
-    <fields>;
-}
-
 # ViewBinding 支持
 -keep class **.databinding.*Binding { *; }
 -keep class **.BR { *; }
@@ -70,11 +52,6 @@
 -dontwarn okio.**
 -keep class okio.** { *; }
 
-#RxJava & RxLifecycle
--dontwarn rx.**
--keep class rx.** { *; }
--keep class com.trello.rxlifecycle4.** { *; }
--dontwarn com.trello.rxlifecycle4.**
 #Glide 4.x
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep public class * extends com.bumptech.glide.module.AppGlideModule

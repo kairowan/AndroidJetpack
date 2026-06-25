@@ -3,7 +3,7 @@ import com.android.build.api.dsl.LibraryExtension
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -14,7 +14,15 @@ android {
     }
 }
 
+configureKotlinJvm()
+
+ksp {
+    arg("KOIN_DEFAULT_MODULE", "false")
+}
+
 dependencies {
     implementation(project(":Lib_Base"))
-    kapt(libs.apt)
+    implementation(libs.koin.annotations)
+    ksp(libs.apt)
+    ksp(libs.koin.ksp.compiler)
 }

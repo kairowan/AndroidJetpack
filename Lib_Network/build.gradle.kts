@@ -3,8 +3,6 @@ import com.android.build.api.dsl.LibraryExtension
 plugins {
     id("com.android.library")
     id("kotlin-android")
-    id("kotlin-kapt")
-    kotlin("android")
 }
 
 android {
@@ -12,14 +10,16 @@ android {
     configureAndroid()
     buildFeatures {
         viewBinding = true
-        dataBinding = true
         buildConfig = true
     }
 
 
 }
 
+configureKotlinJvm()
+
 dependencies {
+    api(libs.androidx.core.ktx)
     api(libs.okhttp.okhttp4.logging)
     api(libs.okhttp.okhttp4)
     api(libs.retrofit.retrofit2)
@@ -27,4 +27,5 @@ dependencies {
     api(libs.retrofit.retrofit2.scalars)
     api(libs.jetbrains.annotations)
     api(libs.aliyun.httpdns)
+    api(libs.kotlinx.core)
 }
