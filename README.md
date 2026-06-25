@@ -25,6 +25,16 @@
 | 🔹 Fragment 自动生命周期订阅 | `Fragment.observeEvent<T>(sticky = false, block)`  | 自动跟随 Fragment 生命周期，只在活跃时收集事件  |
 | 🔹 Activity 自动生命周期订阅 | `ComponentActivity.observeEvent<T>(sticky, block)` | 自动跟随 Activity 生命周期，只在活跃时收集事件  |
 
+### 3. 新增了ble模块（通过nordicsemi进行的一个基础封装,使用起来更加解耦）
+| 功能点 | 核心类/方法 | 说明 |
+| :--- | :--- | :--- |
+| 🔹 **核心控制层 (Driver)** | `CBleManager` | **(核心)** 基于 Nordic 库封装的底层驱动，负责具体的 GATT 交互、Notify 队列与线程切换 |
+| 🔹 **全局单例管家 (Repo)** | `BleRepository` | 全局维护唯一的蓝牙实例，对外提供连接、断开等统一入口，**业务层主要和它打交道** |
+| 🔹 **协议配置中心** | `DeviceProfile` | 集中管理所有的 **Service/Char UUID** 以及具体的 **指令集 (Commands)** |
+| 🔹 **状态监听接口** | `BleStateObserver` | 定义连接状态回调 (`onConnecting`, `onDeviceReady`, `onDisconnected`)，支持多端监听 |
+| 🔹 **数据监听接口** | `BleDataObserver` | 定义数据接收回调 (`onDataReceived`)，自动分发 Device、Byte 和 Hex String |
+| 🔹 **业务模块基类** | `BaseBleModule` | 所有业务模块（如电量、OTA）的父类，封装了数据分发 (`onReceive`) 和指令发送 (`send`) 逻辑 |
+| 🔹 **工具类** | `BleUtils` | 提供 Byte 数组与 Hex 字符串的高效相互转换工具，方便日志打印与调试 |
 
 欢迎在 **Issue** 中提交对本仓库的改进建议~
 有问题请联系QQ:1931672489

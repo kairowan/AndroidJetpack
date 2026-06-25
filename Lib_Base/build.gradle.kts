@@ -11,10 +11,11 @@ android {
 }
 
 dependencies {
+    api(project(":Lib_Ble"))
     api(project(":Lib_Utils"))
-    api(project(":Lib_Network"))
-    api(project(":Lib_Router"))
     api(project(":Lib_Event"))
+    api(project(":Lib_Router"))
+    api(project(":Lib_Network"))
     api(project(":Lib_UI_Common"))
 
     api(libs.androidx.room.ktx)
