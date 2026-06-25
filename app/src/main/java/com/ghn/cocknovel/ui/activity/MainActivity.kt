@@ -11,8 +11,10 @@ import com.ghn.cocknovel.R
 import com.ghn.cocknovel.databinding.ActivityMainBinding
 import com.ghn.cocknovel.utils.DebugEntryHelper
 import com.ghn.lib.base.aop.permission.capability.RequireMediaPermission
+import com.ghn.routermodule.RouterPath
+import com.therouter.router.Route
 
-
+@Route(path = RouterPath.Main.HOME)
 class MainActivity : BaseActivity<ActivityMainBinding, BaseViewModel>() {
     override fun initContentView(savedInstanceState: Bundle?): ActivityMainBinding =
         ActivityMainBinding.inflate(layoutInflater)

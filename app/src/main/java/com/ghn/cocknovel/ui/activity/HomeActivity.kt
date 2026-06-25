@@ -20,7 +20,7 @@ import com.therouter.router.Route
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
  *  描述: TODO
  */
-@Route(path = RouterPath.Main.HOME)
+
 class HomeActivity : BaseActivity<HomeActivityBinding, BaseViewModel>() {
 
     private lateinit var statusController: StatusController

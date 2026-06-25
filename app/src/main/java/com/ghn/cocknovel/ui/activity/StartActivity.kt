@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.example.basemodel.base.baseact.BaseActivity
 import com.ghn.cocknovel.databinding.ActivityStartBinding
 import com.ghn.cocknovel.viewmodel.BookStoreViewModel
+import com.ghn.routermodule.AppRouter
 import com.ghn.routermodule.aop.guard.PreventRepeat
 import com.kt.network.utils.RandomverificationCode
 
@@ -77,7 +78,8 @@ class StartActivity : BaseActivity<ActivityStartBinding, BookStoreViewModel>() {
         toastOnBlocked = false
     )
     private fun onSignInClick(view: View) {
-        mViewModel.getMain("18507174506")
+//        mViewModel.getMain("18507174506")
+        AppRouter.openHome(this@StartActivity)
     }
 
     private fun updateVerifyCode() {

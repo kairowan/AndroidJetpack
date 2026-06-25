@@ -76,7 +76,7 @@ class SplashActivity : AppCompatActivity() {
 
     private fun navigateToStart() {
         startActivity(Intent(this, StartActivity::class.java))
-        overridePendingTransition(0, 0)
+        overridePendingTransition(R.anim.no_anim, R.anim.no_anim)
         finish()
     }
 }
