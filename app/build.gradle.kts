@@ -1,22 +1,43 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     alias(libs.plugins.kotlinmvvm.android.application.compose)
     alias(libs.plugins.kotlin.serialization)
-    id("org.jetbrains.kotlin.kapt")
+}
+
+val navigationMode = providers.gradleProperty("APP_NAVIGATION_MODE")
+    .orElse("single_activity")
+    .get()
+require(navigationMode in setOf("single_activity", "multi_activity")) {
+    "APP_NAVIGATION_MODE 仅支持 single_activity 或 multi_activity，当前值: $navigationMode"
+}
+
+val appEnvironment = providers.gradleProperty("APP_ENVIRONMENT")
+    .orElse("production")
+    .get()
+require(appEnvironment in setOf("development", "dev", "staging", "stage", "production", "prod")) {
+    "APP_ENVIRONMENT 仅支持 development、staging 或 production，当前值: $appEnvironment"
+}
+val normalizedAppEnvironment = when (appEnvironment) {
+    "development", "dev" -> "development"
+    "staging", "stage" -> "staging"
+    else -> "production"
 }
 
 android {
-    namespace = "com.ghn.cocknovel"
+    namespace = "com.kotlinmvvm.app"
     defaultConfig {
-        applicationId = "com.ghn.cocknovel"
+        applicationId = "com.kotlinmvvm.compose.scaffold"
+        testInstrumentationRunner = "com.kotlinmvvm.app.testing.AppTestRunner"
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
+        buildConfigField("String", "APP_NAVIGATION_MODE", "\"$navigationMode\"")
+        buildConfigField("String", "APP_ENVIRONMENT", "\"production\"")
     }
+
+    buildFeatures.buildConfig = true
 
     buildTypes {
         getByName("release") {
+            buildConfigField("String", "APP_ENVIRONMENT", "\"production\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -24,38 +45,35 @@ android {
             )
         }
         getByName("debug") {
+            buildConfigField("String", "APP_ENVIRONMENT", "\"$normalizedAppEnvironment\"")
             isMinifyEnabled = false
         }
     }
 }
 
 dependencies {
-    implementation(project(":Lib_Network"))
-    implementation(project(":feature_home"))
-    implementation(project(":feature_detail"))
-    implementation(project(":feature_shorts"))
-    implementation(project(":core_designsystem"))
-    implementation(project(":core_ui"))
-    implementation(project(":core_data"))
-    implementation(project(":core_model"))
-    
-    implementation(libs.androidx.appcompat)
-    implementation(libs.google.material)
+    implementation(project(":feature-home"))
+    implementation(project(":feature-detail"))
+    implementation(project(":feature-shorts"))
+    implementation(project(":core-designsystem"))
+    implementation(project(":core-network"))
+    implementation(project(":core-player"))
+    implementation(project(":core-ui"))
+    implementation(project(":data-feed"))
+    implementation(project(":domain-feed"))
+
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.lifecycle.viewModelNavigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.hilt.navigation.compose)
-    kapt(libs.apt)
-}
+    implementation(libs.coil.compose)
 
-kapt {
-    correctErrorTypes = true
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        languageVersion.set(KotlinVersion.KOTLIN_1_9)
-        apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    }
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

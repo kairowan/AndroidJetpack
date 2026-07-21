@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_ui_empty">暂无数据</string>
+    <string name="core_ui_load_failed">加载失败</string>
+    <string name="core_ui_retry">重试</string>
+    <string name="core_ui_unknown_error">未知错误</string>
+</resources>

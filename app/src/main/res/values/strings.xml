@@ -1,12 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">鲸鱼阅读</string>
-    <string name="bookstore">书城</string>
-    <string name="classification">分类</string>
-    <string name="bookshelf">书架</string>
-    <string name="mine">我的</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <!-- TODO: mine   -->
-    <string name="mineName">登录即可提现</string>
+    <string name="app_name">Compose Scaffold</string>
+    <string name="navigation_home">首页</string>
+    <string name="navigation_shorts">短视频</string>
+    <string name="app_diagnostic_log_tag">ComposeScaffold-Diagnostic</string>
+    <string name="app_diagnostic_task_format">任务=%1$s 事件=%2$s</string>
+    <string name="app_diagnostic_network_format">网络失败=%1$s 可重试=%2$s</string>
+    <string name="app_diagnostic_cache_format">缓存来源=%1$s 操作=%2$s</string>
 </resources>

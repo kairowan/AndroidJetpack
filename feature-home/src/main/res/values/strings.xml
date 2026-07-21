@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_source_authors">作者</string>
+    <string name="home_source_category">分类</string>
+    <string name="home_source_discovery">发现</string>
+    <string name="home_source_follow">关注</string>
+    <string name="home_source_hot">热门</string>
+    <string name="home_source_selected">精选</string>
+    <string name="home_video_metadata">%1$s / #%2$s</string>
+    <string name="home_author_avatar">%1$s 的头像</string>
+    <string name="home_error_no_connection">网络不可用，请检查连接后重试</string>
+    <string name="home_error_timeout">请求超时，请稍后重试</string>
+    <string name="home_error_unauthorized">登录状态已失效，请重新登录</string>
+    <string name="home_error_server">服务器暂时不可用，请稍后重试</string>
+    <string name="home_error_invalid_response">服务数据异常，请稍后重试</string>
+    <string name="home_error_not_found">未找到对应内容</string>
+    <string name="home_error_unknown">加载失败，请稍后重试</string>
+    <string name="home_no_more">— 没有更多了 —</string>
+    <string name="home_preview_header">Compose 推荐</string>
+    <string name="home_preview_title">可复用的 Compose 页面架构</string>
+    <string name="home_preview_description">Route 管理依赖，Screen 只渲染状态。</string>
+    <string name="home_preview_category">Android</string>
+    <string name="home_preview_author">Compose Scaffold</string>
+</resources>

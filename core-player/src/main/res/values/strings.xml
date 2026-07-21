@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_player_back">返回</string>
+    <string name="core_player_rewind">后退</string>
+    <string name="core_player_play">播放</string>
+    <string name="core_player_pause">暂停</string>
+    <string name="core_player_forward">快进</string>
+</resources>

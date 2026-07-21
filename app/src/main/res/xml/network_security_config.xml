@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
+    <!-- 生产默认拒绝全部明文流量；旧式业务资源必须先经过受控 Host 策略升级为 HTTPS。 -->
+    <base-config cleartextTrafficPermitted="false" />
 </network-security-config>

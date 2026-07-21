@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shorts_author">@%1$s</string>
+    <string name="shorts_category">#%1$s</string>
+    <string name="shorts_empty">暂无视频</string>
+    <string name="shorts_exit_fullscreen">退出全屏</string>
+    <string name="shorts_landscape_fullscreen">横屏全屏</string>
+    <string name="shorts_portrait_fullscreen">竖屏全屏</string>
+    <string name="shorts_switch_landscape">切换横屏</string>
+    <string name="shorts_switch_portrait">切换竖屏</string>
+    <string name="shorts_author_avatar">%1$s 的头像</string>
+    <string name="shorts_error_no_connection">网络不可用，请检查连接后重试</string>
+    <string name="shorts_error_timeout">请求超时，请稍后重试</string>
+    <string name="shorts_error_unauthorized">登录状态已失效，请重新登录</string>
+    <string name="shorts_error_server">服务器暂时不可用，请稍后重试</string>
+    <string name="shorts_error_invalid_response">服务数据异常，请稍后重试</string>
+    <string name="shorts_error_not_found">未找到对应内容</string>
+    <string name="shorts_error_unknown">加载失败，请稍后重试</string>
+</resources>
