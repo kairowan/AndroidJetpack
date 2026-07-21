@@ -10,12 +10,10 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.kotlinmvvm.app.navigation.model.AppRoute
-import com.kotlinmvvm.app.navigation.model.HomeDestination
-import com.kotlinmvvm.app.navigation.model.ShortsDestination
 
 /**
  * @author 浩楠
- * @date 2026/7/20 13:28
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -27,7 +25,7 @@ import com.kotlinmvvm.app.navigation.model.ShortsDestination
 class AppNavigationState internal constructor(
     private val topLevelRouteState: MutableState<AppRoute>,
     val backStacks: Map<AppRoute, NavBackStack<NavKey>>,
-    private val startRoute: AppRoute = HomeDestination
+    private val startRoute: AppRoute
 ) {
     var topLevelRoute: AppRoute
         get() = topLevelRouteState.value
@@ -51,11 +49,9 @@ class AppNavigationState internal constructor(
         }
     }
 
-    /** 切换 Home 或 Shorts 顶层目的地，并保留另一个目的地的完整返回栈。 */
+    /** 切换已注册的顶层目的地，并保留其他顶层目的地的完整返回栈。 */
     fun navigateTopLevel(route: AppRoute) {
-        require(route == HomeDestination || route == ShortsDestination) {
-            "顶层路由只允许 Home 或 Shorts"
-        }
+        require(route in backStacks) { "顶层路由未注册返回栈: $route" }
         if (topLevelRoute != route) topLevelRoute = route
     }
 
@@ -80,16 +76,16 @@ class AppNavigationState internal constructor(
 /** 创建可跨配置变化和进程恢复的应用导航状态。 */
 @Composable
 fun rememberAppNavigationState(): AppNavigationState {
-    val topLevelRouteState = rememberSerializable { mutableStateOf<AppRoute>(HomeDestination) }
-    val homeBackStack = rememberNavBackStack(HomeDestination)
-    val shortsBackStack = rememberNavBackStack(ShortsDestination)
-    return remember(topLevelRouteState, homeBackStack, shortsBackStack) {
+    val startRoute = AppTopLevelDestination.entries.first().route
+    val topLevelRouteState = rememberSerializable { mutableStateOf(startRoute) }
+    val backStacks = AppTopLevelDestination.entries.associate { destination ->
+        destination.route to rememberNavBackStack(destination.route)
+    }
+    return remember(topLevelRouteState, backStacks) {
         AppNavigationState(
             topLevelRouteState = topLevelRouteState,
-            backStacks = mapOf(
-                HomeDestination to homeBackStack,
-                ShortsDestination to shortsBackStack
-            )
+            backStacks = backStacks,
+            startRoute = startRoute
         )
     }
 }

@@ -1,16 +1,16 @@
 package com.kotlinmvvm.feature.home.presentation
 
+import com.kotlinmvvm.core.data.result.DataFailure
+import com.kotlinmvvm.core.data.result.DataResult
+import com.kotlinmvvm.core.data.result.DataSuccess
 import com.kotlinmvvm.domain.feed.result.FeedLoadError
-import com.kotlinmvvm.domain.feed.result.FeedLoadFailure
-import com.kotlinmvvm.domain.feed.result.FeedLoadResult
-import com.kotlinmvvm.domain.feed.result.FeedLoadSuccess
 import com.kotlinmvvm.domain.feed.model.FeedItem
 import com.kotlinmvvm.domain.feed.model.FeedPage
 import com.kotlinmvvm.domain.feed.model.FeedSource
 
 /**
  * @author 浩楠
- * @date 2026/7/20 17:42
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -51,9 +51,11 @@ internal fun HomeUiState.withPage(page: FeedPage) = copy(
 )
 
 /** 将单次请求结果归约为页面错误状态，内容仍以仓库 StateFlow 为唯一来源。 */
-internal fun HomeUiState.withRequestResult(result: FeedLoadResult) = when (result) {
-    is FeedLoadSuccess -> copy(loadError = null)
-    is FeedLoadFailure -> copy(loadError = result.error)
+internal fun HomeUiState.withRequestResult(
+    result: DataResult<FeedPage, FeedLoadError>
+) = when (result) {
+    is DataSuccess -> copy(loadError = null)
+    is DataFailure -> copy(loadError = result.error)
 }
 
 /**

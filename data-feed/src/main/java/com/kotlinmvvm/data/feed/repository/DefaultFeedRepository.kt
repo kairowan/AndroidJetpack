@@ -1,5 +1,8 @@
 package com.kotlinmvvm.data.feed.repository
 
+import com.kotlinmvvm.core.data.result.DataFailure
+import com.kotlinmvvm.core.data.result.DataResult
+import com.kotlinmvvm.core.data.result.DataSuccess
 import com.kotlinmvvm.core.network.result.NetworkResult
 import com.kotlinmvvm.core.network.result.NetworkError
 import com.kotlinmvvm.core.network.result.NetworkSuccess
@@ -16,13 +19,6 @@ import com.kotlinmvvm.data.feed.observer.NoOpFeedDataObserver
 import com.kotlinmvvm.data.feed.remote.FeedRemoteDataSource
 import com.kotlinmvvm.data.feed.remote.model.FeedRemotePage
 import com.kotlinmvvm.domain.feed.result.FeedLoadError
-import com.kotlinmvvm.domain.feed.result.FeedLoadResult
-import com.kotlinmvvm.domain.feed.result.FeedLoadFailure
-import com.kotlinmvvm.domain.feed.result.FeedLoadSuccess
-import com.kotlinmvvm.domain.feed.result.FeedVideoResult
-import com.kotlinmvvm.domain.feed.result.FeedVideoFailure
-import com.kotlinmvvm.domain.feed.result.FeedVideoSuccess
-import com.kotlinmvvm.domain.feed.model.FeedItem
 import com.kotlinmvvm.domain.feed.model.FeedVideo
 import com.kotlinmvvm.domain.feed.model.FeedPage
 import com.kotlinmvvm.domain.feed.model.FeedSource
@@ -41,7 +37,7 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * @author 浩楠
- * @date 2026/7/21 16:58
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -83,7 +79,9 @@ internal class DefaultFeedRepository(
         return pages.getValue(source).value.findVideo(videoId)
     }
 
-    override suspend fun load(params: FeedSource): FeedLoadResult = withSourceLock(params) {
+    override suspend fun load(
+        params: FeedSource
+    ): DataResult<FeedPage, FeedLoadError> = withSourceLock(params) {
         val key = params
         restoreCacheIfNeeded(key)
         val page = pages.getValue(key).value
@@ -95,27 +93,31 @@ internal class DefaultFeedRepository(
                 freshnessMillis = cacheFreshnessMillis
             )
         ) {
-            FeedLoadSuccess(page)
+            DataSuccess(page)
         } else {
             requestFirstPage(key)
         }
     }
 
-    override suspend fun refreshPage(key: FeedSource): FeedLoadResult = withSourceLock(key) {
+    override suspend fun refreshPage(
+        key: FeedSource
+    ): DataResult<FeedPage, FeedLoadError> = withSourceLock(key) {
         restoreCacheIfNeeded(key)
         requestFirstPage(key)
     }
 
-    override suspend fun loadNextPage(key: FeedSource): FeedLoadResult = withSourceLock(key) {
+    override suspend fun loadNextPage(
+        key: FeedSource
+    ): DataResult<FeedPage, FeedLoadError> = withSourceLock(key) {
         restoreCacheIfNeeded(key)
         val currentPage = pages.getValue(key).value ?: return@withSourceLock requestFirstPage(key)
-        val nextPageUrl = nextPageUrls[key] ?: return@withSourceLock FeedLoadSuccess(currentPage)
+        val nextPageUrl = nextPageUrls[key] ?: return@withSourceLock DataSuccess(currentPage)
         when (val result = loadRemote(key, nextPageUrl)) {
-            is NetworkError -> FeedLoadFailure(result.error.toFeedError())
+            is NetworkError -> DataFailure(result.error.toFeedError())
             is NetworkSuccess -> storePage(
                 source = key,
                 page = FeedPage(
-                    items = mergeItems(currentPage.items, result.value.page.items),
+                    items = mergeFeedItems(currentPage.items, result.value.page.items),
                     canLoadMore = result.value.nextPageUrl != null
                 ),
                 nextPageUrl = result.value.nextPageUrl
@@ -123,23 +125,28 @@ internal class DefaultFeedRepository(
         }
     }
 
-    override suspend fun getVideo(videoId: Int, source: FeedSource): FeedVideoResult =
+    override suspend fun getVideo(
+        videoId: Int,
+        source: FeedSource
+    ): DataResult<FeedVideo, FeedLoadError> =
         withSourceLock(source) {
             require(videoId > 0) { "视频 ID 必须大于 0" }
             restoreCacheIfNeeded(source)
-            findVideo(videoId, source)?.let { return@withSourceLock FeedVideoSuccess(it) }
+            findVideo(videoId, source)?.let { return@withSourceLock DataSuccess(it) }
 
             val refreshed = requestFirstPage(source)
-            findVideo(videoId, source)?.let { return@withSourceLock FeedVideoSuccess(it) }
+            findVideo(videoId, source)?.let { return@withSourceLock DataSuccess(it) }
             when (refreshed) {
-                is FeedLoadFailure -> FeedVideoFailure(refreshed.error)
-                is FeedLoadSuccess -> FeedVideoFailure(FeedLoadError.NOT_FOUND)
+                is DataFailure -> DataFailure(refreshed.error)
+                is DataSuccess -> DataFailure(FeedLoadError.NOT_FOUND)
             }
         }
 
-    private suspend fun requestFirstPage(source: FeedSource): FeedLoadResult =
+    private suspend fun requestFirstPage(
+        source: FeedSource
+    ): DataResult<FeedPage, FeedLoadError> =
         when (val result = loadRemote(source, nextPageUrl = null)) {
-            is NetworkError -> FeedLoadFailure(result.error.toFeedError())
+            is NetworkError -> DataFailure(result.error.toFeedError())
             is NetworkSuccess -> storePage(
                 source = source,
                 page = result.value.page,
@@ -180,7 +187,7 @@ internal class DefaultFeedRepository(
         source: FeedSource,
         page: FeedPage,
         nextPageUrl: String?
-    ): FeedLoadSuccess {
+    ): DataSuccess<FeedPage> {
         val timestamp = currentTimeMillis()
         val storedPage = page.copy(canLoadMore = nextPageUrl != null)
         pages.getValue(source).value = storedPage
@@ -193,7 +200,7 @@ internal class DefaultFeedRepository(
         } catch (error: Exception) {
             notifyCacheFailure(source, FeedCacheOperation.WRITE, error)
         }
-        return FeedLoadSuccess(storedPage)
+        return DataSuccess(storedPage)
     }
 
     private suspend fun restoreCacheIfNeeded(source: FeedSource) {
@@ -232,17 +239,6 @@ internal class DefaultFeedRepository(
 
     private suspend fun <T> withSourceLock(source: FeedSource, block: suspend () -> T): T =
         sourceMutexes.getValue(source).withLock { block() }
-
-    private fun mergeItems(current: List<FeedItem>, incoming: List<FeedItem>): List<FeedItem> {
-        val knownVideoIds = current.filterIsInstance<FeedVideo>()
-            .mapTo(mutableSetOf(), FeedVideo::id)
-        return buildList(current.size + incoming.size) {
-            addAll(current)
-            incoming.forEach { item ->
-                if (item !is FeedVideo || knownVideoIds.add(item.id)) add(item)
-            }
-        }
-    }
 
     private companion object {
         const val DEFAULT_CACHE_FRESHNESS_MILLIS = 5 * 60 * 1_000L

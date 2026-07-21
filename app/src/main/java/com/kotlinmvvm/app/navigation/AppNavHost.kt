@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -38,7 +35,6 @@ import com.kotlinmvvm.app.navigation.destination.registerHomeDestination
 import com.kotlinmvvm.app.navigation.destination.registerShortsDestination
 import com.kotlinmvvm.app.navigation.destination.registerVideoDetailDestination
 import com.kotlinmvvm.app.navigation.model.AppRoute
-import com.kotlinmvvm.app.navigation.model.HomeDestination
 import com.kotlinmvvm.app.navigation.model.ShortsDestination
 import com.kotlinmvvm.app.navigation.model.VideoDetailDestination
 import com.kotlinmvvm.app.navigation.model.VideoRouteArguments
@@ -51,7 +47,7 @@ import com.kotlinmvvm.core.ui.viewmodel.ViewModelTaskObserver
 
 /**
  * @author 浩楠
- * @date 2026/7/21 16:58
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -78,8 +74,8 @@ fun AppNavHost(
         ShortsDestination, is VideoDetailDestination -> Color.Black
         else -> MaterialTheme.colorScheme.background
     }
-    val showBottomBar = currentRoute == HomeDestination ||
-        (currentRoute == ShortsDestination && !shortsFullscreen)
+    val showBottomBar = currentRoute in navigationState.backStacks &&
+        (currentRoute != ShortsDestination || !shortsFullscreen)
 
     fun openVideo(videoId: Int, source: FeedSource) {
         when (navigationMode) {
@@ -108,27 +104,17 @@ fun AppNavHost(
             onWindowModeChanged
         )
     }
-    val homeEntries = rememberDecoratedNavEntries(
-        backStack = navigationState.backStacks.getValue(HomeDestination),
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
-        ),
-        entryProvider = provider
-    )
-    val shortsEntries = rememberDecoratedNavEntries(
-        backStack = navigationState.backStacks.getValue(ShortsDestination),
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
-        ),
-        entryProvider = provider
-    )
-    val visibleEntries = if (navigationState.topLevelRoute == HomeDestination) {
-        homeEntries
-    } else {
-        homeEntries + shortsEntries
+    val entriesByRoute = AppTopLevelDestination.entries.associate { destination ->
+        destination.route to rememberDecoratedNavEntries(
+            backStack = navigationState.backStacks.getValue(destination.route),
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
+            ),
+            entryProvider = provider
+        )
     }
+    val visibleEntries = entriesByRoute.getValue(navigationState.topLevelRoute)
 
     val navContent: @Composable (Modifier) -> Unit = { contentModifier ->
         NavDisplay(
@@ -174,28 +160,15 @@ private fun AppBottomNavigationBar(
     onNavigate: (AppRoute) -> Unit
 ) {
     NavigationBar {
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Default.Home,
-                    contentDescription = stringResource(R.string.navigation_home)
-                )
-            },
-            label = { Text(stringResource(R.string.navigation_home)) },
-            selected = selectedRoute == HomeDestination,
-            onClick = { onNavigate(HomeDestination) }
-        )
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = stringResource(R.string.navigation_shorts)
-                )
-            },
-            label = { Text(stringResource(R.string.navigation_shorts)) },
-            selected = selectedRoute == ShortsDestination,
-            onClick = { onNavigate(ShortsDestination) }
-        )
+        AppTopLevelDestination.entries.forEach { destination ->
+            val label = stringResource(destination.labelResId)
+            NavigationBarItem(
+                icon = { Icon(destination.icon, contentDescription = label) },
+                label = { Text(label) },
+                selected = selectedRoute == destination.route,
+                onClick = { onNavigate(destination.route) }
+            )
+        }
     }
 }
 
@@ -206,28 +179,15 @@ private fun AppNavigationRail(
     onNavigate: (AppRoute) -> Unit
 ) {
     NavigationRail {
-        NavigationRailItem(
-            icon = {
-                Icon(
-                    Icons.Default.Home,
-                    contentDescription = stringResource(R.string.navigation_home)
-                )
-            },
-            label = { Text(stringResource(R.string.navigation_home)) },
-            selected = selectedRoute == HomeDestination,
-            onClick = { onNavigate(HomeDestination) }
-        )
-        NavigationRailItem(
-            icon = {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = stringResource(R.string.navigation_shorts)
-                )
-            },
-            label = { Text(stringResource(R.string.navigation_shorts)) },
-            selected = selectedRoute == ShortsDestination,
-            onClick = { onNavigate(ShortsDestination) }
-        )
+        AppTopLevelDestination.entries.forEach { destination ->
+            val label = stringResource(destination.labelResId)
+            NavigationRailItem(
+                icon = { Icon(destination.icon, contentDescription = label) },
+                label = { Text(label) },
+                selected = selectedRoute == destination.route,
+                onClick = { onNavigate(destination.route) }
+            )
+        }
     }
 }
 

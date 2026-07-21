@@ -1,10 +1,12 @@
 package com.kotlinmvvm.feature.home.presentation
 
 import androidx.lifecycle.SavedStateHandle
+import com.kotlinmvvm.core.data.result.DataResult
 import com.kotlinmvvm.core.ui.viewmodel.BaseViewModel
 import com.kotlinmvvm.core.ui.viewmodel.ViewModelTaskObserver
 import com.kotlinmvvm.domain.feed.repository.FeedPageRepository
-import com.kotlinmvvm.domain.feed.result.FeedLoadResult
+import com.kotlinmvvm.domain.feed.result.FeedLoadError
+import com.kotlinmvvm.domain.feed.model.FeedPage
 import com.kotlinmvvm.domain.feed.model.FeedSource
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
@@ -12,7 +14,7 @@ import kotlinx.coroutines.flow.onEach
 
 /**
  * @author 浩楠
- * @date 2026/7/20 17:42
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -83,7 +85,10 @@ class HomeViewModel(
             )
     }
 
-    private fun applyRequestResult(source: FeedSource, result: FeedLoadResult) {
+    private fun applyRequestResult(
+        source: FeedSource,
+        result: DataResult<FeedPage, FeedLoadError>
+    ) {
         if (currentState.selectedSource != source) return
         updateState { state -> state.withRequestResult(result) }
     }

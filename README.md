@@ -15,7 +15,7 @@
 | `data-feed` | 替换为真实接口、DTO、Mapper、缓存和 Repository 实现 |
 | `core-player` | 项目没有音视频能力时可以从依赖和源码中移除 |
 
-模块按“业务域”划分，不按“一个接口一个模块”划分。例如登录、个人资料和账号设置可以共同使用 `domain-account` 与 `data-account`；只有页面职责和交付边界确实独立时，才拆分为多个 `feature-*`。
+页面不等于模块，接口也不等于模块。小项目可以先使用一组 `domain-app` 与 `data-app`，通过业务包名容纳登录、资料、商品等能力；只有团队、交付或编译边界真实出现时，才拆成 `domain-account`、`data-account` 等独立模块。
 
 第一次接入请直接阅读 [`docs/usage-guide.md`](docs/usage-guide.md)，其中包含底部导航替换、新增 Feature、新增网络业务域和删除示例代码的完整步骤。
 
@@ -55,8 +55,8 @@
 | 前缀/模块 | 定位 | 允许包含 |
 | --- | --- | --- |
 | `:app` | 项目装配模块 | Application、Activity、服务地址注册、依赖容器、应用路由 |
-| `:core-*` | 可复用基础/工具能力 | 公共加载契约、网络、设计系统、通用 UI 与 ViewModel 任务策略、播放器 |
-| `:domain-*` | 项目共享领域契约 | 领域模型、窄仓库接口、稳定业务结果与错误分类 |
+| `:core-*` | 可复用基础/工具能力 | 公共加载与结果契约、网络、设计系统、通用 UI 与 ViewModel 任务策略、播放器 |
+| `:domain-*` | 项目共享领域契约 | 领域模型、窄仓库接口与稳定业务错误分类 |
 | `:data-*` | 项目数据实现 | 数据图装配入口、Retrofit Service、DTO、DataSource、Repository 实现、Mapper |
 | `:feature-*` | 项目页面模块 | Route、ViewModel、UiState、Screen、业务组件 |
 | `build-logic` | 构建基础设施 | Android/Compose convention plugin |
@@ -80,8 +80,8 @@ Feature 只依赖 `:domain-*` 的业务契约，不直接依赖 `:data-*` 或 `:
 
 | 规模 | 默认使用方式 | 达到真实边界后再增加 |
 | --- | --- | --- |
-| 小型 | `AppDependencies` + 手动 `AppContainer`，Feature 直接依赖窄 Repository | 不增加 UseCase、DI 框架或 API/Impl 模块 |
-| 中型 | 使用 `feature-* / domain-* / data-*` 边界、data 装配入口、约定插件和架构检查 | 复用业务编排再加 UseCase；复杂持久化再换 Room |
+| 小型 | 一个或少量 Feature + 一组聚合的 `domain-app / data-app`，使用手动 `AppContainer` | 不按页面或接口增加模块，不增加 UseCase、DI 框架或 API/Impl 模块 |
+| 中型 | 将真正形成边界的热点业务拆为 `feature-* / domain-* / data-*`，其余业务继续复用聚合模块 | 复用业务编排再加 UseCase；复杂持久化再换 Room |
 | 大型 | 保持 Activity/Feature 只依赖 `AppDependencies` 与 domain 角色，将依赖实现替换为 Hilt/Dagger | 团队、交付或编译隔离确有需要时再拆 API/Impl、动态 Feature、分析和安全模块 |
 
 因此规模升级只替换装配实现，不要求重写 Screen、ViewModel、Repository 契约或路由参数。
@@ -184,13 +184,14 @@ Debug 接受开发、预发或生产环境；Release 构建类型始终把 `APP_
 
 ```text
 app/navigation/model/AppRoute.kt       可序列化 NavKey
+app/navigation/AppTopLevelDestination.kt 顶层路由、标题、图标的唯一配置
 app/navigation/AppNavigationState.kt   独立顶层返回栈、跳转、去重和返回
 app/navigation/AppNavHost.kt           返回栈、宿主模式和自适应导航布局
 app/navigation/destination/*Entry.kt   每个 Feature 独立的目的地装配入口
 ```
 
 - 普通跳转使用 `AppNavigationState.navigate()`。
-- 顶层切换使用 `navigateTopLevel()`，Home 与 Shorts 各自保留返回栈和页面状态。
+- 顶层切换使用 `navigateTopLevel()`；`AppTopLevelDestination` 中注册的每个页面各自保留返回栈和页面状态。
 - 返回统一使用 `pop()`；根页面不会被移除，并把无法继续出栈的返回事件交给 Activity 正常退出。
 - Navigation 3 安装 saveable-state 和 ViewModel-store entry decorator。
 - Activity 路由参数由 `VideoRouteArguments` 在边界处校验，缺少必要字段时安全结束页面。
@@ -230,7 +231,7 @@ AppNetworkEndpoints
 | `datasource` | 可执行任意 Retrofit 请求的通用契约与适配实现 |
 | `result` | 网络成功以及连接、超时、空响应、HTTP、解析、未知失败分类 |
 
-`:core-data` 只提供一个不包含 Feed、账号等业务名称的 `CommonRepository<Params, Result>`，统一所有页面都能成立的单次 `load()` 语义。
+`:core-data` 提供不包含 Feed、账号等业务名称的 `CommonRepository<Params, Result>`，以及通用的 `DataResult<Value, Error>`、`DataSuccess` 和 `DataFailure`。普通业务只定义自己的模型与错误类型，不再重复创建 Result、Success、Failure 三个文件。
 
 观察、刷新、下一页、保存、删除和搜索等能力由对应的产品窄接口明确声明。例如 `FeedPageRepository` 继承公共加载契约，再声明 Feed 自身的观察、刷新与分页函数；普通页面不会被迫实现无用函数。
 
@@ -239,14 +240,14 @@ AppNetworkEndpoints
 - `FeedPageRepository`、`FeedVideoRepository`：面向不同页面能力的窄仓库角色。
 - `FeedPage`、`FeedItem`、`FeedVideo`：不依赖 Android、Retrofit 或缓存实现的领域模型。
 - 领域模型不参与缓存序列化；缓存 DTO 与下一页 URL 只存在于 `data-feed`，页面只读取 `canLoadMore` 业务事实。
-- `FeedLoadResult`、`FeedVideoResult`、`FeedLoadError`：页面可稳定处理的业务结果。
+- `FeedLoadError`：页面可稳定处理的业务错误；成功/失败结构复用 `:core-data` 的 `DataResult`。
 
 `:data-feed` 只持有 Feed 数据实现：
 
-- `FeedDataGraph`：data 模块唯一装配入口，返回只含领域角色的 `FeedDataBindings`；Service、DTO、DataSource、缓存和 Repository 实现全部保持 `internal`。
+- `FeedDataGraph`：data 模块唯一装配入口。Feed 同时暴露列表与详情两个 Repository 角色，因此返回 `FeedDataBindings`；普通单角色业务直接返回 Repository，不额外创建 Bindings。
 - `FeedApiService`：Feed Retrofit 接口及路径。
 - `Feed*Dto`：服务端可空传输模型，一类一个文件。
-- `FeedRemoteDataSource`：Feed 仓库需要的远程能力契约。
+- `FeedRemoteDataSource`：Feed 需要组合分页、详情恢复与缓存，因此保留业务远程能力契约；普通单服务 Repository 可直接组合 Service 与公共 `NetworkDataSource`。
 - `RetrofitFeedRemoteDataSource`：组合 Feed Service 与通用 `NetworkDataSource`。
 - 列表 Feature 只依赖 `domain-feed` 中的 `FeedPageRepository`，详情 Feature 只依赖 `FeedVideoRepository`；AppContainer 通过 `data-feed` 装配入口取得同一个实现，再按两个窄角色提供，不保留含糊的聚合接口，也不感知数据模块内部类型。
 - Repository 持有分页令牌、并发锁、缓存新鲜度、合并去重和详情恢复逻辑。
@@ -346,4 +347,4 @@ Endpoint 地址必须以 `/` 结尾并默认使用 HTTPS。测试、预发和生
 
 ## 使用教程
 
-完整接入教程见 [`docs/usage-guide.md`](docs/usage-guide.md)。教程以“工作台、个人中心和账号接口”为例，说明如何替换 Home、Shorts、Feed 与开眼接口，并给出从 UI、路由、ViewModel 到 Repository、DataSource 和多 BaseURL 装配的代码模板。
+完整接入教程见 [`docs/usage-guide.md`](docs/usage-guide.md)。教程先给出静态页面、普通接口和顶层导航的最短接入路径，再说明何时才需要新增 ViewModel、Feature、DataSource、Bindings、domain/data 模块与多 BaseURL 装配。

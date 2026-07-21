@@ -1,13 +1,14 @@
 package com.kotlinmvvm.domain.feed.repository
 
+import com.kotlinmvvm.core.data.result.DataResult
 import com.kotlinmvvm.domain.feed.model.FeedSource
 import com.kotlinmvvm.domain.feed.model.FeedVideo
-import com.kotlinmvvm.domain.feed.result.FeedVideoResult
+import com.kotlinmvvm.domain.feed.result.FeedLoadError
 import kotlinx.coroutines.flow.Flow
 
 /**
  * @author 浩楠
- * @date 2026/7/21 16:58
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -23,5 +24,8 @@ interface FeedVideoRepository {
     fun findCachedVideo(videoId: Int, source: FeedSource): FeedVideo?
 
     /** 按 ID 和来源恢复视频；缓存与刷新均未命中时返回稳定的未找到结果。 */
-    suspend fun getVideo(videoId: Int, source: FeedSource): FeedVideoResult
+    suspend fun getVideo(
+        videoId: Int,
+        source: FeedSource
+    ): DataResult<FeedVideo, FeedLoadError>
 }

@@ -1,10 +1,10 @@
 package com.kotlinmvvm.feature.detail.presentation
 
+import com.kotlinmvvm.core.data.result.DataFailure
+import com.kotlinmvvm.core.data.result.DataSuccess
 import com.kotlinmvvm.core.ui.viewmodel.BaseViewModel
 import com.kotlinmvvm.core.ui.viewmodel.ViewModelTaskObserver
 import com.kotlinmvvm.domain.feed.repository.FeedVideoRepository
-import com.kotlinmvvm.domain.feed.result.FeedVideoFailure
-import com.kotlinmvvm.domain.feed.result.FeedVideoSuccess
 import com.kotlinmvvm.domain.feed.result.FeedLoadError
 import com.kotlinmvvm.domain.feed.model.FeedSource
 import kotlinx.coroutines.flow.filterNotNull
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.onEach
 
 /**
  * @author 浩楠
- * @date 2026/7/21 16:58
+ * @date 2026/7/21 17:58
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
@@ -46,8 +46,8 @@ class VideoDetailViewModel(
             .onEach { result ->
                 updateState { state ->
                     when (result) {
-                        is FeedVideoSuccess -> state.copy(loadError = null)
-                        is FeedVideoFailure -> if (state.video == null) {
+                        is DataSuccess -> state.copy(loadError = null)
+                        is DataFailure -> if (state.video == null) {
                             state.copy(loadError = result.error)
                         } else {
                             state
