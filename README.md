@@ -1,6 +1,23 @@
 # ComposeScaffold
 
-面向真实项目扩展的 Android Compose 多模块脚手架。示例业务使用开眼视频流，工程重点不是展示几个页面，而是固定可持续维护的模块语义、页面职责、类型安全路由、单/多 Activity 承载方式、网络错误边界和 Media3 生命周期。
+面向真实项目扩展的 Android Compose 多模块脚手架。项目中的首页、短视频、视频详情和开眼接口只是演示代码，不是脚手架要求保留的业务。真正可以复用的是模块边界、页面状态、类型安全路由、单/多 Activity 承载方式、网络错误边界和可替换的应用依赖容器。
+
+## 示例业务与脚手架边界
+
+接入自己的项目时，不需要把业务继续命名为 `Home`、`Shorts`、`Feed`，也不需要继续请求开眼接口。应当根据自己的业务语义替换示例模块：
+
+| 当前示例 | 在真实项目中的处理方式 |
+| --- | --- |
+| `feature-home` | 替换为实际首个顶层业务，例如工作台、商城或消息 |
+| `feature-shorts` | 不需要短视频时直接删除，或者替换为第二个顶层业务 |
+| `feature-detail` | 仅在存在视频详情时保留，否则替换为自己的详情 Feature |
+| `domain-feed` | 替换为账号、商品、订单等真实领域契约 |
+| `data-feed` | 替换为真实接口、DTO、Mapper、缓存和 Repository 实现 |
+| `core-player` | 项目没有音视频能力时可以从依赖和源码中移除 |
+
+模块按“业务域”划分，不按“一个接口一个模块”划分。例如登录、个人资料和账号设置可以共同使用 `domain-account` 与 `data-account`；只有页面职责和交付边界确实独立时，才拆分为多个 `feature-*`。
+
+第一次接入请直接阅读 [`docs/usage-guide.md`](docs/usage-guide.md)，其中包含底部导航替换、新增 Feature、新增网络业务域和删除示例代码的完整步骤。
 
 ## 技术基线
 
@@ -327,142 +344,6 @@ Endpoint 地址必须以 `/` 结尾并默认使用 HTTPS。测试、预发和生
 - `SimpleCache` 是进程级唯一所有者，避免同一路径被多个实例锁定。
 - 预加载最多并发两个请求，页面切换会取消过期目标；释放控制器后继续访问会立即失败。
 
-## 类描述与中文注释
+## 使用教程
 
-生产 Kotlin 文件严格保持一个具名类型；接口、实现类、`data class`、密封接口实现和私有辅助类也必须分别建文件。公开 Compose 入口可以保留同文件私有辅助函数，但不能混入第二个具名类型。所有生产文件使用项目统一类头，日期使用创建或本次结构性修改的当前时间，描述必须说明职责和边界：
-
-```kotlin
-/**
- * @author 浩楠
- * @date 2026/7/20 09:33
- *      _              _           _     _   ____  _             _ _
- *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
- *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
- *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
- *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * 描述: 视频详情路由入口，持有播放器、播放恢复快照和宿主窗口模式生命周期
- */
-```
-
-规范：
-
-- 类描述和公开 KDoc 以中文为主。
-- 每个公开接口函数都必须有中文 KDoc，说明用途、输入边界、返回值或失败语义；Retrofit 注解不能代替接口说明。
-- 描述不能写“工具类”“公共类”“TODO”或复述类名。
-- 非显然的生命周期、缓存所有权、失败回退和简化边界需要注释。
-- 私有的一行映射和明显 UI 排版不写逐行注释。
-- 用户可见文字必须放在资源文件。
-
-## Skill 与静态约束
-
-仓库内置 [`compose-scaffold-guardrails`](.agents/skills/compose-scaffold-guardrails/SKILL.md)，详细规范见 [`architecture.md`](.agents/skills/compose-scaffold-guardrails/references/architecture.md)。
-
-静态检查覆盖：
-
-- 嵌套模块目录、嵌套 Gradle 路径和旧式下划线模块名。
-- Feature 根包堆放源码。
-- 每个生产文件存在多个具名类型（包括嵌套类型）或缺少中文类头。
-- 单个生产 Kotlin 文件超过 250 行且未按职责拆分。
-- Feature 直接依赖 Network。
-- Feature 直接依赖 Data 实现模块。
-- AppContainer 直接导入 data 模块的 Service、DataSource、Mapper 或 Repository 实现。
-- AppNavHost 重新堆放具体 Feature Route，而不是新增独立 destination entry。
-- Manifest 开启明文流量、默认备份，或 data 模块把 DTO 混淆规则写回 app。
-- Gradle/BuildConfig 中配置全局 Base URL。
-- `:core-network` 出现 Feed 等项目 Service、DTO 或 DataSource。
-- Network 生产代码存在硬编码中文文案、重复异常分类或直接依赖 Android Log。
-- Network 日志未通过 `BuildConfig.DEBUG` 注入。
-- 公开接口函数缺少中文 KDoc。
-- Composable 创建 Repository。
-- ExoPlayer 实现泄漏到播放器模块之外。
-- 多个 `SimpleCache` 所有者。
-- `IPlayer`、`VideoPlayerView` 等遗留命名。
-- 临时日志、样例测试、TODO 描述。
-- 商用 Network 关键边界和正式回归测试缺失。
-- Release 环境未固定为 production、缓存恢复绕过 URL 校验或仓库跨来源元数据退回非线程安全容器。
-
-运行检查：
-
-```bash
-.agents/skills/compose-scaffold-guardrails/scripts/check_architecture.sh
-```
-
-## 构建与验证
-
-一条命令按顺序执行架构约束、全部单元测试、Lint、两种宿主模式的 AndroidTest 编译、单 Activity Debug、多 Activity Debug、带 R8 的 Release APK 和 Release AAB：
-
-```bash
-bash .agents/skills/compose-scaffold-guardrails/scripts/verify_scaffold.sh
-```
-
-等价的核心 Gradle 门禁如下；保持独立调用，避免 Lint 分析与打包任务并发争用同一份 Kotlin 中间产物：
-
-```bash
-./gradlew :app:testDebugUnitTest :core-network:testDebugUnitTest \
-  :core-player:testDebugUnitTest :core-ui:testDebugUnitTest \
-  :data-feed:testDebugUnitTest \
-  :feature-home:testDebugUnitTest :feature-shorts:testDebugUnitTest
-./gradlew lintDebug
-./gradlew :app:assembleDebugAndroidTest
-./gradlew :app:assembleDebug
-./gradlew :app:assembleRelease
-./gradlew :app:bundleRelease
-```
-
-连接真机或模拟器后，执行两种宿主模式的设备烟测：
-
-```bash
-bash .agents/skills/compose-scaffold-guardrails/scripts/verify_device_tests.sh
-```
-
-模板不会保存 JKS 或密码。真实产品由 CI 使用受保护的上传密钥签名 AAB，再校验签名产物：
-
-```bash
-bash .agents/skills/compose-scaffold-guardrails/scripts/verify_signed_bundle.sh \
-  /absolute/path/to/signed-release.aab
-```
-
-正式测试覆盖：
-
-- Network Endpoint 与媒体地址边界、真实 HTTP 请求头/重定向/认证/缓存、请求和响应完整流式日志、统一日志脱敏和原始字节保持。
-- Repository 版本化有界缓存、缓存输入重校验、跨来源并发、时间回拨失效、无实体级永久 Flow 的详情恢复、分页视频去重与结构行保留。
-- 首页来源恢复、来源切换和仓库事实流投影。
-- 短视频分页请求与非视频条目过滤。
-- Navigation 3 路由去重、双顶层返回栈保留、根页面保护和宿主退出委托。
-- 单/多 Activity 构建参数解析。
-- ViewModel 同名任务去重、最新任务取消、热流收集和生命周期自动取消。
-- 播放状态计算、时间格式化和控制参数校验。
-- 设备端使用测试依赖覆盖顶层导航、首页到详情、Activity 重建恢复、根返回以及多 Activity 参数边界，不依赖真实接口数据。
-
-测试属于脚手架契约，需要长期保留。临时日志、探针、临时测试、APK 和构建报告在交付前删除。
-
-## 扩展步骤
-
-新增 Feature：
-
-1. 在仓库根目录创建 `feature-<name>`，Gradle 路径使用 `:feature-<name>`。
-2. 建立 `navigation / presentation / ui / ui.component` 包。
-3. Route 获取依赖和 ViewModel；Screen 只接受状态与回调。
-4. 在 `AppRoute` 增加稳定、可序列化的 `NavKey`。
-5. 在 `app/navigation/destination` 新增独立 `*Entry.kt`，再由 `AppNavHost` 组合注册；Feature 不直接操作应用返回栈。
-6. 为非平凡状态留下一个最小正式测试。
-
-新增数据类型：
-
-1. 在对应 `domain-*` 模块增加领域模型、窄仓库角色和稳定结果。
-2. 在对应 `data-*` 模块的 `remote/model` 增加 DTO。
-3. 在 `remote/service` 增加 Retrofit 协议，并为每个接口函数写中文 KDoc。
-4. 在业务 `RemoteDataSource` 增加仓库需要的方法，通过通用 `NetworkDataSource` 执行。
-5. 在业务 `mapper` 完成 DTO 校验与领域转换，由 Repository 实现领域契约且不暴露 Retrofit 类型。
-6. 在业务 `di` 包提供一个最小装配入口，内部创建 Service、DataSource 与 Repository；AppContainer 只传入共享基础设施、Endpoint、资源 URL 策略和存储目录。
-7. 在 data 模块自己的 `consumer-rules.pro` 维护 Retrofit/Gson/序列化所需的 Release 规则。
-
-新增远程服务：
-
-1. 在 `AppNetworkEndpoints` 增加独立 `NetworkEndpoint`。
-2. 将 Endpoint 传给对应 data 模块的装配入口，由模块内部使用共享 `NetworkClientFactory` 创建 Service。
-3. 需要不同认证信息时，在 `NetworkHeaderProvider` 中根据 Request Host 返回请求头。
-4. 服务会返回图片、文件或媒体地址时，在 `AppRemoteUrlPolicies` 显式登记允许的 Host 和 HTTPS 端口。
-5. 不在 Gradle、BuildConfig 或 `:core-network` 中添加项目 Base URL。
-
-只有出现真实复用或复杂业务组合后才引入 UseCase；手动装配已经产生大量作用域样板、多人频繁冲突或多实现切换时，再让 Hilt/Dagger 实现 `AppDependencies`。
+完整接入教程见 [`docs/usage-guide.md`](docs/usage-guide.md)。教程以“工作台、个人中心和账号接口”为例，说明如何替换 Home、Shorts、Feed 与开眼接口，并给出从 UI、路由、ViewModel 到 Repository、DataSource 和多 BaseURL 装配的代码模板。
