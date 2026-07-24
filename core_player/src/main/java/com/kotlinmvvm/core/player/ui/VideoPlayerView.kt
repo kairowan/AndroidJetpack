@@ -21,7 +21,6 @@ import com.kotlinmvvm.core.player.model.PlayerControlActions
 import com.kotlinmvvm.core.player.model.PlayerControlsConfig
 import com.kotlinmvvm.core.player.model.PlayerControlsIcons
 import com.kotlinmvvm.core.player.model.PlayerControlsStyle
-import com.kotlinmvvm.core.player.provider.rememberPlayer
 
 private typealias ControlsLayer = @Composable BoxScope.(IPlayer, PlayerState) -> Unit
 private typealias SurfaceLayer = @Composable BoxScope.(IPlayer) -> Unit
@@ -32,8 +31,8 @@ private typealias SurfaceLayer = @Composable BoxScope.(IPlayer) -> Unit
 @Composable
 fun VideoPlayerView(
     url: String,
+    player: IPlayer,
     modifier: Modifier = Modifier,
-    player: IPlayer = rememberPlayer(),
     title: String = "",
     onBack: (() -> Unit)? = null,
     autoPlay: Boolean = true,
@@ -82,8 +81,8 @@ fun VideoPlayerView(
 @Composable
 fun FullscreenVideoPlayer(
     url: String,
+    player: IPlayer,
     modifier: Modifier = Modifier,
-    player: IPlayer = rememberPlayer(),
     title: String = "",
     onBack: (() -> Unit)? = null,
     autoPlay: Boolean = true,
@@ -220,23 +219,4 @@ private fun ObserveUrlPlayback(
             feature.onUrlChanged(player, url, autoPlay)
         }
     }
-}
-
-/**
- * 简单播放器 - 无控制层。
- */
-@Composable
-fun SimplePlayer(
-    url: String,
-    player: IPlayer,
-    modifier: Modifier = Modifier,
-    autoPlay: Boolean = true
-) {
-    LaunchedEffect(url, autoPlay) {
-        if (autoPlay) {
-            player.play(url)
-        }
-    }
-
-    PlayerSurfaceFullscreen(player = player, modifier = modifier)
 }

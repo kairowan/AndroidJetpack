@@ -32,9 +32,11 @@ internal class VideoPlayer(
 
     private val appContext = context.applicationContext
 
-    override val exoPlayer: ExoPlayer = ExoPlayer.Builder(appContext)
+    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(appContext)
         .setMediaSourceFactory(DefaultMediaSourceFactory(cacheStore.buildDataSourceFactory()))
         .build()
+    override val media3Player: Player
+        get() = exoPlayer
 
     private val _state = MutableStateFlow(PlayerState())
     override val state: StateFlow<PlayerState> = _state.asStateFlow()
@@ -115,7 +117,6 @@ internal class VideoPlayer(
         scope.cancel()
         progressJob?.cancel()
         exoPlayer.release()
-        cacheStore.release()
     }
 
     private fun updateState() {

@@ -1,10 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     alias(libs.plugins.kotlinmvvm.android.application.compose)
     alias(libs.plugins.kotlin.serialization)
-    id("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -36,28 +32,18 @@ dependencies {
     implementation(project(":core_designsystem"))
     implementation(project(":core_ui"))
     implementation(project(":core_data"))
+    implementation(project(":domain-feed"))
     implementation(project(":core_model"))
     implementation(project(":core_navigation"))
+    implementation(project(":core_player"))
+    implementation(project(":shared-ui"))
     
-    implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.hilt.navigation.compose)
-    kapt(libs.apt)
+    implementation(libs.androidx.lifecycle.viewModelNavigation3)
 
     testImplementation(libs.test.junit)
-}
-
-kapt {
-    correctErrorTypes = true
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        languageVersion.set(KotlinVersion.KOTLIN_1_9)
-        apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    }
 }

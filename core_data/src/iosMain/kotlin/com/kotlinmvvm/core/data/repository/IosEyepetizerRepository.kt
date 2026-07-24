@@ -2,11 +2,14 @@
 
 package com.kotlinmvvm.core.data.repository
 
-import com.kotlinmvvm.core.data.eyepetizer.toDomainFeed
+import com.kotlinmvvm.core.data.eyepetizer.toDomainFeedPage
 import com.kotlinmvvm.core.data.eyepetizer.toPayloadResponse
-import com.kotlinmvvm.core.model.EyepetizerFeed
 import com.kotlinmvvm.core.model.EyepetizerFeedSource
+import com.kotlinmvvm.domain.feed.model.FeedPage
+import com.kotlinmvvm.domain.feed.repository.FeedPageRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
 import platform.Foundation.NSError
@@ -19,7 +22,6 @@ import platform.Foundation.NSURLSession
 import platform.Foundation.dataTaskWithRequest
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * @author 浩楠
@@ -31,64 +33,77 @@ import kotlin.coroutines.suspendCoroutine
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: iOS 侧 Eyepetizer 仓库实现
+ * 描述: iOS 侧 Eyepetizer 仓库实现，并保留协程取消语义
  */
-internal class IosEyepetizerRepository : EyepetizerRepository {
-    override suspend fun getFeed(
+internal class IosEyepetizerRepository : FeedPageRepository {
+    override suspend fun loadPage(
         source: EyepetizerFeedSource,
-        nextPageUrl: String?
-    ): Result<EyepetizerFeed> = withContext(Dispatchers.Default) {
-        runCatching {
-            val request = EyepetizerRequestFactory.create(source, nextPageUrl)
-            val payload = loadData(request).toPayloadResponse(request.url)
-            payload.toDomainFeed()
+        continuationToken: String?
+    ): Result<FeedPage> = withContext(Dispatchers.Default) {
+        try {
+            val request = EyepetizerRequestFactory.create(
+                source = source,
+                nextPageUrl = continuationToken
+            )
+            Result.success(
+                loadData(request)
+                    .toPayloadResponse(request.url)
+                    .toDomainFeedPage()
+            )
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Result.failure(error)
         }
     }
 
-    private suspend fun loadData(request: EyepetizerRequest): NSData = suspendCoroutine { continuation ->
-        val requestUrl = requireNotNull(NSURL.URLWithString(request.url)) {
-            throw EyepetizerInvalidUrlException(request.url)
-        }
-        val urlRequest = NSURLRequest(
-            uRL = requestUrl,
-            cachePolicy = NSURLRequestReloadIgnoringLocalCacheData,
-            timeoutInterval = REQUEST_TIMEOUT_SECONDS
-        )
-        NSURLSession.sharedSession.dataTaskWithRequest(
-            request = urlRequest,
-            completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
-                when {
-                    error != null -> continuation.resumeWithException(
-                        EyepetizerRequestFailedException(
-                            url = request.url,
-                            detail = error.localizedDescription(),
-                            cause = null
+    private suspend fun loadData(request: EyepetizerRequest): NSData =
+        suspendCancellableCoroutine { continuation ->
+            val requestUrl = requireNotNull(NSURL.URLWithString(request.url)) {
+                throw EyepetizerInvalidUrlException(request.url)
+            }
+            val urlRequest = NSURLRequest(
+                uRL = requestUrl,
+                cachePolicy = NSURLRequestReloadIgnoringLocalCacheData,
+                timeoutInterval = REQUEST_TIMEOUT_SECONDS
+            )
+            val task = NSURLSession.sharedSession.dataTaskWithRequest(
+                request = urlRequest,
+                completionHandler = { data: NSData?, response: NSURLResponse?, error: NSError? ->
+                    when {
+                        error != null -> continuation.resumeWithException(
+                            EyepetizerRequestFailedException(
+                                url = request.url,
+                                detail = error.localizedDescription(),
+                                cause = null
+                            )
                         )
-                    )
 
-                    else -> {
-                        val httpResponse = response as? NSHTTPURLResponse
-                        val statusCode = httpResponse?.statusCode?.toInt()
-                        if (statusCode != null && statusCode !in 200..299) {
-                            continuation.resumeWithException(
-                                EyepetizerHttpException(
-                                    url = request.url,
-                                    statusCode = statusCode,
-                                    statusDescription = "Unexpected response status"
+                        else -> {
+                            val httpResponse = response as? NSHTTPURLResponse
+                            val statusCode = httpResponse?.statusCode?.toInt()
+                            if (statusCode != null && statusCode !in 200..299) {
+                                continuation.resumeWithException(
+                                    EyepetizerHttpException(
+                                        url = request.url,
+                                        statusCode = statusCode,
+                                        statusDescription = "Unexpected response status"
+                                    )
                                 )
-                            )
-                        } else if (data != null) {
-                            continuation.resume(data)
-                        } else {
-                            continuation.resumeWithException(
-                                EyepetizerEmptyResponseException(request.url)
-                            )
+                            } else if (data != null) {
+                                continuation.resume(data)
+                            } else {
+                                continuation.resumeWithException(
+                                    EyepetizerEmptyResponseException(request.url)
+                                )
+                            }
                         }
                     }
                 }
-            }
-        ).resume()
-    }
+            )
+            continuation.invokeOnCancellation { task.cancel() }
+            task.resume()
+        }
 
     private companion object {
         private const val REQUEST_TIMEOUT_SECONDS = 15.0

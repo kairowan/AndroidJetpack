@@ -24,9 +24,15 @@ internal object EyepetizerRequestFactory {
         source: EyepetizerFeedSource,
         nextPageUrl: String?
     ): EyepetizerRequest {
+        val requestUrl = if (nextPageUrl.isNullOrBlank()) {
+            EYEPETIZER_BASE_URL + source.path
+        } else {
+            nextPageUrl.toAbsoluteUrlOrNull()
+                ?: throw EyepetizerInvalidUrlException(nextPageUrl)
+        }
         return EyepetizerRequest(
             source = source,
-            url = nextPageUrl.toAbsoluteUrlOrNull() ?: (EYEPETIZER_BASE_URL + source.path)
+            url = requestUrl
         )
     }
 
@@ -42,13 +48,17 @@ internal object EyepetizerRequestFactory {
 
     private fun String?.toAbsoluteUrlOrNull(): String? {
         if (this.isNullOrBlank()) return null
+        val candidate = trim()
         val normalizedUrl = when {
-            startsWith(EYEPETIZER_HTTP_HOST_PREFIX) ->
-                EYEPETIZER_HTTPS_HOST_PREFIX + removePrefix(EYEPETIZER_HTTP_HOST_PREFIX)
-
-            else -> this
+            candidate.startsWith(EYEPETIZER_HTTP_HOST_PREFIX) ->
+                EYEPETIZER_HTTPS_HOST_PREFIX + candidate.removePrefix(EYEPETIZER_HTTP_HOST_PREFIX)
+            candidate.startsWith(EYEPETIZER_HTTPS_HOST_PREFIX) -> candidate
+            candidate.startsWith("//") ||
+                candidate.contains('\\') ||
+                candidate.contains("://") -> return null
+            else -> candidate
         }
-        if (normalizedUrl.startsWith("http://") || normalizedUrl.startsWith("https://")) {
+        if (normalizedUrl.startsWith(EYEPETIZER_HTTPS_HOST_PREFIX)) {
             return normalizedUrl
         }
         val normalizedBaseUrl = EYEPETIZER_BASE_URL.removeSuffix("/")
@@ -58,22 +68,4 @@ internal object EyepetizerRequestFactory {
             "$normalizedBaseUrl/$normalizedUrl"
         }
     }
-
 }
-
-/**
- * @author 浩楠
- *
- * @date 2026-3-9
- *
- *      _              _           _     _   ____  _             _ _
- *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
- *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
- *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
- *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: Eyepetizer 请求快照
- */
-internal data class EyepetizerRequest(
-    val source: EyepetizerFeedSource,
-    val url: String
-)

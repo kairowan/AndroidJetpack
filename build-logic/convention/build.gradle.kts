@@ -1,23 +1,9 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `java-gradle-plugin`
+    alias(libs.plugins.kotlinJvm)
 }
-
-buildscript {
-    repositories {
-        google()
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
-    }
-}
-
-apply(plugin = "org.jetbrains.kotlin.jvm")
 
 group = "com.kotlinmvvm.buildlogic"
 
@@ -34,9 +20,9 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 dependencies {
@@ -50,9 +36,9 @@ dependencies {
             include("gradle-kotlin-dsl-tooling-models-*.jar")
         }
     )
-    implementation("com.android.tools.build:gradle:8.9.1")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
-    implementation("org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.21")
+    implementation(libs.android.gradlePlugin)
+    implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.compose.compiler.gradlePlugin)
 }
 
 gradlePlugin {

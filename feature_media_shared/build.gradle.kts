@@ -1,4 +1,7 @@
-@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+@file:OptIn(
+    org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class,
+    org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class
+)
 
 import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -17,13 +20,22 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+    jvm("desktop")
+    wasmJs {
+        browser()
+    }
 
     jvmToolchain(17)
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core_data"))
             implementation(project(":core_model"))
+            implementation(project(":core_state"))
+            implementation(project(":domain-feed"))
+            implementation(libs.kotlinx.core)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

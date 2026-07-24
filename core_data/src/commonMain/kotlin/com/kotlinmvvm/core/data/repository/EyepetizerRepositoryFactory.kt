@@ -1,5 +1,7 @@
 package com.kotlinmvvm.core.data.repository
 
+import com.kotlinmvvm.domain.feed.repository.FeedPageRepository
+
 /**
  * @author 浩楠
  *
@@ -13,5 +15,5 @@ package com.kotlinmvvm.core.data.repository
  * @Description: 跨平台仓库创建入口
  */
 expect object EyepetizerRepositoryFactory {
-    fun create(): EyepetizerRepository
+    fun create(): FeedPageRepository
 }

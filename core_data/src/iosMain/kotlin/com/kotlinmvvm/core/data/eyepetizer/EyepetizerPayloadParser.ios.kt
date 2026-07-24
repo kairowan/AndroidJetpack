@@ -90,7 +90,7 @@ private fun Map<*, *>.intValue(key: String): Int? {
         is Long -> value.toInt()
         is Double -> value.toInt()
         is Float -> value.toInt()
-        is NSNumber -> value.intValue.toInt()
+        is NSNumber -> value.intValue
         else -> null
     }
 }

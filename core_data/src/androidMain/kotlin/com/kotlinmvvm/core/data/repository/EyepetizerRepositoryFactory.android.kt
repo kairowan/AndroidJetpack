@@ -1,5 +1,7 @@
 package com.kotlinmvvm.core.data.repository
 
+import com.kotlinmvvm.domain.feed.repository.FeedPageRepository
+
 /**
  * @author 浩楠
  *
@@ -13,5 +15,5 @@ package com.kotlinmvvm.core.data.repository
  * @Description: Android 平台仓库工厂
  */
 actual object EyepetizerRepositoryFactory {
-    actual fun create(): EyepetizerRepository = AndroidEyepetizerRepository()
+    actual fun create(): FeedPageRepository = AndroidEyepetizerRepository()
 }

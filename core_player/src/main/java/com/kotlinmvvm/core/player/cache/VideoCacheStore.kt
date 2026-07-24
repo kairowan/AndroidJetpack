@@ -21,7 +21,14 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 视频缓存与预加载仓库（实例级，不使用全局单例）。
+ * @author 浩楠
+ * @date 2026/7/24 13:29
+ *      _              _           _     _   ____  _             _ _
+ *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
+ *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
+ *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
+ *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
+ * 描述: 由应用级播放器工厂独占的 Media3 缓存，保证每个目录只有一个 SimpleCache
  */
 internal class VideoCacheStore(
     private val appContext: Context,
@@ -78,13 +85,6 @@ internal class VideoCacheStore(
         bytes: Long = PlayerDefaults.PRELOAD_BYTES
     ) {
         urls.forEach { preload(scope, it, bytes) }
-    }
-
-    fun release() {
-        synchronized(cacheLock) {
-            simpleCache?.release()
-            simpleCache = null
-        }
     }
 
     private fun getCache(): SimpleCache {

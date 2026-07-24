@@ -9,13 +9,11 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* iosAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* iosAppApp.swift */; };
 		A10000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* ContentView.swift */; };
-		A10000000000000000000003 /* HomeFeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* HomeFeedViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A20000000000000000000001 /* iosAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosAppApp.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A20000000000000000000003 /* HomeFeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeFeedViewModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000005 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -44,7 +42,6 @@
 			children = (
 				A20000000000000000000001 /* iosAppApp.swift */,
 				A20000000000000000000002 /* ContentView.swift */,
-				A20000000000000000000003 /* HomeFeedViewModel.swift */,
 				A20000000000000000000004 /* Info.plist */,
 			);
 			path = iosApp;
@@ -150,7 +147,6 @@
 			files = (
 				A10000000000000000000001 /* iosAppApp.swift in Sources */,
 				A10000000000000000000002 /* ContentView.swift in Sources */,
-				A10000000000000000000003 /* HomeFeedViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,6 +194,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../shared_ios/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
@@ -233,6 +230,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../shared_ios/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",

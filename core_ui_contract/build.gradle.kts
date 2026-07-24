@@ -1,4 +1,7 @@
-@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+@file:OptIn(
+    org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class,
+    org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class
+)
 
 import org.gradle.api.JavaVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -17,6 +20,10 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+    jvm("desktop")
+    wasmJs {
+        browser()
+    }
 
     jvmToolchain(17)
 

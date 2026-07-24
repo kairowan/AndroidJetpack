@@ -1,0 +1,7 @@
+<resources>
+    <string name="player_back">返回</string>
+    <string name="player_rewind">快退</string>
+    <string name="player_play">播放</string>
+    <string name="player_pause">暂停</string>
+    <string name="player_forward">快进</string>
+</resources>

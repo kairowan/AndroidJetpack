@@ -26,11 +26,3 @@ object PlayerControlsDefaults {
     val PROGRESS_UNPLAYED_ALPHA: Float = 0.2f
     val CENTER_PLAY_BUTTON_ALPHA: Float = 0.5f
 }
-
-/**
- * 短视频默认值。
- */
-object ShortsPagerDefaults {
-    val OVERLAY_PADDING: Dp = 16.dp
-    val OVERLAY_GRADIENT_ALPHA: Float = 0.7f
-}

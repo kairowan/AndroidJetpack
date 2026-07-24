@@ -1,11 +1,12 @@
 plugins {
-    id("org.jetbrains.kotlin.multiplatform")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.jetbrains.compose)
+    alias(libs.plugins.compose.compiler)
 }
 
 kotlin {
     val frameworkBaseName = "SharedIosApp"
     val iosTargets = listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     )
@@ -18,17 +19,21 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
+        iosMain.dependencies {
             implementation(project(":core_data"))
-            implementation(project(":core_design_tokens"))
+            implementation(project(":core_designsystem"))
             implementation(project(":core_model"))
-            implementation(project(":core_ui_contract"))
+            implementation(project(":domain-feed"))
+            implementation(project(":feature_detail"))
+            implementation(project(":feature_home"))
             implementation(project(":feature_home_shared"))
             implementation(project(":feature_media_shared"))
-            implementation(libs.kotlinx.core)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+            implementation(project(":feature_shorts"))
+            implementation(project(":shared-ui"))
+            implementation(libs.compose.multiplatform.foundation)
+            implementation(libs.compose.multiplatform.material3)
+            implementation(libs.compose.multiplatform.runtime)
+            implementation(libs.compose.multiplatform.ui)
             implementation(libs.kotlinx.core)
         }
     }

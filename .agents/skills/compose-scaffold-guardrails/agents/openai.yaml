@@ -1,0 +1,4 @@
+interface:
+  display_name: "Compose Scaffold Guardrails"
+  short_description: "Enforce architecture and cleanup rules for this Compose scaffold"
+  default_prompt: "Use $compose-scaffold-guardrails to implement or review this Compose scaffold consistently."

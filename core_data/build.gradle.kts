@@ -26,7 +26,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":core_model"))
+            api(project(":domain-feed"))
+            implementation(project(":core_model"))
             implementation(libs.kotlinx.core)
         }
         commonTest.dependencies {

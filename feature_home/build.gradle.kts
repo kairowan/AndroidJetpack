@@ -1,13 +1,63 @@
+@file:OptIn(
+    org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class,
+    org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class
+)
+
+import org.gradle.api.JavaVersion
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    alias(libs.plugins.kotlinmvvm.android.feature)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.jetbrains.compose)
+    alias(libs.plugins.compose.compiler)
+}
+
+kotlin {
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+    iosArm64()
+    iosSimulatorArm64()
+    jvm("desktop")
+    wasmJs {
+        browser()
+    }
+
+    jvmToolchain(17)
+
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":core_model"))
+            implementation(project(":core_state"))
+            implementation(project(":core_ui"))
+            implementation(project(":feature_home_shared"))
+            implementation(libs.compose.multiplatform.runtime)
+            implementation(libs.compose.multiplatform.foundation)
+            implementation(libs.compose.multiplatform.material3)
+            implementation(libs.compose.multiplatform.ui)
+        }
+        androidMain.dependencies {
+            implementation(project(":domain-feed"))
+            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.lifecycle.viewModelCompose)
+            implementation(libs.coil.compose)
+        }
+    }
 }
 
 android {
     namespace = "com.kotlinmvvm.feature.home"
-}
+    compileSdk = 36
 
-dependencies {
-    api(project(":core_model"))
-    api(project(":core_data"))
-    implementation(project(":feature_home_shared"))
+    defaultConfig {
+        minSdk = 24
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }

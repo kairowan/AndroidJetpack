@@ -1,29 +1,6 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<resources>
     <style name="Theme.Cocknovel" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="android:fontFamily" tools:targetApi="jelly_bean">@font/fangzhengheiti</item>
-        <item name="android:typeface">serif</item>
-
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <!--        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>-->
-        <!-- Customize your theme here. -->
-    </style>
-    <!--设置Tablayout字体大小-->
-    <style name="TabLayoutTextSize" parent="TextAppearance.Design.Tab">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/hei</item>
-    </style>
-    <!-- 王漢宗勘亭流繁字体   -->
-    <style name="appwang" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:fontFamily" tools:targetApi="jelly_bean">@font/wangmozongkantingliufan</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

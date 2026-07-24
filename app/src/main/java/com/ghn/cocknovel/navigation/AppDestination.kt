@@ -8,62 +8,43 @@ import kotlinx.serialization.Serializable
 /**
  * @author 浩楠
  *
- * @date 2026-3-9
+ * @date 2026/7/24 12:05
  *
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: App 模块的 Navigation3 目标与共享路由映射
+ * 描述: App 模块的 Navigation3 目标与共享路由映射
  */
 @Serializable
-internal sealed interface AppDestination : NavKey {
-    @Serializable
-    data object Home : AppDestination
-
-    @Serializable
-    data object Shorts : AppDestination
-
-    @Serializable
-    data class Detail(
-        val videoId: Int,
-        val title: String,
-        val description: String,
-        val coverUrl: String,
-        val playUrl: String,
-        val category: String,
-        val authorName: String,
-        val authorIcon: String,
-        val duration: Int
-    ) : AppDestination
-}
+internal sealed interface AppDestination : NavKey
 
 internal fun AppRoute.TopLevel.toDestination(): AppDestination {
     return when (this) {
-        AppRoute.TopLevel.HOME -> AppDestination.Home
-        AppRoute.TopLevel.SHORTS -> AppDestination.Shorts
+        AppRoute.TopLevel.HOME -> HomeDestination
+        AppRoute.TopLevel.SHORTS -> ShortsDestination
     }
 }
 
 internal fun AppRoute.toDestination(): AppDestination {
     return when (this) {
-        AppRoute.Home -> AppDestination.Home
-        AppRoute.Shorts -> AppDestination.Shorts
+        AppRoute.Home -> HomeDestination
+        AppRoute.Shorts -> ShortsDestination
         is AppRoute.Detail -> video.toDestination()
     }
 }
 
 internal fun AppDestination.toAppRoute(): AppRoute {
     return when (this) {
-        AppDestination.Home -> AppRoute.Home
-        AppDestination.Shorts -> AppRoute.Shorts
-        is AppDestination.Detail -> AppRoute.Detail(toVideo())
+        HomeDestination -> AppRoute.Home
+        ShortsDestination -> AppRoute.Shorts
+        is DetailDestination -> AppRoute.Detail(toVideo())
     }
 }
 
-internal fun EyepetizerFeedItem.Video.toDestination(): AppDestination.Detail {
-    return AppDestination.Detail(
+internal fun EyepetizerFeedItem.Video.toDestination(): DetailDestination {
+    return DetailDestination(
         videoId = id,
         title = title,
         description = description,
@@ -76,7 +57,7 @@ internal fun EyepetizerFeedItem.Video.toDestination(): AppDestination.Detail {
     )
 }
 
-private fun AppDestination.Detail.toVideo(): EyepetizerFeedItem.Video {
+private fun DetailDestination.toVideo(): EyepetizerFeedItem.Video {
     return EyepetizerFeedItem.Video(
         id = videoId,
         title = title,

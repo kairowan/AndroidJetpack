@@ -6,18 +6,6 @@ import com.kotlinmvvm.core.player.api.IPlayer
 import com.kotlinmvvm.core.player.api.PlayState
 
 /**
- * 生命周期与播放器绑定句柄。
- */
-class PlayerLifecycleBinding internal constructor(
-    private val lifecycle: Lifecycle,
-    private val observer: LifecycleEventObserver
-) {
-    fun unbind() {
-        lifecycle.removeObserver(observer)
-    }
-}
-
-/**
  * 非 Compose 场景的生命周期绑定器。
  */
 object PlayerLifecycleBinder {

@@ -1,7 +1,7 @@
 package com.kotlinmvvm.core.player.api
 
 import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.Player
 
 /**
  * @author 浩楠
@@ -13,10 +13,10 @@ import androidx.media3.exoplayer.ExoPlayer
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \
  *   / ___ \| | | | (_| | | | (_) | | (_| |  ___) | |_| |_| | (_| | | (_) |
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
- * @Description: Android 播放器接口，在共享控制协议之上补充 ExoPlayer 能力
+ * 描述: Android 播放器接口，仅向 UI 暴露稳定的 Media3 Player 契约
  */
 interface IPlayer : PlaybackController {
-    val exoPlayer: ExoPlayer
+    val media3Player: Player
 
     fun play(mediaItem: MediaItem)
 }

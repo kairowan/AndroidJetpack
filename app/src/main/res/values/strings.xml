@@ -1,12 +1,5 @@
 <resources>
     <string name="app_name">鲸鱼阅读</string>
-    <string name="bookstore">书城</string>
-    <string name="classification">分类</string>
-    <string name="bookshelf">书架</string>
-    <string name="mine">我的</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <!-- TODO: mine   -->
-    <string name="mineName">登录即可提现</string>
+    <string name="unknown_destination">无法打开该页面</string>
+    <string name="invalid_detail_destination">视频详情参数无效</string>
 </resources>

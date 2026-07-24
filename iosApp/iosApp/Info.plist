@@ -22,5 +22,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
 </dict>
 </plist>

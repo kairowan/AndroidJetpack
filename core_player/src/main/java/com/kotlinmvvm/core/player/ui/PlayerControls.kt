@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import com.kotlinmvvm.core.player.R
 import com.kotlinmvvm.core.player.api.IPlayer
 import com.kotlinmvvm.core.player.api.PlayState
 import com.kotlinmvvm.core.player.api.PlayerState
@@ -43,6 +48,7 @@ import com.kotlinmvvm.core.player.model.PlayerControlActions
 import com.kotlinmvvm.core.player.model.PlayerControlsConfig
 import com.kotlinmvvm.core.player.model.PlayerControlsIcons
 import com.kotlinmvvm.core.player.model.PlayerControlsStyle
+import com.kotlinmvvm.core.player.state.PlaybackSpeedStepper
 import com.kotlinmvvm.core.player.state.PlayerControlsStateHolder
 import kotlinx.coroutines.delay
 
@@ -141,8 +147,19 @@ fun PlayerControls(
                     BottomBar(
                         state = state,
                         style = style,
+                        showSpeedControl = config.showSpeedControl,
+                        speedOptions = config.speedOptions,
                         onSeek = {
                             actions.onSeekProgress(player, it)
+                            controlsStateHolder.markInteraction()
+                        },
+                        onNextSpeed = {
+                            player.setSpeed(
+                                PlaybackSpeedStepper.nextSpeed(
+                                    state.speed,
+                                    config.speedOptions
+                                )
+                            )
                             controlsStateHolder.markInteraction()
                         },
                         extraControls = extraControls,
@@ -171,7 +188,11 @@ private fun TopBar(
     ) {
         onBack?.let { handleBack ->
             IconButton(onClick = handleBack) {
-                Icon(icon, contentDescription = null, tint = style.iconColor)
+                Icon(
+                    icon,
+                    contentDescription = stringResource(R.string.player_back),
+                    tint = style.iconColor
+                )
             }
         }
         Text(
@@ -200,7 +221,7 @@ private fun CenterControls(
         IconButton(onClick = onRewind, modifier = Modifier.size(PlayerControlsDefaults.SIDE_BUTTON_SIZE)) {
             Icon(
                 imageVector = icons.rewind,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.player_rewind),
                 tint = style.iconColor,
                 modifier = Modifier.size(PlayerControlsDefaults.SIDE_ICON_SIZE)
             )
@@ -214,7 +235,9 @@ private fun CenterControls(
         ) {
             Icon(
                 imageVector = if (state.isPlaying) icons.pause else icons.play,
-                contentDescription = null,
+                contentDescription = stringResource(
+                    if (state.isPlaying) R.string.player_pause else R.string.player_play
+                ),
                 tint = style.iconColor,
                 modifier = Modifier.size(PlayerControlsDefaults.PLAY_ICON_SIZE)
             )
@@ -223,7 +246,7 @@ private fun CenterControls(
         IconButton(onClick = onForward, modifier = Modifier.size(PlayerControlsDefaults.SIDE_BUTTON_SIZE)) {
             Icon(
                 imageVector = icons.forward,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.player_forward),
                 tint = style.iconColor,
                 modifier = Modifier.size(PlayerControlsDefaults.SIDE_ICON_SIZE)
             )
@@ -235,7 +258,10 @@ private fun CenterControls(
 private fun BottomBar(
     state: PlayerState,
     style: PlayerControlsStyle,
+    showSpeedControl: Boolean,
+    speedOptions: List<Float>,
     onSeek: (Float) -> Unit,
+    onNextSpeed: () -> Unit,
     extraControls: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -269,6 +295,22 @@ private fun BottomBar(
                 horizontalArrangement = Arrangement.spacedBy(PlayerControlsDefaults.BOTTOM_BAR_VERTICAL_PADDING),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                if (showSpeedControl && speedOptions.isNotEmpty()) {
+                    AssistChip(
+                        onClick = onNextSpeed,
+                        label = {
+                            Text(
+                                text = "${state.speed}x",
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = style.progressPlayedColor.copy(alpha = 0.28f),
+                            labelColor = style.timeTextColor
+                        ),
+                        border = null
+                    )
+                }
                 extraControls()
             }
         }

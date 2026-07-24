@@ -15,7 +15,6 @@ package com.kotlinmvvm.core.player.state
 object PlaybackSpeedStepper {
     fun nextSpeed(current: Float, candidates: List<Float>): Float {
         if (candidates.isEmpty()) return current
-        val index = candidates.indexOfFirst { value -> value >= current }.coerceAtLeast(0)
-        return if (index == candidates.lastIndex) candidates.first() else candidates[index + 1]
+        return candidates.firstOrNull { value -> value > current } ?: candidates.first()
     }
 }

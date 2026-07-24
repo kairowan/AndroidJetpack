@@ -21,11 +21,6 @@ enum class EyepetizerFeedSource(val title: String) {
     PGCS_ALL("作者")
 }
 
-data class EyepetizerFeed(
-    val items: List<EyepetizerFeedItem>,
-    val nextPageUrl: String?
-)
-
 sealed class EyepetizerFeedItem {
     data class Video(
         val id: Int,
