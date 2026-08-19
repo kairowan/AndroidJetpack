@@ -21,8 +21,8 @@
   页面布局、页面状态、分页、展示模型、业务规则、导航规则
 
 必须平台实现
-  Android Activity/ViewModel 生命周期、Coil、Media3、Retrofit
-  iOS UIViewController、UIImageView、AVPlayer、Foundation 网络
+  Android Activity/ViewModel 生命周期、Coil、Media3、OkHttp 网络引擎
+  iOS UIViewController、UIImageView、AVPlayer、Foundation 网络引擎
 ```
 
 判断代码应该放哪里的最简单方法：
@@ -88,15 +88,15 @@ Xcode 的构建脚本会自动执行
 如果只看到 `invalid reuse after initialization failure`，且没有具体 Swift
 源码报错，先执行 `Product > Clean Build Folder`（`⇧⌘K`）再运行。
 
-## 3. 不需要读完整个项目：先看这 7 个文件
+## 3. 不需要读完整个项目：先看这 8 个文件
 
 建议按下面的顺序阅读：
 
 1. [`HomeScreen.kt`](../feature_home/src/commonMain/kotlin/com/kotlinmvvm/feature/home/HomeScreen.kt)：
    Android/iOS 共用的首页 UI。
-2. [`HomeFeedPageModel.kt`](../feature_home_shared/src/commonMain/kotlin/com/kotlinmvvm/feature/home/shared/HomeFeedPageModel.kt)：
+2. [`HomeFeedPageModel.kt`](../feature_home/src/commonMain/kotlin/com/kotlinmvvm/feature/home/HomeFeedPageModel.kt)：
    首页渲染需要的不可变数据。
-3. [`HomeFeedStateHolder.kt`](../feature_home_shared/src/commonMain/kotlin/com/kotlinmvvm/feature/home/shared/HomeFeedStateHolder.kt)：
+3. [`HomeFeedStateHolder.kt`](../feature_home/src/commonMain/kotlin/com/kotlinmvvm/feature/home/HomeFeedStateHolder.kt)：
    首页加载、刷新、分页和切换频道。
 4. [`HomeRoute.kt`](../feature_home/src/androidMain/kotlin/com/kotlinmvvm/feature/home/HomeRoute.kt)：
    Android 如何把状态、Coil 图片和回调接入共享页面。
@@ -106,6 +106,8 @@ Xcode 的构建脚本会自动执行
    Feature 能看到的数据接口。
 7. [`AppNavigation.kt`](../app/src/main/java/com/ghn/cocknovel/navigation/AppNavigation.kt)：
    Android 页面导航和底部栏如何组装。
+8. [`NetworkClient.kt`](../core_network/src/commonMain/kotlin/com/kotlinmvvm/core/network/NetworkClient.kt)：
+   Android/iOS 共用的请求、超时与重试；取消会沿协程自动传到底层请求。
 
 读完以后，你会看到同一条数据流：
 
@@ -145,22 +147,24 @@ Android Studio 默认的 Android 视图可能隐藏 source set。找不到文件
 | 你要修改的内容 | 首先去哪里 |
 | --- | --- |
 | 首页布局 | `feature_home/src/commonMain/.../HomeScreen.kt` |
-| 短视频布局 | `feature_shorts/src/commonMain/.../ShortsScreen.kt` |
-| 详情布局 | `feature_detail/src/commonMain/.../VideoDetailScreen.kt` |
-| 首页加载/刷新/分页 | `feature_home_shared` |
-| Shorts/详情状态 | `feature_media_shared` |
-| 主题颜色和字体 | `core_design_tokens`、`core_designsystem` |
+| 短视频布局 | `feature_media/src/commonMain/.../ShortsScreen.kt` |
+| 详情布局 | `feature_media/src/commonMain/.../VideoDetailScreen.kt` |
+| 首页加载/刷新/分页 | `feature_home/src/commonMain` |
+| Shorts/详情状态 | `feature_media/src/commonMain` |
+| 主题颜色和字体 | `core_ui/src/commonMain/.../designsystem/theme` |
 | 通用 Compose 组件 | `core_ui/src/commonMain` |
-| 导航规则 | `core_navigation`、`shared-ui` |
+| 导航规则 | `core_navigation`、`core_ui` |
 | Android 页面接线 | Feature 的 `src/androidMain` |
-| Android 网络和播放器 | `core_data/src/androidMain`、`core_player` |
+| 通用网络请求、重试、缓存和错误 | `core_network/src/commonMain` |
+| Android/iOS 网络引擎 | `core_network/src/androidMain`、`core_network/src/iosMain` |
 | iOS 页面接线、图片和播放器 | `shared_ios/src/iosMain` |
 | 接口 DTO、数据映射 | `core_data/src/commonMain` |
 | Android 应用依赖装配 | `app/.../di/AppContainer.kt` |
 | iOS Swift 入口 | `iosApp/iosApp/ContentView.swift` |
 
-模块很多不代表每次都要修改很多模块。普通 UI 调整通常只需要改一个
-`commonMain` 文件。
+当前工程只有 13 个 Gradle 模块，状态、Presenter 和 Screen 已经集中在所属 Feature。
+`core_network` 是明确的跨业务平台边界，同时被数据仓库和 iOS 图片加载使用。
+普通 UI 调整通常只需要改一个 `commonMain` 文件。
 
 ## 5. 第一个练习：修改 Android 和 iOS 共用 UI
 
@@ -248,7 +252,7 @@ iOS Host
 ## 7. 修改状态或业务逻辑
 
 首页状态位于
-[`HomeFeedStateHolder.kt`](../feature_home_shared/src/commonMain/kotlin/com/kotlinmvvm/feature/home/shared/HomeFeedStateHolder.kt)。
+[`HomeFeedStateHolder.kt`](../feature_home/src/commonMain/kotlin/com/kotlinmvvm/feature/home/HomeFeedStateHolder.kt)。
 它由 Android ViewModel 和 iOS Compose scope 共同使用。
 
 职责分工如下：
@@ -288,7 +292,7 @@ core_data/EyepetizerPayloadMapper.kt
 core_model/EyepetizerModel.kt
   两端共同理解的业务数据
         ↓
-feature_*_shared/*Presenter.kt
+feature_home 或 feature_media 中的 *Presenter.kt
   领域模型 → 页面模型
         ↓
 feature_*/commonMain/*Screen.kt
@@ -305,6 +309,35 @@ feature_*/commonMain/*Screen.kt
 如果只是改变标题拼接格式，通常从 Presenter 开始改，不需要动 DTO 和 Repository。
 
 如果只是改变卡片间距，直接改 Screen，不需要动状态层。
+
+### 8.1 新增网络请求
+
+不要在 Feature、ViewModel 或 Screen 中创建 OkHttp、Retrofit、`NSURLSession`。
+平台组合根已经创建并复用了同一个 `NetworkClient`，Repository 只需要接收它：
+
+```kotlin
+class ExampleRepository(
+    private val networkClient: NetworkClient
+) {
+    suspend fun load(): String =
+        networkClient.getText("https://example.com/api/example")
+}
+```
+
+全局请求头使用 `NetworkInterceptor`，超时和重试使用 `NetworkConfig`；不要为每个
+接口重复 `try/catch` 或重新创建客户端。详细示例、错误类型和缓存策略见
+[`docs/networking.md`](networking.md)。
+
+Query 参数通过 `queryParameters` 传入，JSON、表单、文本和二进制请求体统一使用
+`NetworkBody`；不要把未经编码的用户输入直接拼进 URL。
+
+首页秒开或弱网回退可以使用 `getCacheFirst()` / `getNetworkFirst()`；它们遵循标准
+HTTP 缓存协议。缓存未命中统一抛出 `NetworkCacheMissException`，响应来源可从
+`NetworkResponse.source` 读取。完整示例见
+[`docs/networking.md`](networking.md)。
+
+需要覆盖默认网络超时时，直接给 `get()`、`getText()`、`getBytes()` 或 `send()`
+传入 `timeoutMillis`。它表示一次请求尝试的完整时间预算，Android 与 iOS 语义一致。
 
 ## 9. Android 与 iOS 的入口
 
@@ -358,7 +391,7 @@ iosAppApp.swift
 9. 为 Presenter、状态变化或导航规则留下一个最小 `commonTest`。
 
 如果它是新的底部一级页面，还要更新
-[`AppTopLevelDestination.kt`](../shared-ui/src/commonMain/kotlin/com/kotlinmvvm/shared/ui/navigation/AppTopLevelDestination.kt)。
+[`AppTopLevelDestination.kt`](../core_ui/src/commonMain/kotlin/com/kotlinmvvm/core/ui/navigation/AppTopLevelDestination.kt)。
 这里是一级入口文案、顺序与共享路由的唯一配置位置。
 
 不要为了一个页面增加 BaseViewModel、BaseRepository、通用 Event 总线或 DI 框架。
@@ -367,10 +400,10 @@ iosAppApp.swift
 
 全局颜色和排版的入口：
 
-- [`DesignTokens.kt`](../core_design_tokens/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/DesignTokens.kt)
-- [`Color.kt`](../core_designsystem/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/Color.kt)
-- [`Type.kt`](../core_designsystem/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/Type.kt)
-- [`Theme.kt`](../core_designsystem/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/Theme.kt)
+- [`DesignTokens.kt`](../core_ui/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/DesignTokens.kt)
+- [`Color.kt`](../core_ui/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/Color.kt)
+- [`Type.kt`](../core_ui/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/Type.kt)
+- [`Theme.kt`](../core_ui/src/commonMain/kotlin/com/kotlinmvvm/core/designsystem/theme/Theme.kt)
 
 只被一个页面使用的样式先留在该页面。至少有多个页面稳定复用时，才考虑提取到
 `core_ui`。这样可以避免新人为了改一个圆角被迫跳转很多层。
@@ -399,7 +432,9 @@ sourceSets {
 }
 ```
 
-不要把 Coil、Media3、Retrofit 或 Android Lifecycle 放入 `commonMain`。
+不要把 Coil、Media3、OkHttp、Foundation 或 Android Lifecycle 放入普通
+`commonMain`。`core_network` 的 `commonMain` 只定义平台无关契约，具体引擎分别
+位于 `androidMain` 和 `iosMain`。
 
 ## 13. 测试放在哪里
 
@@ -536,7 +571,7 @@ slot 注入共享代码。
   → feature_*/src/commonMain/*Screen.kt
 
 改加载、刷新、分页、播放状态？
-  → feature_*_shared / core_state
+  → feature_home / feature_media / core_state
 
 改接口字段？
   → core_data Payload + Mapper

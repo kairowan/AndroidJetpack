@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.kotlinmvvm.android.application.compose)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -27,16 +26,14 @@ android {
 
 dependencies {
     implementation(project(":feature_home"))
-    implementation(project(":feature_detail"))
-    implementation(project(":feature_shorts"))
-    implementation(project(":core_designsystem"))
+    implementation(project(":feature_media"))
     implementation(project(":core_ui"))
+    implementation(project(":core_network"))
     implementation(project(":core_data"))
     implementation(project(":domain-feed"))
     implementation(project(":core_model"))
     implementation(project(":core_navigation"))
     implementation(project(":core_player"))
-    implementation(project(":shared-ui"))
     
     implementation(libs.google.material)
     implementation(libs.androidx.activity.compose)

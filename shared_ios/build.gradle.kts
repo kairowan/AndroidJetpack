@@ -21,15 +21,12 @@ kotlin {
     sourceSets {
         iosMain.dependencies {
             implementation(project(":core_data"))
-            implementation(project(":core_designsystem"))
             implementation(project(":core_model"))
+            implementation(project(":core_network"))
             implementation(project(":domain-feed"))
-            implementation(project(":feature_detail"))
             implementation(project(":feature_home"))
-            implementation(project(":feature_home_shared"))
-            implementation(project(":feature_media_shared"))
-            implementation(project(":feature_shorts"))
-            implementation(project(":shared-ui"))
+            implementation(project(":feature_media"))
+            implementation(project(":core_ui"))
             implementation(libs.compose.multiplatform.foundation)
             implementation(libs.compose.multiplatform.material3)
             implementation(libs.compose.multiplatform.runtime)

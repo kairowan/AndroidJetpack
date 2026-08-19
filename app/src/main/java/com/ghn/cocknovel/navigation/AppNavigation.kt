@@ -23,8 +23,8 @@ import com.kotlinmvvm.core.player.api.VideoPlayerFactory
 import com.kotlinmvvm.feature.detail.VideoDetailRoute
 import com.kotlinmvvm.feature.home.HomeRoute
 import com.kotlinmvvm.feature.shorts.ShortsRoute
-import com.kotlinmvvm.shared.ui.navigation.AppNavigationBar
-import com.kotlinmvvm.shared.ui.navigation.AppTopLevelDestination
+import com.kotlinmvvm.core.ui.navigation.AppNavigationBar
+import com.kotlinmvvm.core.ui.navigation.AppTopLevelDestination
 
 /**
  * @author 浩楠

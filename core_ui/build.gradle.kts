@@ -30,8 +30,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":core_designsystem"))
-            api(project(":core_ui_contract"))
+            api(project(":core_navigation"))
             api(project(":core_state"))
             api(libs.kotlinx.collections.immutable)
             implementation(libs.compose.multiplatform.runtime)
@@ -42,6 +41,9 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.lifecycle.viewmodel)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
     }
 }

@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.multiplatform")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -28,16 +29,12 @@ kotlin {
         commonMain.dependencies {
             api(project(":domain-feed"))
             implementation(project(":core_model"))
+            implementation(project(":core_network"))
             implementation(libs.kotlinx.core)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-        }
-        androidMain.dependencies {
-            implementation(libs.kotlinx.coroutines.android)
-            implementation(libs.okhttp.okhttp4)
-            implementation(libs.retrofit.retrofit2)
-            implementation(libs.retrofit.retrofit2.gson)
         }
     }
 }

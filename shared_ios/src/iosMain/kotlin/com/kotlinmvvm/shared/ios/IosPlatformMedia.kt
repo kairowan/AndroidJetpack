@@ -1,4 +1,7 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(
+    kotlinx.cinterop.BetaInteropApi::class,
+    kotlinx.cinterop.ExperimentalForeignApi::class
+)
 
 package com.kotlinmvvm.shared.ios
 
@@ -11,7 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import androidx.compose.ui.viewinterop.UIKitViewController
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.kotlinmvvm.core.network.NetworkClient
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
+import kotlinx.coroutines.CancellationException
 import platform.AVFoundation.AVLayerVideoGravityResizeAspectFill
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
@@ -22,20 +28,19 @@ import platform.AVFoundation.replaceCurrentItemWithPlayerItem
 import platform.AVKit.AVPlayerViewController
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
-import platform.Foundation.NSURLSession
-import platform.Foundation.dataTaskWithURL
+import platform.Foundation.create
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageView
 import platform.UIKit.UIViewContentMode
 import platform.UIKit.setAccessibilityLabel
 import platform.UIKit.setIsAccessibilityElement
-import kotlin.coroutines.resume
 
 /**
  * iOS 图片插槽：复用系统 URL cache，不额外引入图片框架。
  */
 @Composable
 internal fun IosRemoteImage(
+    networkClient: NetworkClient,
     url: String,
     contentDescription: String,
     modifier: Modifier = Modifier
@@ -43,7 +48,7 @@ internal fun IosRemoteImage(
     var image by remember(url) { mutableStateOf<UIImage?>(null) }
 
     LaunchedEffect(url) {
-        image = loadImage(url)
+        image = loadImage(networkClient, url)
     }
 
     UIKitView(
@@ -124,24 +129,26 @@ internal fun IosVideoSurface(
     )
 }
 
-private suspend fun loadImage(url: String): UIImage? = suspendCancellableCoroutine { continuation ->
-    val nativeUrl = NSURL.URLWithString(url.atsSafeUrl())
-    if (nativeUrl == null) {
-        continuation.resume(null)
-        return@suspendCancellableCoroutine
+private suspend fun loadImage(
+    networkClient: NetworkClient,
+    url: String
+): UIImage? =
+    try {
+        networkClient.getBytes(url.atsSafeUrl()).toNSData().let(::UIImage)
+    } catch (error: CancellationException) {
+        throw error
+    } catch (_: Exception) {
+        null
     }
 
-    val task = NSURLSession.sharedSession.dataTaskWithURL(nativeUrl) {
-            data: NSData?,
-            _,
-            _ ->
-        if (continuation.isActive) {
-            continuation.resume(data?.let(::UIImage))
+private fun ByteArray.toNSData(): NSData =
+    if (isEmpty()) {
+        NSData.create(bytes = null, length = 0u)
+    } else {
+        usePinned { pinned ->
+            NSData.create(bytes = pinned.addressOf(0), length = size.toULong())
         }
     }
-    continuation.invokeOnCancellation { task.cancel() }
-    task.resume()
-}
 
 private fun String.atsSafeUrl(): String =
     if (startsWith("http://")) "https://${removePrefix("http://")}" else this

@@ -28,18 +28,22 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.kotlinmvvm.core.data.repository.EyepetizerRepositoryFactory
 import com.kotlinmvvm.core.designsystem.theme.AppTheme
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
+import com.kotlinmvvm.core.network.NetworkClient
+import com.kotlinmvvm.core.network.NetworkConfig
+import com.kotlinmvvm.core.network.NetworkRetryPolicy
+import com.kotlinmvvm.core.network.createIosNetworkClient
+import com.kotlinmvvm.core.ui.navigation.AppNavigationBar
+import com.kotlinmvvm.core.ui.navigation.AppTopLevelDestination
 import com.kotlinmvvm.feature.detail.VideoDetailScreen
+import com.kotlinmvvm.feature.detail.VideoDetailPagePresenter
+import com.kotlinmvvm.feature.detail.VideoDetailState
 import com.kotlinmvvm.feature.home.HomeScreen
-import com.kotlinmvvm.feature.home.shared.HomeFeedPagePresenter
-import com.kotlinmvvm.feature.home.shared.HomeFeedStateHolder
-import com.kotlinmvvm.feature.media.shared.ShortsFeedStateHolder
-import com.kotlinmvvm.feature.media.shared.ShortsPagePresenter
-import com.kotlinmvvm.feature.media.shared.ShortsPlaybackStateHolder
-import com.kotlinmvvm.feature.media.shared.VideoDetailPagePresenter
-import com.kotlinmvvm.feature.media.shared.VideoDetailState
+import com.kotlinmvvm.feature.home.HomeFeedPagePresenter
+import com.kotlinmvvm.feature.home.HomeFeedStateHolder
 import com.kotlinmvvm.feature.shorts.ShortsScreen
-import com.kotlinmvvm.shared.ui.navigation.AppNavigationBar
-import com.kotlinmvvm.shared.ui.navigation.AppTopLevelDestination
+import com.kotlinmvvm.feature.shorts.ShortsFeedStateHolder
+import com.kotlinmvvm.feature.shorts.ShortsPagePresenter
+import com.kotlinmvvm.feature.shorts.ShortsPlaybackStateHolder
 import platform.UIKit.UIViewController
 
 /**
@@ -56,7 +60,16 @@ class IosAppController {
 @Composable
 private fun IosApp() {
     val scope = rememberCoroutineScope()
-    val repository = remember { EyepetizerRepositoryFactory.create() }
+    val networkClient = remember {
+        createIosNetworkClient(
+            NetworkConfig(
+                retryPolicy = NetworkRetryPolicy(maxRetries = 1)
+            )
+        )
+    }
+    val repository = remember(networkClient) {
+        EyepetizerRepositoryFactory.create(networkClient)
+    }
     val homeStateHolder = remember { HomeFeedStateHolder(scope, repository) }
     val shortsStateHolder = remember { ShortsFeedStateHolder(scope, repository) }
     val shortsPlaybackStateHolder = remember { ShortsPlaybackStateHolder() }
@@ -132,6 +145,7 @@ private fun IosApp() {
             when {
                 video != null -> IosVideoDetail(
                     video = video,
+                    networkClient = networkClient,
                     onBack = { detailVideo = null },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -149,6 +163,7 @@ private fun IosApp() {
                     },
                     image = { url, contentDescription, imageModifier ->
                         IosRemoteImage(
+                            networkClient = networkClient,
                             url = url,
                             contentDescription = contentDescription,
                             modifier = imageModifier
@@ -169,6 +184,7 @@ private fun IosApp() {
                     onExitFullscreen = shortsPlaybackStateHolder::exitFullscreen,
                     authorImage = { shortsVideo, imageModifier ->
                         IosRemoteImage(
+                            networkClient = networkClient,
                             url = shortsVideo.authorIcon,
                             contentDescription = shortsVideo.authorName,
                             modifier = imageModifier
@@ -193,6 +209,7 @@ private fun IosApp() {
 @Composable
 private fun IosVideoDetail(
     video: EyepetizerFeedItem.Video,
+    networkClient: NetworkClient,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -226,6 +243,7 @@ private fun IosVideoDetail(
             },
             authorImage = { url, contentDescription, imageModifier ->
                 IosRemoteImage(
+                    networkClient = networkClient,
                     url = url,
                     contentDescription = contentDescription,
                     modifier = imageModifier

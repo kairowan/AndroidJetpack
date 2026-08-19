@@ -7,8 +7,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":core_designsystem"))
+    implementation(project(":core_ui"))
     api(project(":core_playback"))
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui.compose)

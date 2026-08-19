@@ -34,10 +34,6 @@ import com.kotlinmvvm.core.ui.component.EmptyContent
 import com.kotlinmvvm.core.ui.component.ErrorContent
 import com.kotlinmvvm.core.ui.component.LoadingContent
 import com.kotlinmvvm.core.ui.component.PagedList
-import com.kotlinmvvm.feature.home.shared.HomeFeedCatalog
-import com.kotlinmvvm.feature.home.shared.HomeFeedEntryType
-import com.kotlinmvvm.feature.home.shared.HomeFeedPageModel
-import com.kotlinmvvm.feature.home.shared.HomeVideoCardModel
 
 /**
  * @author 浩楠
@@ -94,7 +90,7 @@ fun HomeScreen(
 
             pageModel.errorMessage != null && pageModel.entries.isEmpty() -> {
                 ErrorContent(
-                    message = pageModel.errorMessage ?: "加载失败",
+                    message = pageModel.errorMessage,
                     onRetry = onRetry,
                     modifier = Modifier
                         .fillMaxWidth()

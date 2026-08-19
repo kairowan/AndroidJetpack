@@ -1,8 +1,10 @@
 package com.ghn.cocknovel.di
 
 import android.content.Context
-import com.kotlinmvvm.core.data.network.NetworkRuntime
 import com.kotlinmvvm.core.data.repository.EyepetizerRepositoryFactory
+import com.kotlinmvvm.core.network.NetworkConfig
+import com.kotlinmvvm.core.network.NetworkRetryPolicy
+import com.kotlinmvvm.core.network.createAndroidNetworkClient
 import com.kotlinmvvm.core.player.api.VideoPlayerFactory
 import com.kotlinmvvm.core.player.facade.createVideoPlayerFactory
 import com.kotlinmvvm.domain.feed.repository.FeedPageRepository
@@ -22,14 +24,17 @@ internal class AppContainer(
 ) : AppDependencies {
     private val appContext = context.applicationContext
 
-    init {
-        NetworkRuntime.initialize(appContext)
-    }
+    private val networkClient = createAndroidNetworkClient(
+        context = appContext,
+        config = NetworkConfig(
+            retryPolicy = NetworkRetryPolicy(maxRetries = 1)
+        )
+    )
 
     override val eyepetizerRepository: FeedPageRepository by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED
     ) {
-        EyepetizerRepositoryFactory.create()
+        EyepetizerRepositoryFactory.create(networkClient)
     }
 
     override val videoPlayerFactory: VideoPlayerFactory by lazy(

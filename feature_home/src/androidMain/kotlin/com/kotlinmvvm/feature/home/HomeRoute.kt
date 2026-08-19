@@ -11,7 +11,6 @@ import coil.compose.AsyncImage
 import com.kotlinmvvm.core.model.EyepetizerFeedItem
 import com.kotlinmvvm.core.ui.base.viewModelFactory
 import com.kotlinmvvm.domain.feed.repository.FeedPageRepository
-import com.kotlinmvvm.feature.home.shared.HomeFeedPagePresenter
 
 /**
  * @author 浩楠

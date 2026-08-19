@@ -1,5 +1,7 @@
 package com.kotlinmvvm.core.data.eyepetizer
 
+import kotlinx.serialization.Serializable
+
 /**
  * @author 浩楠
  *
@@ -12,16 +14,19 @@ package com.kotlinmvvm.core.data.eyepetizer
  *  /_/   \_\_| |_|\__,_|_|  \___/|_|\__,_| |____/ \__|\__,_|\__,_|_|\___/
  * @Description: Eyepetizer 共享最小响应模型
  */
+@Serializable
 internal data class EyepetizerPayloadResponse(
     val itemList: List<EyepetizerPayloadItem> = emptyList(),
     val nextPageUrl: String? = null
 )
 
+@Serializable
 internal data class EyepetizerPayloadItem(
     val type: String? = null,
     val data: EyepetizerPayloadData? = null
 )
 
+@Serializable
 internal data class EyepetizerPayloadData(
     val dataType: String? = null,
     val id: Int? = null,
@@ -37,16 +42,19 @@ internal data class EyepetizerPayloadData(
     val itemList: List<EyepetizerPayloadItem> = emptyList()
 )
 
+@Serializable
 internal data class EyepetizerPayloadCover(
     val feed: String? = null,
     val detail: String? = null
 )
 
+@Serializable
 internal data class EyepetizerPayloadAuthor(
     val name: String? = null,
     val icon: String? = null
 )
 
+@Serializable
 internal data class EyepetizerPayloadHeader(
     val title: String? = null
 )

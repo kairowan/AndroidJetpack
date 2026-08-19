@@ -33,14 +33,14 @@ kotlin {
             api(project(":core_model"))
             implementation(project(":core_state"))
             implementation(project(":core_ui"))
-            implementation(project(":feature_home_shared"))
+            implementation(project(":domain-feed"))
             implementation(libs.compose.multiplatform.runtime)
             implementation(libs.compose.multiplatform.foundation)
             implementation(libs.compose.multiplatform.material3)
             implementation(libs.compose.multiplatform.ui)
+            implementation(libs.kotlinx.core)
         }
         androidMain.dependencies {
-            implementation(project(":domain-feed"))
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewModelCompose)
             implementation(libs.coil.compose)
