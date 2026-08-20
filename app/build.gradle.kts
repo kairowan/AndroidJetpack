@@ -52,15 +52,15 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature-home"))
-    implementation(project(":feature-detail"))
-    implementation(project(":feature-shorts"))
-    implementation(project(":core-designsystem"))
-    implementation(project(":core-network"))
-    implementation(project(":core-player"))
-    implementation(project(":core-ui"))
-    implementation(project(":data-feed"))
-    implementation(project(":domain-feed"))
+    implementation(project(":module-feature-home"))
+    implementation(project(":module-feature-detail"))
+    implementation(project(":module-feature-shorts"))
+    implementation(project(":lib-core-designsystem"))
+    implementation(project(":lib-core-network"))
+    implementation(project(":lib-core-player"))
+    implementation(project(":lib-core-ui"))
+    implementation(project(":module-data-feed"))
+    implementation(project(":module-domain-feed"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.foundation)

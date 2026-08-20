@@ -32,12 +32,12 @@ Home、Shorts、Feed 和开眼接口只是可删除的示例。本教程默认�
 
 ### 2. 复用或重命名示例模块
 
-不要先创建 `feature-profile / domain-account / data-account`。优先选择：
+不要先创建 `module-feature-profile / module-domain-account / module-data-account`。优先选择：
 
-- 与首页职责相近：直接改造 `feature-home`。
-- 仍需要详情页：改造 `feature-detail`。
-- 不需要短视频：删除 `feature-shorts` 和对应导航。
-- 主要业务不再是 Feed：将 `domain-feed / data-feed` 重命名为真实业务名，或者小项目使用 `domain-app / data-app`。
+- 与首页职责相近：直接改造 `module-feature-home`。
+- 仍需要详情页：改造 `module-feature-detail`。
+- 不需要短视频：删除 `module-feature-shorts` 和对应导航。
+- 主要业务不再是 Feed：将 `module-domain-feed / module-data-feed` 重命名为真实业务名，或者小项目使用 `module-domain-app / module-data-app`。
 
 只有当第二个业务域需要独立团队维护、独立发布或产生明显编译隔离价值时，才新增另一组 domain/data。
 
@@ -377,6 +377,61 @@ class ProfileViewModel(
 
 这条链路只有一次请求，没有刷新和下一页。只有真实需要相应能力时，才在 `AccountRepository` 增加 `refreshProfile()`、`saveProfile()` 等明确函数。
 
+## 接入 SSE 与 WebSocket
+
+两种长连接都从已有 `NetworkClientFactory` 创建，不要新建 OkHttpClient，也不要在
+Composable 中直接持有连接。它们会复用 Endpoint 白名单、认证头、连接池和 Debug
+日志；页面协程取消时，SSE Call 或 WebSocket 会同步释放。
+
+SSE 在 data 层返回 Flow：
+
+```kotlin
+val events = networkClientFactory
+    .createSseClient(endpoint)
+    .events(
+        relativeUrl = "v1/updates",
+        lastEventId = savedEventId
+    )
+
+events.collect { event ->
+    when (event) {
+        is SseMessage -> saveAndApply(event.id, event.type, event.data)
+        is SseRetry -> updateReconnectDelay(event.delayMillis)
+    }
+}
+```
+
+WebSocket 会话由一个 owner 收集事件；`send()` 返回 `false` 表示连接正在关闭、已经
+关闭，或 OkHttp 的发送队列达到上限，不能忽略返回值：
+
+```kotlin
+val session = networkClientFactory
+    .createWebSocketClient(endpoint)
+    .connect("v1/chat")
+
+try {
+    session.events.collect { event ->
+        when (event) {
+            NetworkWebSocketOpen -> session.send("hello")
+            is NetworkWebSocketText -> receive(event.value)
+            is NetworkWebSocketBinary -> receive(event.value)
+            is NetworkWebSocketClosing -> Unit
+            is NetworkWebSocketClosed -> Unit
+            is NetworkWebSocketFailure -> handle(event.failure)
+        }
+    }
+} finally {
+    session.cancel()
+}
+```
+
+`NetworkConfig.webSocketPingIntervalSeconds` 默认 30 秒，设置为 0 可关闭传输层 Ping。
+WebSocket 建连仍受普通 `callTimeoutSeconds` 限制，升级成功后才进入无整次超时的长连接。
+SSE 收到 HTTP 204 时会正常结束，表示服务端要求停止当前事件流。
+基础层不会自动重连：是否可重放订阅、如何恢复 Last-Event-ID、鉴权失效和退避上限都
+属于具体业务协议，应在 data/Repository 中实现并测试，避免默认重连造成重复消息或
+请求风暴。
+
 ## 新增第二个 BaseURL
 
 在 `AppNetworkEndpoints` 增加一个函数：
@@ -418,13 +473,13 @@ Feed 示例需要分页、磁盘缓存、多个远程接口并同时暴露列表
 ### 小型项目
 
 - 保留一个或少量 Feature 模块。
-- 使用一组 `domain-app / data-app`，通过清晰包名区分账号、商品等业务。
+- 使用一组 `module-domain-app / module-data-app`，通过清晰包名区分账号、商品等业务。
 - 使用手动 `AppContainer`。
 - 不预置 UseCase、数据库、WorkManager 或 DI 框架。
 
 ### 中型项目
 
-- 达到团队或编译边界后，将热点业务从 `domain-app / data-app` 拆成独立模块。
+- 达到团队或编译边界后，将热点业务从 `module-domain-app / module-data-app` 拆成独立模块。
 - 业务包名可以保持不变，只调整 Gradle 依赖，Feature API 不需要重写。
 - 复杂持久化使用 Room，可靠后台任务使用 WorkManager。
 - 多处复用的业务编排才增加 UseCase。
@@ -462,6 +517,6 @@ navigationState.navigate(ProductDetailDestination(productId))
 2. 从 `AppNavHost` 删除示例 Destination 注册、播放器全屏状态和视频背景判断。
 3. 从 `MainActivity`、`AppDependencies`、`AppContainer` 删除 Feed 与播放器依赖。
 4. 从 `app/build.gradle.kts` 和 `settings.gradle.kts` 删除不再使用的示例模块。
-5. 项目完全不播放视频时再删除 `core-player`；仍播放业务视频时只替换页面和资源 Host。
+5. 项目完全不播放视频时再删除 `lib-core-player`；仍播放业务视频时只替换页面和资源 Host。
 
 不要把 `FeedApiService` 改名后继续塞入账号、商品等无关接口。同一业务可以复用模块，不同业务仍应使用清晰的 Service、DTO 和 Repository 包名。

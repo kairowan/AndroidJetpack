@@ -8,7 +8,7 @@
 
 | 阶段 | 常见信号 | 保持不变 | 建议升级 |
 | --- | --- | --- | --- |
-| 小型 | 1–5 个页面或少量 Feature、单团队、单应用、数据以在线读取为主 | 一个或少量 Feature、一组 `domain-app / data-app`、手动 `AppContainer` | 不按页面或接口拆模块，不引入 UseCase、DI、数据库或动态化 |
+| 小型 | 1–5 个页面或少量 Feature、单团队、单应用、数据以在线读取为主 | 一个或少量 Feature、一组 `module-domain-app / module-data-app`、手动 `AppContainer` | 不按页面或接口拆模块，不引入 UseCase、DI、数据库或动态化 |
 | 中型 | 多业务域、多人并行、离线查询/事务、可靠后台任务、测试环境独立 | Feature 只依赖 domain；热点业务才拆独立 domain/data | 真实事务使用 Room；可延期工作使用 WorkManager；复用编排才增加 UseCase；CI 增加设备烟测与迁移测试 |
 | 大型 | 多团队独立发布、白标/多租户、多进程、动态交付、严格性能与安全 SLO | `AppDependencies`、Route/Screen、领域角色和错误模型 | 用 Hilt/Dagger 实现 `AppDependencies`；按组织边界拆 `api/implementation`；需要时增加动态 Feature、Macrobenchmark/Baseline Profile、集中可观测性和供应链门禁 |
 
@@ -27,7 +27,7 @@
 | Bindings | 一个 data 装配入口需要同时返回多个领域 Repository 角色；单角色直接返回该接口 |
 | UseCase | 同一业务编排被多个 ViewModel 或入口复用 |
 
-普通单接口允许 Repository 直接组合 Retrofit Service 与 `:core-network` 的通用 `NetworkDataSource`。公共成功/失败结构使用 `DataResult`，业务域只保留自己的稳定错误类型。
+普通单接口允许 Repository 直接组合 Retrofit Service 与 `:lib-core-network` 的通用 `NetworkDataSource`。公共成功/失败结构使用 `DataResult`，业务域只保留自己的稳定错误类型。
 
 ## 可替换边界
 

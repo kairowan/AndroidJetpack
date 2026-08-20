@@ -8,14 +8,14 @@
 
 | 当前示例 | 在真实项目中的处理方式 |
 | --- | --- |
-| `feature-home` | 替换为实际首个顶层业务，例如工作台、商城或消息 |
-| `feature-shorts` | 不需要短视频时直接删除，或者替换为第二个顶层业务 |
-| `feature-detail` | 仅在存在视频详情时保留，否则替换为自己的详情 Feature |
-| `domain-feed` | 替换为账号、商品、订单等真实领域契约 |
-| `data-feed` | 替换为真实接口、DTO、Mapper、缓存和 Repository 实现 |
-| `core-player` | 项目没有音视频能力时可以从依赖和源码中移除 |
+| `module-feature-home` | 替换为实际首个顶层业务，例如工作台、商城或消息 |
+| `module-feature-shorts` | 不需要短视频时直接删除，或者替换为第二个顶层业务 |
+| `module-feature-detail` | 仅在存在视频详情时保留，否则替换为自己的详情 Feature |
+| `module-domain-feed` | 替换为账号、商品、订单等真实领域契约 |
+| `module-data-feed` | 替换为真实接口、DTO、Mapper、缓存和 Repository 实现 |
+| `lib-core-player` | 项目没有音视频能力时可以从依赖和源码中移除 |
 
-页面不等于模块，接口也不等于模块。小项目可以先使用一组 `domain-app` 与 `data-app`，通过业务包名容纳登录、资料、商品等能力；只有团队、交付或编译边界真实出现时，才拆成 `domain-account`、`data-account` 等独立模块。
+页面不等于模块，接口也不等于模块。小项目可以先使用一组 `module-domain-app` 与 `module-data-app`，通过业务包名容纳登录、资料、商品等能力；只有团队、交付或编译边界真实出现时，才拆成 `module-domain-account`、`module-data-account` 等独立模块。
 
 第一次接入请直接阅读 [`docs/usage-guide.md`](docs/usage-guide.md)，其中包含底部导航替换、新增 Feature、新增网络业务域和删除示例代码的完整步骤。
 
@@ -38,41 +38,41 @@
 ```text
 :app                    app/
 
-:core-data              core-data/
-:core-network           core-network/
-:core-designsystem      core-designsystem/
-:core-ui                core-ui/
-:core-player            core-player/
+:lib-core-data          lib-core-data/
+:lib-core-network       lib-core-network/
+:lib-core-designsystem  lib-core-designsystem/
+:lib-core-ui            lib-core-ui/
+:lib-core-player        lib-core-player/
 
-:domain-feed            domain-feed/
-:data-feed              data-feed/
+:module-domain-feed     module-domain-feed/
+:module-data-feed       module-data-feed/
 
-:feature-home           feature-home/
-:feature-detail         feature-detail/
-:feature-shorts         feature-shorts/
+:module-feature-home    module-feature-home/
+:module-feature-detail  module-feature-detail/
+:module-feature-shorts  module-feature-shorts/
 ```
 
 | 前缀/模块 | 定位 | 允许包含 |
 | --- | --- | --- |
 | `:app` | 项目装配模块 | Application、Activity、服务地址注册、依赖容器、应用路由 |
-| `:core-*` | 可复用基础/工具能力 | 公共加载与结果契约、网络、设计系统、通用 UI 与 ViewModel 任务策略、播放器 |
-| `:domain-*` | 项目共享领域契约 | 领域模型、窄仓库接口与稳定业务错误分类 |
-| `:data-*` | 项目数据实现 | 数据图装配入口、Retrofit Service、DTO、DataSource、Repository 实现、Mapper |
-| `:feature-*` | 项目页面模块 | Route、ViewModel、UiState、Screen、业务组件 |
+| `:lib-core-*` | 可复用基础/工具能力 | 公共加载与结果契约、网络、设计系统、通用 UI 与 ViewModel 任务策略、播放器 |
+| `:module-domain-*` | 项目共享领域契约 | 领域模型、窄仓库接口与稳定业务错误分类 |
+| `:module-data-*` | 项目数据实现 | 数据图装配入口、Retrofit Service、DTO、DataSource、Repository 实现、Mapper |
+| `:module-feature-*` | 项目页面模块 | Route、ViewModel、UiState、Screen、业务组件 |
 | `build-logic` | 构建基础设施 | Android/Compose convention plugin |
 
 依赖方向：
 
 ```text
 app
- ├─ feature-home ─────┐
- ├─ feature-shorts ───┼── domain-feed ── core-data
- ├─ feature-detail ───┘       ▲
- │   └── core-ui / core-designsystem / core-player
- └─ data-feed ────────────────┴── core-network
+ ├─ module-feature-home ─────┐
+ ├─ module-feature-shorts ───┼── module-domain-feed ── lib-core-data
+ ├─ module-feature-detail ───┘       ▲
+ │   └── lib-core-ui / lib-core-designsystem / lib-core-player
+ └─ module-data-feed ────────────────┴── lib-core-network
 ```
 
-Feature 只依赖 `:domain-*` 的业务契约，不直接依赖 `:data-*` 或 `:core-network`，也不能在 Composable 或 ViewModel 中创建 Retrofit、DataSource 或 Repository。这样替换网络、缓存或 Repository 实现时不会扩大到页面模块重新编译。`core-*` 不允许出现 Feed、账号等项目业务协议。
+Feature 只依赖 `:module-domain-*` 的业务契约，不直接依赖 `:module-data-*` 或 `:lib-core-network`，也不能在 Composable 或 ViewModel 中创建 Retrofit、DataSource 或 Repository。这样替换网络、缓存或 Repository 实现时不会扩大到页面模块重新编译。`lib-core-*` 不允许出现 Feed、账号等项目业务协议。
 
 ## 小、中、大型项目扩展方式
 
@@ -80,8 +80,8 @@ Feature 只依赖 `:domain-*` 的业务契约，不直接依赖 `:data-*` 或 `:
 
 | 规模 | 默认使用方式 | 达到真实边界后再增加 |
 | --- | --- | --- |
-| 小型 | 一个或少量 Feature + 一组聚合的 `domain-app / data-app`，使用手动 `AppContainer` | 不按页面或接口增加模块，不增加 UseCase、DI 框架或 API/Impl 模块 |
-| 中型 | 将真正形成边界的热点业务拆为 `feature-* / domain-* / data-*`，其余业务继续复用聚合模块 | 复用业务编排再加 UseCase；复杂持久化再换 Room |
+| 小型 | 一个或少量 Feature + 一组聚合的 `module-domain-app / module-data-app`，使用手动 `AppContainer` | 不按页面或接口增加模块，不增加 UseCase、DI 框架或 API/Impl 模块 |
+| 中型 | 将真正形成边界的热点业务拆为 `module-feature-* / module-domain-* / module-data-*`，其余业务继续复用聚合模块 | 复用业务编排再加 UseCase；复杂持久化再换 Room |
 | 大型 | 保持 Activity/Feature 只依赖 `AppDependencies` 与 domain 角色，将依赖实现替换为 Hilt/Dagger | 团队、交付或编译隔离确有需要时再拆 API/Impl、动态 Feature、分析和安全模块 |
 
 因此规模升级只替换装配实现，不要求重写 Screen、ViewModel、Repository 契约或路由参数。
@@ -91,7 +91,7 @@ Feature 只依赖 `:domain-*` 的业务契约，不直接依赖 `:data-*` 或 `:
 每个业务模块按职责分包，不把路由、状态和所有组件放在一个文件：
 
 ```text
-feature-home/src/main/java/.../home/
+module-feature-home/src/main/java/.../home/
 ├─ navigation/
 │  └─ HomeRoute.kt
 ├─ presentation/
@@ -125,7 +125,7 @@ Navigation entry
 
 `viewModelScope.launch` 返回 `Job` 是 Kotlin 协程的正常设计，Job 仍属于 ViewModel 的作用域，并会在 `ViewModel` 清理时自动取消。脚手架真正禁止的是业务方法把 `Job` 暴露给 Route 或 Screen，以及各页面自行维护互不一致的取消逻辑。
 
-所有业务 ViewModel 继承 `:core-ui` 的 `BaseViewModel<FeatureUiState>`。ViewModel 基础能力与通用页面反馈组件同属展示基础设施，不再为四个类型单独增加 Gradle 模块。基类统一私有持有 `MutableStateFlow`，只向 Route 暴露只读 `uiState`，并向子类提供当前快照 `currentState`、原子更新 `updateState` 和整体替换 `setState`。具体状态类型、Loading/Error 字段和业务转换仍由各 Feature 定义。
+所有业务 ViewModel 继承 `:lib-core-ui` 的 `BaseViewModel<FeatureUiState>`。ViewModel 基础能力与通用页面反馈组件同属展示基础设施，不再为四个类型单独增加 Gradle 模块。基类统一私有持有 `MutableStateFlow`，只向 Route 暴露只读 `uiState`，并向子类提供当前快照 `currentState`、原子更新 `updateState` 和整体替换 `setState`。具体状态类型、Loading/Error 字段和业务转换仍由各 Feature 定义。
 
 公开页面动作只返回 `Unit`。中间处理直接使用 kotlinx.coroutines 官方 Flow 操作符，基类只提供一个单次任务源、一个当前状态恢复操作和两个生命周期终端：
 
@@ -220,7 +220,7 @@ AppNetworkEndpoints
   → FeedPage / FeedItem
 ```
 
-`:core-network` 只负责与业务无关的网络基础能力：
+`:lib-core-network` 只负责与业务无关的网络基础能力：
 
 | 包 | 职责 |
 | --- | --- |
@@ -230,26 +230,27 @@ AppNetworkEndpoints
 | `exception` | Retrofit 响应、HTTP 状态和传输异常的统一分类 |
 | `datasource` | 可执行任意 Retrofit 请求的通用契约与适配实现 |
 | `result` | 网络成功以及连接、超时、空响应、HTTP、解析、未知失败分类 |
+| `stream` | SSE 事件流、WebSocket 会话及长连接失败分类 |
 
-`:core-data` 提供不包含 Feed、账号等业务名称的 `CommonRepository<Params, Result>`，以及通用的 `DataResult<Value, Error>`、`DataSuccess` 和 `DataFailure`。普通业务只定义自己的模型与错误类型，不再重复创建 Result、Success、Failure 三个文件。
+`:lib-core-data` 提供不包含 Feed、账号等业务名称的 `CommonRepository<Params, Result>`，以及通用的 `DataResult<Value, Error>`、`DataSuccess` 和 `DataFailure`。普通业务只定义自己的模型与错误类型，不再重复创建 Result、Success、Failure 三个文件。
 
 观察、刷新、下一页、保存、删除和搜索等能力由对应的产品窄接口明确声明。例如 `FeedPageRepository` 继承公共加载契约，再声明 Feed 自身的观察、刷新与分页函数；普通页面不会被迫实现无用函数。
 
-`:domain-feed` 持有页面与数据实现之间的稳定业务边界：
+`:module-domain-feed` 持有页面与数据实现之间的稳定业务边界：
 
 - `FeedPageRepository`、`FeedVideoRepository`：面向不同页面能力的窄仓库角色。
 - `FeedPage`、`FeedItem`、`FeedVideo`：不依赖 Android、Retrofit 或缓存实现的领域模型。
-- 领域模型不参与缓存序列化；缓存 DTO 与下一页 URL 只存在于 `data-feed`，页面只读取 `canLoadMore` 业务事实。
-- `FeedLoadError`：页面可稳定处理的业务错误；成功/失败结构复用 `:core-data` 的 `DataResult`。
+- 领域模型不参与缓存序列化；缓存 DTO 与下一页 URL 只存在于 `module-data-feed`，页面只读取 `canLoadMore` 业务事实。
+- `FeedLoadError`：页面可稳定处理的业务错误；成功/失败结构复用 `:lib-core-data` 的 `DataResult`。
 
-`:data-feed` 只持有 Feed 数据实现：
+`:module-data-feed` 只持有 Feed 数据实现：
 
 - `FeedDataGraph`：data 模块唯一装配入口。Feed 同时暴露列表与详情两个 Repository 角色，因此返回 `FeedDataBindings`；普通单角色业务直接返回 Repository，不额外创建 Bindings。
 - `FeedApiService`：Feed Retrofit 接口及路径。
 - `Feed*Dto`：服务端可空传输模型，一类一个文件。
 - `FeedRemoteDataSource`：Feed 需要组合分页、详情恢复与缓存，因此保留业务远程能力契约；普通单服务 Repository 可直接组合 Service 与公共 `NetworkDataSource`。
 - `RetrofitFeedRemoteDataSource`：组合 Feed Service 与通用 `NetworkDataSource`。
-- 列表 Feature 只依赖 `domain-feed` 中的 `FeedPageRepository`，详情 Feature 只依赖 `FeedVideoRepository`；AppContainer 通过 `data-feed` 装配入口取得同一个实现，再按两个窄角色提供，不保留含糊的聚合接口，也不感知数据模块内部类型。
+- 列表 Feature 只依赖 `module-domain-feed` 中的 `FeedPageRepository`，详情 Feature 只依赖 `FeedVideoRepository`；AppContainer 通过 `module-data-feed` 装配入口取得同一个实现，再按两个窄角色提供，不保留含糊的聚合接口，也不感知数据模块内部类型。
 - Repository 持有分页令牌、并发锁、缓存新鲜度、合并去重和详情恢复逻辑。
 - `observePage()` / `observeVideo(videoId, source)` 向多个页面提供同一事实数据，视频观察与恢复使用一致的“来源 + ID”身份，ViewModel 不自行拼接分页。
 - 将网络失败转换成稳定的 `FeedLoadError`，UI 不解析 HTTP code 或异常文本。
@@ -264,12 +265,15 @@ AppNetworkEndpoints
 - 支持多个独立 Base URL，相同 Endpoint 复用 Retrofit，不同 Endpoint 共享连接池。
 - 初始 `@Url` 在认证头注入前校验，服务端分页地址和每次重定向在实际网络交换前再次校验。
 - 独立连接、读取、写入、整次调用超时。
+- SSE 支持标准字段、多行 data、Last-Event-ID、服务端 retry 提示、HTTP 204 停止信号和 Flow 取消。
+- WebSocket 支持文本/二进制消息、关闭握手、失败分类、发送队列反馈和可配置 Ping。
+- 长连接复用现有连接池、认证头、Endpoint 白名单与日志链路；SSE 不设整次调用超时，WebSocket 仅握手阶段受其限制。
 - 有界 OkHttp 磁盘缓存。
 - `Accept`、`User-Agent`、`X-Request-ID` 公共请求头。
 - `NetworkHeaderProvider` 可读取当前 Request，按 Host 接入不同 Token、租户或渠道。
 - `NetworkExceptionHandler` 统一处理成功、空正文、HTTP、连接、超时、解析和未知异常，DataSource 不重复编写异常分支。
 - TLS/证书与协议异常使用不可重试类型，避免被通用 `IOException` 分支错误重试。
-- 网络校验、通用失败和日志文案全部位于 `core-network/src/main/res/values/strings.xml`。
+- 网络校验、通用失败和日志文案全部位于 `lib-core-network/src/main/res/values/strings.xml`。
 - 保留 `CancellationException`，页面离开后请求可正确取消。
 - `NetworkLoggingInterceptor` 只在 Debug 装配；Release 不注入日志拦截器。
 - Debug 日志按请求/响应/异常分段展示，完整输出并美化 JSON，自动隐藏认证头、Cookie、Token、密码、Credential、Session、Signature、Secret 和 API Key。
@@ -329,13 +333,13 @@ Endpoint 地址必须以 `/` 结尾并默认使用 HTTPS。测试、预发和生
 - 应用自有组件中只有 Launcher Activity 对外导出；详情 Activity 保持 `exported=false`，Activity 参数在创建 Route 前校验。
 - Token、租户和认证头通过 `NetworkHeaderProvider` 按 Host 动态注入，禁止写入源码、资源、Gradle 或日志。
 - 网络、任务和缓存诊断使用显式稳定码；Release 只记录脱敏维度，原始异常栈仅允许 Debug 输出。
-- Gson DTO 的 R8 规则由 `data-*` 模块自己的 `consumer-rules.pro` 持有，Release 混淆构建是交付门槛。
+- Gson DTO 的 R8 规则由 `module-data-*` 模块自己的 `consumer-rules.pro` 持有，Release 混淆构建是交付门槛。
 - 证书固定和 Android 16 Certificate Transparency 需要后端证书轮换、备用 Pin 和故障恢复能力，因此作为大型项目显式策略，不对公共示例域盲目启用。
 
 ## 播放器边界
 
 - 对外契约名为 `VideoPlayerController`，不使用 Java 风格 `IPlayer`。
-- Media3 实现名为 `Media3VideoPlayerController`，只存在于 `:core-player`。
+- Media3 实现名为 `Media3VideoPlayerController`，只存在于 `:lib-core-player`。
 - Compose API 使用 `InlineVideoPlayer`、`FullscreenVideoPlayer` 和 `PlayerSurface`，不使用误导性的 `*View` 命名。
 - 视频画面使用 Media3 Compose `ContentFrame`，不通过 `AndroidView` 包装 `PlayerView`。
 - 播放器由当前 Composition 持有，跟随 Lifecycle 暂停、恢复和释放。

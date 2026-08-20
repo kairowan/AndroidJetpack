@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kotlin 代码规范"
+  short_description: "统一 Kotlin 类注释、中文说明与文件职责边界"
+  default_prompt: "使用 $kotlin-code-style 新增或重构 Kotlin 代码，并遵循本项目的注释与文件分离规范。"

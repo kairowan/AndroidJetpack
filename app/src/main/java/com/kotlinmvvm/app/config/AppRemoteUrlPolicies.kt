@@ -4,7 +4,7 @@ import com.kotlinmvvm.core.network.config.RemoteResourceUrlPolicy
 
 /**
  * @author 浩楠
- * @date 2026/7/21 09:23
+ * @date 2026/7/21
  *      _              _           _     _   ____  _             _ _
  *     / \   _ __   __| |_ __ ___ (_) __| | / ___|| |_ _   _  __| (_) ___
  *    / _ \ | '_ \ / _` | '__/ _ \| |/ _` | \___ \| __| | | |/ _` | |/ _ \

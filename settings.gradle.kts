@@ -18,15 +18,15 @@ dependencyResolutionManagement {
 rootProject.name = "ComposeScaffold"
 include(":app")
 
-include(":core-data")
-include(":core-designsystem")
-include(":core-network")
-include(":core-player")
-include(":core-ui")
+include(":lib-core-data")
+include(":lib-core-designsystem")
+include(":lib-core-network")
+include(":lib-core-player")
+include(":lib-core-ui")
 
-include(":data-feed")
-include(":domain-feed")
+include(":module-data-feed")
+include(":module-domain-feed")
 
-include(":feature-detail")
-include(":feature-home")
-include(":feature-shorts")
+include(":module-feature-detail")
+include(":module-feature-home")
+include(":module-feature-shorts")
